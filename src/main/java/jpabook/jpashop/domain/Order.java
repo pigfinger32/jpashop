@@ -19,6 +19,7 @@ public class Order {
     @Column(name = "order_id")
     private Long id;
 
+    //@ManyToOne(fetch = LAZY)로 변경 2023-04-15
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
