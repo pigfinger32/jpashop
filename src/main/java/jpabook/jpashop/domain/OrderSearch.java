@@ -1,14 +1,12 @@
-package jpabook.jpashop.repository;
+package jpabook.jpashop.domain;
 
-import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.util.StringUtils;
 
-import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 public class OrderSearch {
 
     private String memberName; //회원 이름
