@@ -2,6 +2,7 @@ package jpabook.jpashop.controller;
 
 import jpabook.jpashop.Service.ItemService;
 import jpabook.jpashop.domain.item.Book;
+import jpabook.jpashop.domain.item.FlagSection;
 import jpabook.jpashop.domain.item.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,20 +22,20 @@ public class ItemController {
 
     @GetMapping("/items/new")
     public String createForm(Model model) {
-        model.addAttribute("form", new BookForm());
+        model.addAttribute("form", new FlagSectionForm());
         return "items/createItemForm";
     }
 
     @PostMapping("items/new")
-    public String create(BookForm form) {
-        Book book = new Book();
-        book.setName(form.getName());
-        book.setPrice(form.getPrice());
-        book.setStockQuantity(form.getStockQuantity());
-        book.setAuthor(form.getAuthor());
-        book.setIsbn(form.getIsbn());
+    public String create(FlagSectionForm form) {
+        FlagSection flagSection = new FlagSection();
+        flagSection.setName(form.getName());
+        flagSection.setPrice(form.getPrice());
+        flagSection.setStockQuantity(form.getStockQuantity());
+        flagSection.setStartPlcae(form.getStartPlace());
+        flagSection.setEndPlace(form.getEndPlace());
 
-        itemService.saveItem(book);
+        itemService.saveItem(flagSection);
         return "redirect:/";
     }
 
@@ -47,15 +48,16 @@ public class ItemController {
 
     @GetMapping("items/{itemId}/edit")
     public String updateItemForm(@PathVariable("itemId") Long itemId, Model model) {
-        Book item = (Book) itemService.findOne(itemId);
 
-        BookForm form = new BookForm();
+        FlagSection item = (FlagSection) itemService.findOne(itemId);
+
+        FlagSectionForm form = new FlagSectionForm();
         form.setId(item.getId());
         form.setName(item.getName());
         form.setPrice(item.getPrice());
         form.setStockQuantity(item.getStockQuantity());
-        form.setAuthor(item.getAuthor());
-        form.setIsbn(item.getIsbn());
+        form.setStartPlace(item.getStartPlcae());
+        form.setEndPlace(item.getEndPlace());
 
         model.addAttribute("form", form);
 
@@ -63,7 +65,7 @@ public class ItemController {
     }
 
     @PostMapping("items/{itemId}/edit")
-    public String updateItem(@PathVariable Long itemId, @ModelAttribute("form") BookForm form) {
+    public String updateItem(@PathVariable Long itemId, @ModelAttribute("form") FlagSectionForm form) {
 
         itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
 

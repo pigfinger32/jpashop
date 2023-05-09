@@ -35,6 +35,8 @@ public class MemberController {
         Address address = new Address(form.getCity(), form.getStreet(), form.getZipcode());
         Member member = new Member();
         member.setName(form.getName());
+        member.setPw(form.getPw()); //2023-05-09 setPw추가
+        member.setCompany(form.getCompany()); //2023-05-09 setCompany추가
         member.setAddress(address);
 
         memberService.join(member);

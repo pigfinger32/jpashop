@@ -6,9 +6,9 @@
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
     <form th:action="@{/items/new}" th:object="${form}" method="post">
         <div class="form-group">
-            <label th:for="name">상품명</label>
+            <label th:for="name">구간명</label>
             <input type="text" th:field="*{name}" class="form-control"
-                   placeholder="이름을 입력하세요">
+                   placeholder="구간명을 입력하세요">
         </div>
         <div class="form-group">
             <label th:for="price">가격</label>
@@ -20,14 +20,14 @@
             <input type="number" th:field="*{stockQuantity}" class="formcontrol" placeholder="수량을 입력하세요">
         </div>
         <div class="form-group">
-            <label th:for="author">저자</label>
-            <input type="text" th:field="*{author}" class="form-control"
-                   placeholder="저자를 입력하세요">
+            <label th:for="startPlace">구간의 시작 지점</label>
+            <input type="text" th:field="*{startPlace}" class="form-control"
+                   placeholder="구간의 시작 지점을 입력하세요">
         </div>
         <div class="form-group">
-            <label th:for="isbn">ISBN</label>
-            <input type="text" th:field="*{isbn}" class="form-control"
-                   placeholder="ISBN을 입력하세요">
+            <label th:for="endPlace">구간의 종료 지점</label>
+            <input type="text" th:field="*{endPlace}" class="form-control"
+                   placeholder="구간의 종료 지점을 입력하세요">
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
