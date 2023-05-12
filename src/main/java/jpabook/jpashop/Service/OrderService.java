@@ -12,6 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -27,6 +32,38 @@ public class OrderService {
     /**
      * 주문
      * */
+    @Transactional
+    public void order(List <OrderDto> orderDtoList, String startDate, int term) throws ParseException {
+        //종료날짜 연산
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = sdf.parse(startDate);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, term);
+        //시작날짜 종료날짜 입력
+        String orderStartDate = startDate;
+        String orderEndDate = sdf.format(cal.getTime());
+
+        for(OrderDto orderDto : orderDtoList) {
+            //엔티티조회
+            Member member = memberRepository.findOne(orderDto.getMemberId());
+            Item item = itemRepository.findOne(orderDto.getItemId());
+            //배송정보 생성
+            Delivery delivery = new Delivery();
+            delivery.setAddress(member.getAddress());
+            delivery.setStatus(DeliveryStatus.READY);//2023-04-25 수정
+            //주문상품 생성
+            OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), orderDto.getCount());
+            //공연명 입력
+            String orderName = orderDto.getOrderName();
+            //주문 생성
+            Order order = Order.createOrder(member, delivery, orderName,orderStartDate, orderEndDate, orderItem);
+            //주문 저장
+            orderRepository.save(order);
+        }
+        return ;
+    }
+
     @Transactional
     public Long order(Long memberId, Long itemId, int count) {
 
@@ -71,3 +108,5 @@ public class OrderService {
 
     }
 }
+
+

@@ -1,0 +1,10 @@
+#container { width: 400px; margin: 0 auto; }
+#container ul { margin: 0; padding: 0; list-style: none; }
+#container select { width: 380px; }
+#selected-result { display: none; }
+#total-price { display: none; }
+.option-delete { cursor: pointer; }
+.option-price { display: none; }
+.item-count input { width: 45px; text-align: right; padding-right: 5px; }
+.add-item { cursor: pointer; }
+.subtract-item { cursor: pointer; }

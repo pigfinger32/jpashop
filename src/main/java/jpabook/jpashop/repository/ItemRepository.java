@@ -1,5 +1,6 @@
 package jpabook.jpashop.repository;
 
+import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.item.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -25,8 +26,15 @@ public class ItemRepository {
         return em.find(Item.class, id);
     }
 
+
     public List<Item> findAll() {
         return em.createQuery("select i from Item i", Item.class)
+                .getResultList();
+    }
+
+    public List<Item> findByName(String name) {
+        return em.createQuery("select i from Item i where i.name = :name", Item.class)
+                .setParameter("name", name)
                 .getResultList();
     }
 }

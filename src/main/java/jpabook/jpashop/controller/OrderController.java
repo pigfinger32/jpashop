@@ -5,6 +5,7 @@ import jpabook.jpashop.Service.MemberService;
 import jpabook.jpashop.Service.OrderService;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.OrderDto;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 
 @Controller
@@ -34,13 +36,25 @@ public class OrderController {
     }
 
     @PostMapping(value="/order")
+    public String order(@RequestParam List<OrderDto> orderDtoList,
+                        @RequestParam("startDate") String startDate,
+                        @RequestParam("term") int term) throws ParseException {
+
+        //orderService.order(memberId, itemId, count);
+        orderService.order(orderDtoList, startDate, term);
+        return "redirect:/orders";
+    }
+
+/*    @PostMapping(value="/order")
     public String order(@RequestParam("memberId") Long memberId,
+                        //@RequestParam List<OrderDto> orderDtoList,
+                        //@RequestParam("startDate") Long startDate,
                         @RequestParam("itemId") Long itemId,
                         @RequestParam("count") int count) {
 
         orderService.order(memberId, itemId, count);
         return "redirect:/orders";
-    }
+    }*/
 
     @GetMapping("/orders")
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {

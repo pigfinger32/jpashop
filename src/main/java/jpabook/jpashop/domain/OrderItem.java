@@ -13,7 +13,7 @@ import static javax.persistence.FetchType.*;
 
 @Entity
 @Getter @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem {
 
     @Id @GeneratedValue
@@ -55,5 +55,9 @@ public class OrderItem {
      */
     public int getTotalPrice() {
         return getOrderPrice() * getCount();
+    }
+
+    public int getCnt() {
+        return getCount();
     }
 }

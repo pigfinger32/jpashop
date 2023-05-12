@@ -1,10 +1,23 @@
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/header :: header" />
+<link rel='stylesheet' href='./orderOption.css' />
 <body>
-<div class="container">
+<div class="container" id="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
     <form role="form" action="/order" method="post">
+        <div class="form-group">
+            <label for="date">날짜를 선택하세요:
+                <input type="date"
+                       id="date"
+                       name="startDate"
+                       max="2040-06-20"
+                       min="2022-07-01"
+                       value="2077-06-15"
+                       class="form-control">
+            </label>
+        </div>
         <div class="form-group">
             <label for="member">주문회원</label>
             <select name="memberId" id="member" class="form-control">
@@ -13,6 +26,11 @@
                         th:value="${member.id}"
                         th:text="${member.name}" />
             </select>
+        </div>
+        <div class="form-group">
+            <label for="count">공연명</label>
+            <input type="text" name="name" class="form-control" id="name"
+                   placeholder="공연명을 입력하세요.">
         </div>
         <div class="form-group">
             <label for="item">상품명</label>
@@ -24,14 +42,53 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="count">주문수량</label>
-            <input type="number" name="count" class="form-control" id="count"
-                   placeholder="주문 수량을 입력하세요">
+                <label for="count">주문수량</label>
+                <input type="number" name="count" class="form-control" id="count"
+                       placeholder="주문 수량을 입력하세요">
         </div>
+        <div class="form-group">
+            <label for="count">주문기간</label>
+
+            <input type="radio" id="15Day" name="term" value="15Day">
+            <label for="15Day">15Day</label>
+            <input type="radio" id="30Day" name="term" value="30Day" checked>
+            <label for="30Day">30Day</label>
+        </div>
+        <!-- 아이템 추가 버튼 -->
+        <div id="newItem">
+            <input style="float: right;" type="button"  value="추가" onclick="add_textbox()">
+        </div>
+        <!-- 아이템 추가 버튼 -->
+
+        </ul>
+        <ul id="selected-result">
+        </ul>
+        <div id="total-price">총 금액 : <span></span></div>
+
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <br/>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
+<script>
+    const add_textbox = () => {
+        const newItem = document.getElementById("newItem");
+        const newItemText = document.getElementById("item").value;
+        const itemCount = document.getElementById("itemCount");
+        const itemCountText = document.getElementById("count").value;
+        const newP = document.createElement('p');
+        newP.innerHTML = "<input type='text'> <input type='text'> <input type='button' value='삭제' onclick='remove(this)'>";
+        newItem.appendChild(newP);
+        itemCount.appendChild(newP);
+
+        alert('hi');
+    }
+    const remove = (obj) => {
+        document.getElementById('newItem').removeChild(obj.parentNode);
+        document.getElementById('itemCount').removeChild(obj.parentNode);
+    }
+
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+</script>
 </body>
 </html>
