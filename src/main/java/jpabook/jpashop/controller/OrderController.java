@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -36,11 +37,27 @@ public class OrderController {
     }
 
     @PostMapping(value="/order")
-    public String order(@RequestParam List<OrderDto> orderDtoList,
+    public String order(//@RequestParam List<OrderDto> orderDtoList,
+                        @RequestParam (name="addItem", required=true) List<String> addItemList,
                         @RequestParam("startDate") String startDate,
                         @RequestParam("term") int term) throws ParseException {
 
         //orderService.order(memberId, itemId, count);
+        //orderDtoList 생성
+        List<OrderDto> orderDtoList = new ArrayList<>();
+        //%로 문자열을 나눠서 List로 담기
+        for(String str : addItemList) {
+            String[] strArr = str.split(", ");
+            OrderDto orderDto = new OrderDto();
+            //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
+            orderDto.setStartDate(strArr[0]);
+            orderDto.setMemberId(Long.parseLong(strArr[1]));
+            orderDto.setOrderName(strArr[2]);
+            orderDto.setItemId(Long.parseLong(strArr[3]));
+            orderDto.setCount(Integer.parseInt(strArr[4]));
+            orderDto.setTerm(Integer.parseInt(strArr[5]));
+            orderDtoList.add(orderDto);
+        }
         orderService.order(orderDtoList, startDate, term);
         return "redirect:/orders";
     }
