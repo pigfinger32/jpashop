@@ -47,7 +47,7 @@ public class OrderController {
         List<OrderDto> orderDtoList = new ArrayList<>();
         //%로 문자열을 나눠서 List로 담기
         for(String str : addItemList) {
-            String[] strArr = str.split(", ");
+            String[] strArr = str.split("% ");
             OrderDto orderDto = new OrderDto();
             //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
             orderDto.setStartDate(strArr[0]);
