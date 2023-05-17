@@ -16,6 +16,10 @@ public class MemberForm {
 
     private String company; //2023-05-09 MemberForm GetCompany추가
 
+    private String phone; //2023-05-17 MemberForm phone 추가
+
+    private String bizRegiNo; //2023-05-17 MemberForm bizRegiNo 사업자등록번호 추가
+
     private String city;
     private String street;
     private String zipcode;

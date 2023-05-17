@@ -11,9 +11,10 @@
                 <th>#</th>
                 <th>이름</th>
                 <th>회사이름</th>
+                <th>전화번호</th>
+                <th>사업자등록번호</th>
                 <th>도시</th>
                 <th>주소</th>
-                <th>우편번호</th>
             </tr>
             </thead>
             <tbody>
@@ -21,14 +22,16 @@
                 <td th:text="${member.id}"></td>
                 <td th:text="${member.name}"></td>
                 <td th:text="${member.company}"></td>
+                <td th:text="${member.phone}"></td>
+                <td th:text="${member.bizRegiNo}"></td>
                 <td th:text="${member.address?.city}"></td>
                 <td th:text="${member.address?.street}"></td>
-                <td th:text="${member.address?.zipcode}"></td>
             </tr>
             </tbody>
         </table>
     </div>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
+
 </body>
 </html>

@@ -25,6 +25,10 @@ public class Member {
     @Embedded
     private Address address;
 
+    private String phone; //2023-05-17 전화번호 추가
+    
+    private String bizRegiNo; //2023-05-17 사업자등록번호 추가
+
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
 

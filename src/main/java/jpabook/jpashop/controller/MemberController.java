@@ -38,6 +38,8 @@ public class MemberController {
         member.setPw(form.getPw()); //2023-05-09 setPw추가
         member.setCompany(form.getCompany()); //2023-05-09 setCompany추가
         member.setAddress(address);
+        member.setPhone(form.getPhone());
+        member.setBizRegiNo(form.getBizRegiNo());
 
         memberService.join(member);
         return "redirect:/";
@@ -46,7 +48,20 @@ public class MemberController {
     @GetMapping("/members")
     public String list(Model model) {
         List<Member> members = memberService.findMembers();
+        for(Member member : members) {
+            member.setPhone(phone_format(member.getPhone()));
+            String bizRegiNo = member.getBizRegiNo().substring(3) + "-" + member.getBizRegiNo().substring(`2) + "-" + member.getBizRegiNo().substring(5);
+            member.setBizRegiNo(phone_format(bizRegiNo));
+        }
         model.addAttribute("members", members);
         return "members/memberList";
     }
+
+    //전화번호 셋팅
+    public String phone_format(String number) {
+        String regEx = "(\\d{3})(\\d{3,4})(\\d{4})";
+        return number.replaceAll(regEx, "$1-$2-$3");
+    }
+
+
 }
