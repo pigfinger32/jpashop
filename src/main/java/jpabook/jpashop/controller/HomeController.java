@@ -13,4 +13,9 @@ public class HomeController {
         log.info("home controller");
         return "home";
     }
+    @RequestMapping("/index")
+    public String index() {
+        log.info("home controller");
+        return "index";
+    }
 }
