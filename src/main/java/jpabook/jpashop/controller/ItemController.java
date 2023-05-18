@@ -32,7 +32,7 @@ public class ItemController {
         flagSection.setName(form.getName());
         flagSection.setPrice(form.getPrice());
         flagSection.setStockQuantity(form.getStockQuantity());
-        flagSection.setStartPlcae(form.getStartPlace());
+        flagSection.setStartPlace(form.getStartPlace());
         flagSection.setEndPlace(form.getEndPlace());
 
         itemService.saveItem(flagSection);
@@ -56,7 +56,7 @@ public class ItemController {
         form.setName(item.getName());
         form.setPrice(item.getPrice());
         form.setStockQuantity(item.getStockQuantity());
-        form.setStartPlace(item.getStartPlcae());
+        form.setStartPlace(item.getStartPlace());
         form.setEndPlace(item.getEndPlace());
 
         model.addAttribute("form", form);

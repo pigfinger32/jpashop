@@ -54,8 +54,19 @@
             <input type="radio" id="30Day" name="term" value="30" checked>
             <label for="30Day">30Day</label>
         </div>
+        <div style="padding:10px;">
+        </div>
         <!-- 아이템 추가 버튼 -->
         <div id="newItem">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>상품명      </th>
+                    <th>주문수량</th>
+                    <th>주문기간(일)</th>
+                </tr>
+                </thead>
+            </table>
             <input style="float: right;" type="button"  value="추가" onclick="add_textbox()">
         </div>
         <!-- 아이템 추가 버튼 -->
@@ -78,19 +89,18 @@
         var tmpMemberId = document.getElementById("member").value
         var tmpOrderName = document.getElementById("name").value
         var tmpItemId = document.getElementById("item").value
+        var target = document.getElementById("item");
+        var tmpItemText = target.options[target.selectedIndex].text;
         var tmpCount = document.getElementById("count").value
         var tmpTerm = document.querySelector('input[name="term"]:checked').value;
-
+        //%로 구분하여 문자열 저장함.
         var addString = tmpDate + "%" + tmpMemberId + "%" + tmpOrderName + "%" + tmpItemId + "%" + tmpCount + "%" + tmpTerm
 
-
-        newP.innerHTML = "<input type='text' name='addItem' value="+addString+ "> <input type='button' value='삭제' onclick='remove(this)'>";
-
+        newP.innerHTML = "<input readonly type='text' size='17' style='text-align:center' value="+tmpItemText+ "> <input readonly type='text' size='17' style='text-align:center' value="+tmpCount+ "> <input readonly type='text' size='20' style='text-align:center' value="+tmpTerm+ "> <input type='hidden' name='addItem' value="+addString+ "> <input type='button' value='삭제' onclick='remove(this)'>";
 
         newItem.appendChild(newP);
         itemCount.appendChild(newP);
 
-        alert('hi');
     }
     const remove = (obj) => {
         document.getElementById('newItem').removeChild(obj.parentNode);
