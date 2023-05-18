@@ -12,6 +12,6 @@ import javax.persistence.Entity;
 @Setter
 public class FlagSection extends Item {
 
-    private String startPlcae;
+    private String startPlace;
     private String endPlace;
 }

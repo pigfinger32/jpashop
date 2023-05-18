@@ -22,7 +22,7 @@ fieldError' : 'form-control'">
         </div>
         <div class="form-group">
             <label th:for="pw">비밀번호</label>
-            <input type="text" th:field="*{pw}" class="form-control"
+            <input type="password" th:field="*{pw}" class="form-control"
                    placeholder="비밀번호를 입력하세요">
         </div>
         <div class="form-group">
@@ -31,13 +31,13 @@ fieldError' : 'form-control'">
                    placeholder="회사이름을 입력하세요">
         </div>
         <div class="form-group">
-            <label th:for="phone">전화번호</label>
-            <input type="text" th:field="*{phone}" class="form-control"
+            <label th:for="phone" >전화번호</label>
+            <input type="text" maxlength="13" oninput="hypenTel(this)" th:field="*{phone}" class="form-control "
                    placeholder="전화번호를 입력하세요">
         </div>
         <div class="form-group">
-            <label th:for="bizRegiNo">사업자등록번호</label>
-            <input type="text" th:field="*{bizRegiNo}" class="form-control"
+            <label th:for="bizRegiNo" >사업자등록번호</label>
+            <input type="text" id="bizRegiNo" maxlength="12" th:field="*{bizRegiNo}" class="form-control"
                    placeholder="사업자등록번호를 입력하세요">
         </div>
         <div class="form-group">
@@ -60,5 +60,39 @@ fieldError' : 'form-control'">
     <br/>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
+<script>
+  const hypenTel = (target) => {
+ target.value = target.value
+   .replace(/[^0-9]/g, '')
+   .replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+}
+function bizRegiNum(str){
+          str = str.replace(/[^0-9]/g, '');
+          var tmp = '';
+          if(str.length < 4){
+              return str;
+          }else if(str.length < 7){
+              tmp += str.substr(0, 3);
+              tmp += '-';
+              tmp += str.substr(3);
+              return tmp;
+          }else{
+              tmp += str.substr(0, 3);
+              tmp += '-';
+              tmp += str.substr(3, 2);
+              tmp += '-';
+              tmp += str.substr(5);
+              return tmp;
+          }
+          return str;
+      }
+
+var bizRegiNo = document.getElementById("bizRegiNo");
+bizRegiNo.onkeyup = function(event){
+       event = event || window.event;
+       var _val = this.value.trim();
+       this.value = bizRegiNum(_val) ;
+}
+</script>
 </body>
 </html>

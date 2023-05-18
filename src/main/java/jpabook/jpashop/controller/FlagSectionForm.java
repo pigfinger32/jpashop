@@ -10,7 +10,6 @@ public class FlagSectionForm {
     private String name;
     private int price;
     private int stockQuantity;
-
     private String startPlace;
     private String endPlace;
 }

@@ -38,8 +38,8 @@ public class MemberController {
         member.setPw(form.getPw()); //2023-05-09 setPw추가
         member.setCompany(form.getCompany()); //2023-05-09 setCompany추가
         member.setAddress(address);
-        member.setPhone(form.getPhone());
-        member.setBizRegiNo(form.getBizRegiNo());
+        member.setPhone(form.getPhone().replaceAll("-",""));
+        member.setBizRegiNo(form.getBizRegiNo().replaceAll("-",""));
 
         memberService.join(member);
         return "redirect:/";
@@ -50,8 +50,8 @@ public class MemberController {
         List<Member> members = memberService.findMembers();
         for(Member member : members) {
             member.setPhone(phone_format(member.getPhone()));
-            String bizRegiNo = member.getBizRegiNo().substring(3) + "-" + member.getBizRegiNo().substring(`2) + "-" + member.getBizRegiNo().substring(5);
-            member.setBizRegiNo(phone_format(bizRegiNo));
+            String bizRegiNo = member.getBizRegiNo().substring(0,3) + "-" + member.getBizRegiNo().substring(3,5) + "-" + member.getBizRegiNo().substring(5,10);
+            member.setBizRegiNo(bizRegiNo);
         }
         model.addAttribute("members", members);
         return "members/memberList";
