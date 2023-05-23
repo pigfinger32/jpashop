@@ -7755,6 +7755,7 @@ textarea.form-control-lg {
 .px-5 {
   padding-right: 3rem !important;
   padding-left: 3rem !important;
+  text-align: center;
 }
 
 .py-0 {
