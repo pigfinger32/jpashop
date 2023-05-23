@@ -3,8 +3,17 @@
 <head>
     <title>Hello</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script type="text/javascript">
+    window.onload  = function() {
+    // 페이지 완전 로딩후 실행
+    alert("로딩 완료");
+    // 이후 프로세스 실행
+    ..
+    }
+</script>
 </head>
 <body>
 <p th:text="'안녕. ' + ${data}" > 안녕하세요. 손님</p>
 </body>
+
 </html>

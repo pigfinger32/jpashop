@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<form role="form" action="/members/new" th:object="${memberForm}"
+<form role="form" action="/members/login" th:object="${loginForm}"
       method="post">
     <div class="wrap">
         <div class="login">
@@ -27,16 +27,6 @@ fieldError' : 'form-control'">
                     <h4>Password</h4>
                     <input type="password" th:field="*{pw}" class="form-control" id="pw" placeholder="Password">
                 </div>
-                <!--
-                <div class="login_etc">
-                    <div class="checkbox">
-                        <input type="checkbox" id=""> Remember Me?
-                    </div>
-                    <div class="forgot_pw">
-                        <a href="">Forgot Password?</a>
-                    </div>
-                </div>
-                -->
                 <div class="submit">
                     <input type="submit" value="Login">
                 </div>
