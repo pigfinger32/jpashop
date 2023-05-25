@@ -33,4 +33,14 @@ public class MemberRepository {
                 .setParameter("name", name)
                 .getResultList();
     }
+
+    public List<Member> findByIdPw(String name, String pw) {
+        return em.createQuery("select m from Member m where m.name = :name and m.pw = :pw", Member.class)
+                .setParameter("name", name)
+                .setParameter("pw", pw)
+                .getResultList();
+    }
+
+
+
 }
