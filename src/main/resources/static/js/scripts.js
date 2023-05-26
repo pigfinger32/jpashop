@@ -6,9 +6,6 @@
 //
 // Scripts
 //
-$(document).ready(function(){
-    alert("abc");
-});
 
 
 window.addEventListener('DOMContentLoaded', event => {
