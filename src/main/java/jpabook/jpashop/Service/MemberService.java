@@ -13,11 +13,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberService {
-
     @Autowired
     private final MemberRepository memberRepository;
-
-
     /**
      * 회원가입
      */
