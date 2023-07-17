@@ -7,21 +7,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class NoticeRepository {
+    @PersistenceContext
     private final EntityManager em;
     private final JdbcTemplate jdbcTemplate;
 
     public void save(Notice notice) {
-        if (notice.getId() == null) {
-            em.persist(notice);
-        } else {
-            em.merge(notice);
-        }
+        em.persist(notice);
     }
 
     public Notice findOne(Long id) {
