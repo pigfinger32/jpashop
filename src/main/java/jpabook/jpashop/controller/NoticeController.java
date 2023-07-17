@@ -25,13 +25,13 @@ public class NoticeController {
         return "notices/notices";
     }
 
-    @GetMapping("/{uid}")
-    public String notice(@PathVariable("uid") Long uid, Model model) {
-        noticeService.ViewcntUpdate(uid);
-        Notice result = noticeService.NoticeOne(uid);
+    @GetMapping("notices/{uid}")
+    public String notice(@PathVariable("uid") long id, Model model) {
+        noticeService.ViewcntUpdate(id);
+        Notice result = noticeService.NoticeOne(id);
         Notice notice = result;
         model.addAttribute("notice", notice);
         log.info("notice={}", notice);
-        return "notices/notices";
+        return "notices/notice";
     }
 }

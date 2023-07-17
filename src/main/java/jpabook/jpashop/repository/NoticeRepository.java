@@ -35,7 +35,7 @@ public class NoticeRepository {
     }
 
     public void updateViewCnt(Long uid) {
-        jdbcTemplate.update("update test_write set viewcnt = viewcnt + 1 where id = ?", uid);
+        jdbcTemplate.update("update Notice set viewcnt = viewcnt + 1 where notice_id = ?", uid);
     }
 
     public List<Notice> findByName(String subject) {

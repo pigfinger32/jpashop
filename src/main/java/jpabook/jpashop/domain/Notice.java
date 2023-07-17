@@ -21,11 +21,4 @@ public class Notice extends BaseEntity {
     private String name;
     private String viewcnt;
 
-    public Notice(Long id, String subject, String contents, String name, String viewcnt) {
-        this.id = id;
-        this.subject = subject;
-        this.contents = contents;
-        this.name = name;
-        this.viewcnt = viewcnt;
-    }
 }

@@ -1,16 +1,19 @@
 <!DOCTYPE HTML>
 <html lang="ko-kr">
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+<head th:fragment="header">
   <meta charset="UTF-8">
+  <!-- Bootstrap CSS -->
   <link th:href="@{/css/bootstrap.min.css}"
-        href="../css/bootstrap.min.css" rel="stylesheet">
+        href="/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 <body>
 
 <div class="container" style="max-width: 1000px">
   <div class="py-5 text-center">
-    <h2 th:text="#{page.notices}">글 목록</h2>
+<!--    <h2 th:text="#{page.notices}">글 목록</h2>-->
+    <h2 >공지사항</h2>
   </div>
 
   <div class="row">
@@ -18,7 +21,7 @@
       <button class="btn btn-primary float-end"
               onclick="location.href='addForm.html'"
               th:onclick="|location.href='@{/notices/add}'|"
-              type="button" th:text="#{page.addBoard}">글 등록</button>
+              type="button" >글 등록</button>
     </div>
   </div>
 
@@ -27,21 +30,21 @@
     <table class="table">
       <thead>
       <tr>
-        <th th:text="#{label.notice.id}">ID</th>
-        <th th:text="#{label.notice.subject}">제목</th>
-        <th th:text="#{label.notice.name}">작성자</th>
-        <th th:text="#{label.notice.viewcnt}">조회수</th>
-        <th th:text="#{label.notice.create_date}">등록일</th>
+        <th >ID</th>
+        <th >제목</th>
+        <th >작성자</th>
+        <th >조회수</th>
+        <th >등록일</th>
 
       </tr>
       </thead>
       <tbody>
       <tr th:each="notice : ${notices}">
-        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.uid})}" th:text="${notice.uid}">글 ID</a></td>
-        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.uid})}" th:text="${notice.subject}">제목</a></td>
+        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>
+        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.subject}">제목</a></td>
         <td th:text="${notice.name}">작성자</td>
         <td th:text="${notice.viewcnt}">조회수</td>
-        <td th:text="${notice.created_date}">등록일</td>
+        <td th:text="${notice.createdDate}">등록일</td>
       </tr>
       </tbody>
     </table>
