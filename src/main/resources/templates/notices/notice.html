@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <link th:href="@{/css/bootstrap.min.css}"
+        href="../css/bootstrap.min.css" rel="stylesheet">
+  <style>
+        .container {
+            max-width: 560px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="py-5 text-center">
+    <h2 th:text="#{page.notice}">상품 상세</h2>
+  </div>
+
+  <!-- 추가 -->
+  <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
+
+  <div>
+    <label for="noticeId" th:text="#{label.notice.id}">ID</label>
+    <input type="text" id="noticeId" name="noticeId" class="form-control" value="1" th:value="${notice.uid}" readonly>
+  </div>
+  <div>
+    <label for="noticeSubject" th:text="#{label.notice.subject}">제목</label>
+    <input type="text" id="noticeSubject" name="noticeSubject" class="form-control" value="상품A" th:value="${notice.subject}" readonly>
+  </div>
+  <div>
+    <label for="name" th:text="#{label.notice.name}">작성자</label>
+    <input type="text" id="name" name="name" class="form-control" value="작성자" th:value="${notice.name}" readonly>
+  </div>
+  <div>
+    <label for="viewcnt" th:text="#{label.notice.viewcnt}">조회수</label>
+    <input type="text" id="viewcnt" name="viewcnt" class="form-control" value="10" th:value="${notice.viewcnt}" readonly>
+  </div>
+
+  <div>
+    <label for="regdate" th:text="#{label.notice.regdate}">등록일</label>
+    <input type="text" id="regdate" name="regdate" class="form-control" value="10" th:value="${notice.regdate}" readonly>
+  </div>
+
+  <div>
+    <label for="contents" th:text="#{label.notice.contents}">글 내용</label>
+    <input type="text" id="contents" name="contents" class="form-control" value="10" th:value="${notice.contents}" readonly>
+  </div>
+
+  <hr class="my-4">
+
+  <div class="row">
+    <div class="col">
+      <button class="w-100 btn btn-primary btn-lg"
+              onclick="location.href='editForm.html'"
+              th:onclick="|location.href='@{/notices/{uid}/edit(uid=${notice.uid})}'|"
+              type="button" th:text="#{page.updatenotice}">상품 수정</button>
+    </div>
+    <div class="col">
+      <button class="w-100 btn btn-secondary btn-lg"
+              onclick="location.href='items.html'"
+              th:onclick="|location.href='@{/notices}'|"
+              type="button" th:text="#{button.list}">목록으로</button>
+    </div>
+
+    <div class="col">
+      <button class="w-100 btn btn-secondary btn-lg"
+              onclick="location.href='items.html'"
+              th:onclick="|location.href='@{/notices/{uid}/delete(uid=${notice.uid})}'|"
+              type="button" th:text="#{button.delete}">삭제</button>
+    </div>
+  </div>
+
+</div> <!-- /container -->
+</body>
+</html>
