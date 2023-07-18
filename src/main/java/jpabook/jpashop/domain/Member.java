@@ -15,6 +15,8 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
+    private String loginId;
+
     private String pw; //2023-05-09 pw 추가
 
     private String name;

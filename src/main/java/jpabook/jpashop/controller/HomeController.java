@@ -18,6 +18,11 @@ public class HomeController {
         log.info("home controller");
         return "index";
     }
+    @RequestMapping("/home")
+    public String homeIndex() {
+        log.info("home controller");
+        return "home";
+    }
     @RequestMapping("/information")
     public String information() {
         log.info("home information");

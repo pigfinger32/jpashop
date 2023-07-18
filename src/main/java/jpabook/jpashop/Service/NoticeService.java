@@ -22,12 +22,20 @@ public class NoticeService {
     public Notice NoticeOne(Long uid) {
         return noticeRepository.findOne(uid);
     }
-    public void ViewcntUpdate(Long uid) {
-        noticeRepository.updateViewCnt(uid);
+
+    public void NoticeDelete(Long uid) { noticeRepository.deleteOne(uid);}
+
+    public void NoticeUpdate(Notice notice) {
+        noticeRepository.UpdateOne(notice);
     }
 
     public Long NoticeAdd(Notice notice) {
         noticeRepository.save(notice);
         return notice.getId();
     }
+
+    public void ViewcntUpdate(Long uid) {
+        noticeRepository.updateViewCnt(uid);
+    }
+
 }

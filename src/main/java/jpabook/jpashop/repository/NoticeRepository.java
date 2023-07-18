@@ -26,10 +26,19 @@ public class NoticeRepository {
         return em.find(Notice.class, id);
     }
 
+    public void deleteOne(Long id) { jdbcTemplate.update("delete from Notice where notice_id = ?", id);}
 
     public List<Notice> findAll() {
         return em.createQuery("select n from Notice n", Notice.class)
                 .getResultList();
+    }
+
+    public void UpdateOne(Notice notice) {
+        jdbcTemplate.update(("update Notice set subject=?, contents=? where notice_id=?")
+                , notice.getSubject()
+                , notice.getContents()
+                , notice.getId()
+        );
     }
 
     public void updateViewCnt(Long uid) {

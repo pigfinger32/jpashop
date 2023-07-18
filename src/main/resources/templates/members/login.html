@@ -10,17 +10,16 @@
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
-
 <form role="form" action="/members/loginDo" th:object="${loginForm}"
       method="post">
     <div class="wrap">
         <div class="login">
             <h2>Log-in</h2>
                 <div class="login_id">
-                    <h4>이름</h4>
-                    <input type="text" th:field="*{name}" class="form-control" id="name"
-                           placeholder="이름을 입력하세요"
-                           th:class="${#fields.hasErrors('name')}? 'form-control
+                    <h4>ID</h4>
+                    <input type="text" th:field="*{loginId}" class="form-control" id="loginId"
+                           placeholder="아이디를 입력하세요"
+                           th:class="${#fields.hasErrors('loginId')}? 'form-control
 fieldError' : 'form-control'">
                 </div>
                 <div class="login_pw">
@@ -33,5 +32,9 @@ fieldError' : 'form-control'">
         </div>
     </div>
 </form>
+
+
+
 </body>
+
 </html>
