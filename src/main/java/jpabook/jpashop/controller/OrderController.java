@@ -7,6 +7,7 @@ import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderDto;
 import jpabook.jpashop.domain.item.Item;
+import jpabook.jpashop.domain.OrderItemDTO;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,23 @@ public class OrderController {
     private final OrderService orderService;
     private final MemberService memberService;
     private final ItemService itemService;
+
+    @GetMapping("/orderItems")
+    public String itemList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        List<Member> members = memberService.findMembers();
+        List<Item> items = itemService.findItems();
+
+        model.addAttribute("members", members);
+        model.addAttribute("items", items);
+
+        List<Order> orders = orderService.findOrders(orderSearch);
+        List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
+        model.addAttribute("itemList", itemList);
+        model.addAttribute("date", orderSearch.getFindDate());
+
+        return "order/createOrder";
+    }
+
 
     @GetMapping("/order")
     public String createForm(Model model) {
@@ -59,7 +77,7 @@ public class OrderController {
             orderDtoList.add(orderDto);
         }
         orderService.order(orderDtoList, startDate, term);
-        return "redirect:/orders";
+        return "redirect:/";
     }
 
 /*    @PostMapping(value="/order")
@@ -77,12 +95,19 @@ public class OrderController {
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
+        model.addAttribute("date", orderSearch.getFindDate());
 
         return "order/orderList";
     }
 
     @PostMapping("/orders/{orderId}/cancel")
     public String cancelOrder(@PathVariable("orderId") Long orderId) {
+        orderService.cancel(orderId);
+        return "redirect:/orders";
+    }
+
+    @PostMapping("/orderItems/{orderId}/cancel")
+    public String cancelOrderItems(@PathVariable("orderId") Long orderId) {
         orderService.cancel(orderId);
         return "redirect:/orders";
     }

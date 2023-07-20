@@ -39,7 +39,8 @@ public class OrderItem extends BaseEntity {
         orderItem.setOrderPrice(orderPrice);
         orderItem.setCount(count);
 
-        item.removeStock(count);
+
+        //item.removeStock(count); //우리 프로그램은 수량을 제거하지 않습니다.
         return orderItem;
     }
 

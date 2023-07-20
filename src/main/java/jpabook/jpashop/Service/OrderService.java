@@ -2,6 +2,7 @@ package jpabook.jpashop.Service;
 
 import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.item.FlagSection;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.ItemRepository;
 import jpabook.jpashop.repository.MemberRepository;
@@ -14,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional
@@ -28,6 +26,40 @@ public class OrderService {
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final EntityManager em;
+
+    //검색
+    public List<OrderItemDTO> findItemsOfPossible(OrderSearch orderSearch) {
+        //Item 조회
+        List<Item> items = itemRepository.findAll();
+        //Order 조회(날짜기준으로 조회)
+        List<Order> orders =  orderRepository.findAllByString(orderSearch);
+        //변환하여 넣을 DTOS리스트
+        List<OrderItemDTO> orderItemDtos = new ArrayList<>();
+        //같은이름으로 들어오는 수량을 더하기 위한 HASHMAP
+        HashMap<String, Integer> hash = new HashMap<>();
+        for (Order o : orders) {
+            hash.put(o.getOrderItemName(), hash.getOrDefault(o.getOrderItemName(), 0) + o.getOrderCnt());
+        }
+        if(!hash.isEmpty()){
+            for (Item i : items) {
+                FlagSection flagSection = (FlagSection) i;
+                OrderItemDTO orderItemDTO = new OrderItemDTO();
+                orderItemDTO.setId(flagSection.getId());
+                orderItemDTO.setPrice(flagSection.getPrice());
+                orderItemDTO.setName(flagSection.getName());
+                orderItemDTO.setStartPlace(flagSection.getStartPlace());
+                orderItemDTO.setEndPlace(flagSection.getEndPlace());
+                orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
+                orderItemDTO.setUsedStock(hash.get(flagSection.getName()));
+                orderItemDTO.setUsedStock(hash.getOrDefault(flagSection.getName(), 0));
+                orderItemDTO.setCurStock(flagSection.getStockQuantity()-hash.getOrDefault(flagSection.getName(),0));
+                orderItemDtos.add(orderItemDTO);
+            }
+        }
+
+        return orderItemDtos;
+
+    }
 
     /**
      * 주문
