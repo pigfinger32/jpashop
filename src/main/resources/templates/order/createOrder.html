@@ -20,8 +20,8 @@
         </div>
         <div id="testImg">
             <img src="assets/img/yeasuFlagPlace_BeforeAfterCallAccount.png" width="700" height="350" alt="테스트이미지" />
-            <button class="btn1" type="button" onclick="javascript:sensorBtnClick('btn1');">1구간</button>
-            <button class="btn2" type="button" onclick="javascript:sensorBtnClick('btn2');">2구간</button>
+            <button class="btn1" type="button" value="1" onclick="changItem(this.value)" >1구간</button>
+            <button class="btn2" type="button" value="2" onclick="changItem(this.value)" >2구간</button>
         </div>
         <div class="form-group">
 <!--            <select name="memberId" id="member" class="form-control" style="font-size=10px;display:none ">-->
@@ -107,20 +107,12 @@
 
 </body>
 <script>
-$(document).ready(function(){
-    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+document.getElementById('date').value = new Date().toISOString().substring(0, 10);
 
-    $(".btn1").click(function () {
-       //this is change select value 1
-        $('#memberId').val('1').trigger('change');
-    });
-     $(".btn2").click(function () {
-         //
-         //this is change select value 1
-         $('#itemId').val('2').trigger('change');
-    });
-
-});
+function changItem(idx) {
+      var target = document.getElementById('item');   //대상 셀렉트 id
+      target.options[idx].selected = true;   //options에 대상 option의 index를 넣으시면 됩니다.
+    }
 
 /*
     const remove = (obj) => {

@@ -1,8 +1,68 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <div class="header" th:fragment="bodyHeader">
-    <ul class="nav nav-pills pull-right">
-        <li><a href="/">Home</a></li>
-    </ul>
-    <a href="/"><h3 class="text-muted">여수시 가로등배너</h3></a>
+    <!-- Custom styles for this template -->
+    <link href="/css/jumbotron-narrow.css" rel="stylesheet">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-sm" id="mainNav">
+        <div class="container px-5">
+            <a class="navbar-brand fw-bold" href="/">여수시 가로등배너 예약</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="bi-list"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+<!--                    <li class="nav-item"><a class="nav-link me-lg-3" href="/">Home</a></li>-->
+                    <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
+                    <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+                    <li class="nav-item"><a class="nav-link me-lg-3" th:href="@{/members/new}">회원가입</a></li>
+                </ul>
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                        <span class="d-flex align-items-center">
+                            <i class="bi-chat-text-fill me-2"></i>
+                            <span class="small">담당자연락처</span>
+                        </span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div>
+<!--        공백-->
+    </div>
+    <!-- Mashead header-->
+<!--    <header class="masthead">
+        <div class="container px-5"  >
+            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/information'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 운영안내</span>
+                    </span>
+            </button>
+            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/orders'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 지정게시대현황</span>
+                    </span>
+            </button>
+            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/order'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 게첨 신청하기</span>
+                    </span>
+            </button>
+            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/items'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">구간 현황</span>
+                    </span>
+            </button>
+            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/notices/notices'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">공지사항</span>
+                    </span>
+            </button>
+        </div>
+    </header>-->
 </div>

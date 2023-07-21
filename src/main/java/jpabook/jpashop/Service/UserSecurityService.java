@@ -7,8 +7,10 @@ import java.util.Optional;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.UserRole;
 import jpabook.jpashop.repository.MemberRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+
+import javax.servlet.http.Cookie;
 
 @RequiredArgsConstructor
 @Service
@@ -39,6 +43,7 @@ public class UserSecurityService implements UserDetailsService {
         }
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encodedPassword = passwordEncoder.encode(siteUser.getPw());
+
         return new User(siteUser.getName(), encodedPassword, authorities);
     }
 }

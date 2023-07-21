@@ -10,10 +10,15 @@ import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.domain.OrderItemDTO;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +43,10 @@ public class OrderController {
         List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
         model.addAttribute("itemList", itemList);
         model.addAttribute("date", orderSearch.getFindDate());
+
+//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//        String username = userDetails.getUsername();
+//        System.out.println("username = " + username);
 
         return "order/createOrder";
     }

@@ -13,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.servlet.http.HttpSession;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -35,6 +37,7 @@ public class SecurityConfig {
                         .invalidateHttpSession(true))
         ;
         http.csrf().disable();//2023-07-19 HttpSecurity를 추가하면서 H2-console에도 접근되지 않아 403에러발생. 일단 disable처리. 추후권한문제 해결해야함
+
         return http.build();
     }
     @Bean
@@ -47,9 +50,5 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // Security 무시하기
-    public void configure(WebSecurity web)throws Exception{
-        web.ignoring().antMatchers("/h2-console/**");
-    }
 
 }
