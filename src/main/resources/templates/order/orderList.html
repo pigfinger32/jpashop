@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/header :: header"/>
-<body id="page-top">
+<body id="page-top" style="padding-top : 50px">
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
     <div>
@@ -72,7 +72,14 @@
 </div> <!-- /container -->
 
 </body>
-<script>
+<script th:inline="javascript">
+var startDate = [[${date}]];
+if (startDate){
+    document.getElementById('date').value = startDate;
+} else{
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+}
+
     function cancel(id) {
         var form = document.createElement("form");
         form.setAttribute("method", "post");
@@ -81,17 +88,6 @@
         form.submit();
     }
 
-    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
-    var  = true;
-    if(myBool){
-        console.log("myBool is true");
-    }
-    myBool = false;
-    if(myBool){
-        console.log("myBool is true");
-    } else {
-        console.log("myBool is false");
-    }
 </script>
 </html>
 

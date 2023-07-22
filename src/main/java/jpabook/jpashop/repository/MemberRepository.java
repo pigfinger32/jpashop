@@ -38,6 +38,8 @@ public class MemberRepository {
 
 
 
+
+
     public Optional<Member> findByUserName(String loginId) {
         Member result = em.createQuery("select m from Member m where m.loginId = :loginId", Member.class)
                 .setParameter("loginId", loginId)

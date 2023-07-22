@@ -35,12 +35,14 @@ public class UserSecurityService implements UserDetailsService {
             throw new UsernameNotFoundException("사용자를 찾을수 없습니다.");
         }
         Member siteUser = member.get();
+
         List<GrantedAuthority> authorities = new ArrayList<>();
         if ("admin".equals(loginId)) {
             authorities.add(new SimpleGrantedAuthority(UserRole.ADMIN.getValue()));
         } else {
             authorities.add(new SimpleGrantedAuthority(UserRole.USER.getValue()));
         }
+        siteUser.setName(siteUser.getLoginId());
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encodedPassword = passwordEncoder.encode(siteUser.getPw());
 

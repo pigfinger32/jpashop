@@ -42,6 +42,11 @@ public class MemberService {
         return memberRepository.findOne(memberId);
     }
 
+    public Member findByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId).get(0);
+    }
+
+
     public List<Member> login(String memberName, String memberPw) {
         return memberRepository.findByIdPw(memberName, memberPw);
     }

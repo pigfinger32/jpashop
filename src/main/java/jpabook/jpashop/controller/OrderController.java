@@ -42,11 +42,9 @@ public class OrderController {
         List<Order> orders = orderService.findOrders(orderSearch);
         List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
         model.addAttribute("itemList", itemList);
-        model.addAttribute("date", orderSearch.getFindDate());
+        model.addAttribute("startDate", orderSearch.getFindDate());
 
-//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-//        String username = userDetails.getUsername();
-//        System.out.println("username = " + username);
+
 
         return "order/createOrder";
     }
@@ -70,6 +68,10 @@ public class OrderController {
                         @RequestParam("term") int term) throws ParseException {
 
         //orderService.order(memberId, itemId, count);
+        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
+        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
+        Member member = memberService.findByLoginId(userId);
+
         //orderDtoList 생성
         List<OrderDto> orderDtoList = new ArrayList<>();
         //%로 문자열을 나눠서 List로 담기
@@ -78,7 +80,7 @@ public class OrderController {
             OrderDto orderDto = new OrderDto();
             //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
             orderDto.setStartDate(strArr[0]);
-            orderDto.setMemberId(Long.parseLong(strArr[1]));
+            orderDto.setMemberId(member.getId());
             orderDto.setOrderName(strArr[2]);
             orderDto.setItemId(Long.parseLong(strArr[3]));
             orderDto.setCount(Integer.parseInt(strArr[4]));
@@ -105,6 +107,7 @@ public class OrderController {
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
         model.addAttribute("date", orderSearch.getFindDate());
+        model.addAttribute("startDate", orderSearch.getFindDate());
 
         return "order/orderList";
     }
