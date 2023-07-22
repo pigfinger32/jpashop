@@ -2,9 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/header :: header"/>
 <body id="page-top" style="padding-top : 50px">
-<div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-
     <div>
         <div>
             <form th:object="${orderSearch}" class="form-inline">
@@ -124,7 +122,7 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <div th:replace="fragments/footer :: footer"/>
-</div> <!-- /container -->
+
 
 </body>
 <script th:inline="javascript">
