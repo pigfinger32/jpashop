@@ -3,11 +3,8 @@ package jpabook.jpashop.controller;
 import jpabook.jpashop.Service.ItemService;
 import jpabook.jpashop.Service.MemberService;
 import jpabook.jpashop.Service.OrderService;
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.OrderDto;
+import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.item.Item;
-import jpabook.jpashop.domain.OrderItemDTO;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -70,6 +67,14 @@ public class OrderController {
         //orderService.order(memberId, itemId, count);
         Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
         String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(UserRole.ADMIN))) {
+//            System.out.println("loggedinUser = " + loggedinUser.getAuthorities());
+//        }
+        //*****로그인체크부분 추가할것.
+        if ("anonymousUser".equals(userId)){
+            throw new IllegalStateException("로그인 후 주문 하세요.");
+        }
         Member member = memberService.findByLoginId(userId);
 
         //orderDtoList 생성
@@ -110,6 +115,26 @@ public class OrderController {
         model.addAttribute("startDate", orderSearch.getFindDate());
 
         return "order/orderList";
+    }
+
+    @GetMapping("/myOrders")
+    public String myOrderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //나의 로그인 정보로 이름을 구해 OrderSearch에 name을 넣어줌
+        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
+        //*****로그인체크부분 추가할것.
+        if ("anonymousUser".equals(loggedinUser.getName())){
+            throw new IllegalStateException("로그인 후 이용하세요.");
+        }
+        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
+        Member member = memberService.findByLoginId(userId);
+        orderSearch.setMemberName(member.getName());
+        //<--
+        List<Order> orders = orderService.findOrders(orderSearch);
+        model.addAttribute("orders", orders);
+        model.addAttribute("date", orderSearch.getFindDate());
+        model.addAttribute("startDate", orderSearch.getFindDate());
+
+        return "order/myOrderList";
     }
 
     @PostMapping("/orders/{orderId}/cancel")

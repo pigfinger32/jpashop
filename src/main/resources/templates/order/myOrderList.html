@@ -16,7 +16,7 @@
                            th:field="*{findDate}" class="form-control">
                 </label>
                 <div class="form-group mb-2">
-                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>
+                    <input style="font-size=10px;display:none " type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>
                 </div>
                 <div class="form-group mb-2">
                     <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>
@@ -36,7 +36,6 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>회원명</th>
                 <th>구간명</th>
                 <th>공연명</th>
                 <th>가격</th>
@@ -49,7 +48,6 @@
             </thead>
             <tbody>
             <tr th:each="item : ${orders}">
-                <td th:text="${item.member.name}"></td>
                 <td th:text="${item.orderItems[0].item.name}"></td>
                 <td th:text="${item.orderName}"></td>
                 <td th:text="${item.orderItems[0].orderPrice}"></td>
@@ -60,7 +58,6 @@
                 <td>
                     <a th:if="${item.status.name() == 'ORDER'}" href="#"
                        th:href="'javascript:cancel('+${item.id}+')'"
-                       sec:authorize="hasRole('ADMIN')"
                        class="btn btn-danger">CANCEL</a>
                 </td>
             </tr>

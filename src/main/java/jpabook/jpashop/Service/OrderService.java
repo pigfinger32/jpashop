@@ -62,10 +62,31 @@ public class OrderService {
     }
 
     /**
+     * 주문 수량이 아이템의 수량을 초과했을 경우.
+     * */
+    private void CheckOrderStock(List <OrderDto> orderDtoList, String startDate) {
+        OrderSearch orderSearch = new OrderSearch();
+        orderSearch.setFindDate(startDate);
+        //주문한 날짜를 기준으로 아이템의 수량 계산 테이블을 조회
+        List<OrderItemDTO> itemStockList = findItemsOfPossible(orderSearch);
+        for (OrderItemDTO itemStockDto : itemStockList) {
+            for (OrderDto orderDto : orderDtoList) {
+                if (itemStockDto.getId() == orderDto.getItemId()) {
+                    if (itemStockDto.getCurStock() < orderDto.getCount()) {
+                        throw new IllegalStateException(itemStockDto.getName()+ " 수량이 부족합니다. 주문 수량을 확인하세요.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * 주문
      * */
     @Transactional
     public void order(List <OrderDto> orderDtoList, String startDate, int term) throws ParseException {
+        //주문 수량 확인 수량이 부족하면 뒤로
+        CheckOrderStock(orderDtoList, startDate);
         //종료날짜 연산
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = sdf.parse(startDate);

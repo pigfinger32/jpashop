@@ -81,10 +81,17 @@
                         <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
                         <li class="nav-item"><a class="nav-link me-lg-3" th:href="@{/members/new}">회원가입</a></li>
                     </ul>
+<!--                    sec:authorize="hasRole('ADMIN')"-->
                     <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
                         <span class="d-flex align-items-center">
                             <i class="bi-chat-text-fill me-2"></i>
                             <span class="small">담당자 연락하기</span>
+                        </span>
+                    </button>
+                    <button sec:authorize="hasRole('ADMIN')" class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" onclick="location.href='/items'">
+                        <span class="d-flex align-items-center">
+                            <i class="bi-chat-text-fill me-2"></i>
+                            <span  class="small">구간 등록</span>
                         </span>
                     </button>
                 </div>
@@ -112,10 +119,10 @@
                         <span class="small">가로기 게첨 신청하기</span>
                     </span>
                 </button>
-                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/items'">
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/myOrders'">
                     <span class="d-flex align-items-center">
                         <i class="bi-chat-text-fill me-2"></i>
-                        <span class="small">구간 현황</span>
+                        <span class="small">내신청현황</span>
                     </span>
                 </button>
                 <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/notices/notices'">

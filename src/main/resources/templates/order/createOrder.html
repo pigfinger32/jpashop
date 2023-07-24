@@ -21,8 +21,8 @@
         </div>
         <div id="testImg">
             <img src="assets/img/yeasuFlagMap.png" width="700" height="350" alt="테스트이미지" />
-            <button class="btn1" type="button" value="1" onclick="changItem(this.value)" >1구간</button>
-            <button class="btn2" type="button" value="2" onclick="changItem(this.value)" >2구간</button>
+<!--            <button class="btn1" type="button" value="1" onclick="changItem(this.value)" >1구간</button>-->
+<!--            <button class="btn2" type="button" value="2" onclick="changItem(this.value)" >2구간</button>-->
         </div>
 
         <table class="table table-striped">
@@ -78,7 +78,7 @@
         <div class="form-group">
             <!--            <select name="itemId" id="item" class="form-control" style="font-size=10px;display:none ">-->
             <select name="itemId" id="item" class="form-control" >
-                <option value="">상품선택</option>
+                <option value="">구간선택</option>
                 <option th:each="item : ${items}"
                         th:value="${item.id}"
                         th:text="${item.name}" />
