@@ -5,7 +5,7 @@
 
 <link th:href="@{/css/bootstrap.min.css}"
       href="../css/bootstrap.min.css" rel="stylesheet">
-<div layout:fragment="content" class="container my-3" style="padding-top : 50px">
+<div layout:fragment="content" class="container my-3" style="padding-top : 100px">
   <div th:replace="fragments/bodyHeader :: bodyHeader"/>
   <form th:action="@{/login}" method="post">
     <div th:if="${param.error}">
