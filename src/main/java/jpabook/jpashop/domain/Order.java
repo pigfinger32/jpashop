@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -33,6 +35,7 @@ public class Order extends BaseEntity {
     @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
+
 
     private LocalDateTime orderDate; //주문시간
 
@@ -97,22 +100,27 @@ public class Order extends BaseEntity {
     /**
     * 주문취소
     */
-    public void cancel() {
-        if (delivery.getStatus() == DeliveryStatus.COMP) {
-            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
-        }
-        this.setStatus(OrderStatus.CANCEL);
-        for (OrderItem orderItem : orderItems) {
-            orderItem.cancel();
+    public void cancel(Long orderId) {
+        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
+        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
+        //*****admin 인 경우 무조건 삭제
+        if ("admin".equals(userId.toLowerCase())){
+            ;//통과 무조건 삭제
+        }else {
+            if (getStatus() == OrderStatus.PAYED) {
+                throw new IllegalStateException("이미 결제된 상품은 취소가 불가능합니다. 관리자에게 문의하세요.");
+            }
         }
     }
 
     /**
      * 주문 결제완료
      */
-    public void pay() {
+    public void myOrderCancle(Long orderId) {
+        if (getStatus() == OrderStatus.PAYED) {
+            throw new IllegalStateException("이미 결제된 상품은 취소가 불가능합니다. 관리자에게 문의하세요.");
+        }
         if (delivery.getStatus() == DeliveryStatus.COMP) {
-            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
         }
         this.setStatus(OrderStatus.PAYED);
     }

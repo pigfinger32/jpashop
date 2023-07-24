@@ -139,13 +139,19 @@ public class OrderController {
 
     @PostMapping("/orders/{orderId}/cancel")
     public String cancelOrder(@PathVariable("orderId") Long orderId) {
-        orderService.cancel(orderId);
+        orderService.cancle(orderId);
         return "redirect:/orders";
+    }
+
+    @PostMapping("/myOrders/{orderId}/cancel")
+    public String cancelMyOrder(@PathVariable("orderId") Long orderId) {
+        orderService.cancle(orderId);
+        return "redirect:/myOrders";
     }
 
     @PostMapping("/orderItems/{orderId}/cancel")
     public String cancelOrderItems(@PathVariable("orderId") Long orderId) {
-        orderService.cancel(orderId);
+        orderService.cancle(orderId);
         return "redirect:/orders";
     }
 }

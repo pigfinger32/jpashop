@@ -50,7 +50,6 @@ public class OrderService {
                 orderItemDTO.setStartPlace(flagSection.getStartPlace());
                 orderItemDTO.setEndPlace(flagSection.getEndPlace());
                 orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
-                orderItemDTO.setUsedStock(hash.get(flagSection.getName()));
                 orderItemDTO.setUsedStock(hash.getOrDefault(flagSection.getName(), 0));
                 orderItemDTO.setCurStock(flagSection.getStockQuantity()-hash.getOrDefault(flagSection.getName(),0));
                 orderItemDtos.add(orderItemDTO);
@@ -148,12 +147,17 @@ public class OrderService {
      * 2.아이템 수량또한 조회해서 업데이트 쿼리를 날려야 함.
      * 그러나 JPA를 이용하면 dirty Checking을 통해서 엔티티에 변경된 값을 찾아서 업데이트 쿼리를 자동으로 던져줌.
      * */
-    public void cancel(Long orderId) {
+    @Transactional
+    public void cancle(Long orderId) {
         //주문조회
         Order order = orderRepository.findOne(orderId);
+
         //주문취소
-        order.cancel();
+        order.cancel(orderId);
+        orderRepository.deleteById(orderId);
+
     }
+
 
     //검색
     public List<Order> findOrders(OrderSearch orderSearch) {
