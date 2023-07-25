@@ -40,7 +40,7 @@ public class OrderService {
         for (Order o : orders) {
             hash.put(o.getOrderItemName(), hash.getOrDefault(o.getOrderItemName(), 0) + o.getOrderCnt());
         }
-        if(!hash.isEmpty()){
+        if (!hash.isEmpty()) {
             for (Item i : items) {
                 FlagSection flagSection = (FlagSection) i;
                 OrderItemDTO orderItemDTO = new OrderItemDTO();
@@ -51,7 +51,21 @@ public class OrderService {
                 orderItemDTO.setEndPlace(flagSection.getEndPlace());
                 orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
                 orderItemDTO.setUsedStock(hash.getOrDefault(flagSection.getName(), 0));
-                orderItemDTO.setCurStock(flagSection.getStockQuantity()-hash.getOrDefault(flagSection.getName(),0));
+                orderItemDTO.setCurStock(flagSection.getStockQuantity() - hash.getOrDefault(flagSection.getName(), 0));
+                orderItemDtos.add(orderItemDTO);
+            }
+        } else {
+            for (Item i : items) {
+                FlagSection flagSection = (FlagSection) i;
+                OrderItemDTO orderItemDTO = new OrderItemDTO();
+                orderItemDTO.setId(flagSection.getId());
+                orderItemDTO.setPrice(flagSection.getPrice());
+                orderItemDTO.setName(flagSection.getName());
+                orderItemDTO.setStartPlace(flagSection.getStartPlace());
+                orderItemDTO.setEndPlace(flagSection.getEndPlace());
+                orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
+                orderItemDTO.setUsedStock(0);
+                orderItemDTO.setCurStock(flagSection.getStockQuantity());
                 orderItemDtos.add(orderItemDTO);
             }
         }
