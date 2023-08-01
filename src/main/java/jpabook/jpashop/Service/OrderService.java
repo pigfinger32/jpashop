@@ -170,7 +170,8 @@ public class OrderService {
             //공연명 입력
             String orderName = orderDto.getOrderName();
             //주문 생성
-            Order order = Order.createOrder(member, delivery, orderName,orderStartDate, orderEndDate, orderItem);
+            //Order order = Order.createOrder(member, delivery, orderName,orderStartDate, orderEndDate, orderItem);
+            Order order = Order.createOrder(member, orderName,orderStartDate, orderEndDate, orderItem);
             //주문 저장
             orderRepository.save(order);
         }
@@ -192,7 +193,8 @@ public class OrderService {
         OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), count);
 
         //주문 생성
-        Order order = Order.createOrder(member, delivery, orderItem);
+        //Order order = Order.createOrder(member, delivery, orderItem);
+        Order order = Order.createOrder(member, orderItem);
 
         //주문 저장
         orderRepository.save(order);

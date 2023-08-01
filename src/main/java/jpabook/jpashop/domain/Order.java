@@ -32,9 +32,9 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivery_id")
-    private Delivery delivery;
+//    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
+//    @JoinColumn(name = "delivery_id")
+//    private Delivery delivery;
 
 
     private LocalDateTime orderDate; //주문시간
@@ -61,16 +61,17 @@ public class Order extends BaseEntity {
         orderItem.setOrder(this);
     }
 
-    public void setDelivery(Delivery delivery) {
-        this.delivery = delivery;
-        delivery.setOrder(this);
-    }
+//    public void setDelivery(Delivery delivery) {
+//        this.delivery = delivery;
+//        delivery.setOrder(this);
+//    }
 
     //==생성 메서드=//
-    public static Order createOrder(Member member, Delivery delivery, String orderName, String orderStartDate, String orderEndDate, OrderItem... orderItems ) {
+    //public static Order createOrder(Member member, Delivery delivery, String orderName, String orderStartDate, String orderEndDate, OrderItem... orderItems ) {
+    public static Order createOrder(Member member, String orderName, String orderStartDate, String orderEndDate, OrderItem... orderItems ) {
         Order order = new Order();
         order.setMember(member);
-        order.setDelivery(delivery);
+        //order.setDelivery(delivery);
         for (OrderItem orderItem : orderItems) {
             order.addOrderItem(orderItem);
         }
@@ -83,10 +84,11 @@ public class Order extends BaseEntity {
         return order;
     }
 
-    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems ) {
+    //public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems ) {
+    public static Order createOrder(Member member, OrderItem... orderItems ) {
         Order order = new Order();
         order.setMember(member);
-        order.setDelivery(delivery);
+        //order.setDelivery(delivery);
         for (OrderItem orderItem : orderItems) {
             order.addOrderItem(orderItem);
         }
@@ -120,8 +122,8 @@ public class Order extends BaseEntity {
         if (getStatus() == OrderStatus.PAYED) {
             throw new IllegalStateException("이미 결제된 상품은 취소가 불가능합니다. 관리자에게 문의하세요.");
         }
-        if (delivery.getStatus() == DeliveryStatus.COMP) {
-        }
+//        if (delivery.getStatus() == DeliveryStatus.COMP) {
+//        }
         this.setStatus(OrderStatus.PAYED);
     }
 
