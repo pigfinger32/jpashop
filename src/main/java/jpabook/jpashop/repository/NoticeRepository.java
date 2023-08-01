@@ -26,23 +26,32 @@ public class NoticeRepository {
         return em.find(Notice.class, id);
     }
 
-    public void deleteOne(Long id) { jdbcTemplate.update("delete from Notice where notice_id = ?", id);}
+    public void deleteOne(Long id) {
+        Notice notice = em.find(Notice.class, id);
+        em.remove(notice);
+        //jdbcTemplate.update("delete from Notice where notice_id = ?", id);
+    }
 
     public List<Notice> findAll() {
         return em.createQuery("select n from Notice n", Notice.class)
                 .getResultList();
     }
 
-    public void UpdateOne(Notice notice) {
-        jdbcTemplate.update(("update Notice set subject=?, contents=? where notice_id=?")
-                , notice.getSubject()
-                , notice.getContents()
-                , notice.getId()
-        );
+    public void UpdateOne(Notice notice) {//2023-08-01 JPA방식으로 수정
+        Notice object = em.find(Notice.class, notice.getId());
+        object.setSubject(notice.getSubject());
+        object.setContents(notice.getContents());
+//        jdbcTemplate.update(("update Notice set subject=?, contents=? where notice_id=?")
+//                , notice.getSubject()
+//                , notice.getContents()
+//                , notice.getId()
+//        );
     }
 
     public void updateViewCnt(Long uid) {
-        jdbcTemplate.update("update Notice set viewcnt = viewcnt + 1 where notice_id = ?", uid);
+        Notice object = em.find(Notice.class, uid);
+        object.setViewcnt(object.getViewcnt() + 1);
+        //jdbcTemplate.update("update Notice set viewcnt = viewcnt + 1 where notice_id = ?", uid);
     }
 
     public List<Notice> findByName(String subject) {

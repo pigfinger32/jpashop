@@ -74,6 +74,53 @@ public class OrderService {
 
     }
 
+    //검색
+    public List<OrderItemDTO> findItemsOfPossible2(OrderSearch orderSearch) {
+        //Item 조회
+        List<Item> items = itemRepository.findAll();
+        //Order 조회(날짜기준으로 조회)
+        List<Order> orders =  orderRepository.findAllByString(orderSearch);
+        //변환하여 넣을 DTOS리스트
+        List<OrderItemDTO> orderItemDtos = new ArrayList<>();
+        //같은이름으로 들어오는 수량을 더하기 위한 HASHMAP
+        HashMap<String, Integer> hash = new HashMap<>();
+        for (Order o : orders) {
+            hash.put(o.getOrderItemName(), hash.getOrDefault(o.getOrderItemName(), 0) + o.getOrderCnt());
+        }
+        if (!hash.isEmpty()) {
+            for (Item i : items) {
+                FlagSection flagSection = (FlagSection) i;
+                OrderItemDTO orderItemDTO = new OrderItemDTO();
+                orderItemDTO.setId(flagSection.getId());
+                orderItemDTO.setPrice(flagSection.getPrice());
+                orderItemDTO.setName(flagSection.getName());
+                orderItemDTO.setStartPlace(flagSection.getStartPlace());
+                orderItemDTO.setEndPlace(flagSection.getEndPlace());
+                orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
+                orderItemDTO.setUsedStock(hash.getOrDefault(flagSection.getName(), 0));
+                orderItemDTO.setCurStock(flagSection.getStockQuantity() - hash.getOrDefault(flagSection.getName(), 0));
+                orderItemDtos.add(orderItemDTO);
+            }
+        } else {
+            for (Item i : items) {
+                FlagSection flagSection = (FlagSection) i;
+                OrderItemDTO orderItemDTO = new OrderItemDTO();
+                orderItemDTO.setId(flagSection.getId());
+                orderItemDTO.setPrice(flagSection.getPrice());
+                orderItemDTO.setName(flagSection.getName());
+                orderItemDTO.setStartPlace(flagSection.getStartPlace());
+                orderItemDTO.setEndPlace(flagSection.getEndPlace());
+                orderItemDTO.setStockQuantity(flagSection.getStockQuantity());
+                orderItemDTO.setUsedStock(0);
+                orderItemDTO.setCurStock(flagSection.getStockQuantity());
+                orderItemDtos.add(orderItemDTO);
+            }
+        }
+
+        return orderItemDtos;
+
+    }
+
     /**
      * 주문 수량이 아이템의 수량을 초과했을 경우.
      * */

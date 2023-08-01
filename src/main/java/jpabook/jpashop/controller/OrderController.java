@@ -36,7 +36,7 @@ public class OrderController {
         model.addAttribute("members", members);
         model.addAttribute("items", items);
 
-        List<Order> orders = orderService.findOrders(orderSearch);
+        //List<Order> orders = orderService.findOrders(orderSearch);
         List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
         model.addAttribute("itemList", itemList);
         model.addAttribute("startDate", orderSearch.getFindDate());

@@ -116,12 +116,6 @@ public class OrderRepository {
 
         List<Order> resultList = query.getResultList();
 
-
-
-
-
-
-
         //return query.getResultList();
         return resultList;
     }
@@ -157,48 +151,4 @@ public class OrderRepository {
 }
 
 
-/*//
-        List<Order> resultList = query.getResultList();
-        resultList.clear();
-
-        Iterator<Order> iterator = tempList.iterator();
-
-        int i = 0; int itemCnt = 0; String orderItem = "";
-for(Order order : tempList) {
-        while(iterator.hasNext()) {
-                Order order = iterator.next();
-                if((i == 0) || (orderItem == "")) {
-                orderItem = order.getOrderName();
-                itemCnt += order.getOrderCnt();//주문 수량 더하기
-                i++;
-                resultList.add(order);
-                }else {
-                if(orderItem == order.getOrderItemName()) {
-                itemCnt += order.getOrderCnt();//주문 수량 더하기
-                i++;
-                resultList.add(order);
-                } else {
-                //가짜 Order객체를 만들어서 구간명, 수량을 입력한 후 List에 추가하자.
-                Order fakeOrder = new Order();
-                fakeOrder = order;
-
-
-                OrderItem orderItem1 = new OrderItem();
-                orderItem1.setCount(20);
-
-                List<OrderItem> orderItemList = new ArrayList<>();
-        orderItemList.add(orderItem1);
-
-        fakeOrder.setOrderItems(orderItemList);
-
-        resultList.add(fakeOrder);
-        resultList.add(order);
-
-
-        orderItem = order.getOrderItemName();
-        itemCnt = 0;//주문 수량 더하기
-        i++;
-        }
-        }
-        }*/
 
