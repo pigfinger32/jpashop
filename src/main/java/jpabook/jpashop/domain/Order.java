@@ -18,7 +18,7 @@ import static javax.persistence.FetchType.*;
 @Table(name = "orders")
 @Getter @Setter
 //@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order extends BaseEntity {
+public class Order implements Comparable<Order> {
 
     @Id @GeneratedValue
     @Column(name = "order_id")
@@ -32,10 +32,6 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-//    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "delivery_id")
-//    private Delivery delivery;
-
 
     private LocalDateTime orderDate; //주문시간
 
@@ -48,7 +44,10 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus status; //주문상태 [ORDER, CANCEL, PAYED]
 
-
+    @Override
+    public int compareTo(Order o) {
+        return this.getOrderItems().get(0).getItem().getName().compareTo(o.getOrderItems().get(0).getItem().getName());
+    }
 
     //==연관관계 메서드==//
     public void setMember(Member member) {
@@ -67,8 +66,22 @@ public class Order extends BaseEntity {
 //    }
 
     //==생성 메서드=//
-    //public static Order createOrder(Member member, Delivery delivery, String orderName, String orderStartDate, String orderEndDate, OrderItem... orderItems ) {
     public static Order createOrder(Member member, String orderName, String orderStartDate, String orderEndDate, OrderItem... orderItems ) {
+        Order order = new Order();
+        order.setMember(member);
+        //order.setDelivery(delivery);
+        for (OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        order.setOrderName(orderName);
+        order.setOrderStartDate(orderStartDate);
+        order.setOrderEndDate(orderEndDate);
+
+        return order;
+    }
+    public static Order createOrder(Member member, String orderName, String orderStartDate, String orderEndDate, List<OrderItem> orderItems ) {
         Order order = new Order();
         order.setMember(member);
         //order.setDelivery(delivery);

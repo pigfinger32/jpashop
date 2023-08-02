@@ -48,4 +48,14 @@ public class UserSecurityService implements UserDetailsService {
 
         return new User(siteUser.getName(), encodedPassword, authorities);
     }
+
+    public String LoginUserCheck() {
+        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
+        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
+        //*****로그인체크부분 추가할것.
+        if ("anonymousUser".equals(userId)){
+            throw new IllegalStateException("로그인 후 주문 하세요.");
+        }
+        return userId;
+    }
 }

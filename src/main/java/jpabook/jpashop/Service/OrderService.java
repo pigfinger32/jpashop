@@ -4,10 +4,7 @@ import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.item.FlagSection;
 import jpabook.jpashop.domain.item.Item;
-import jpabook.jpashop.repository.ItemRepository;
-import jpabook.jpashop.repository.MemberRepository;
-import jpabook.jpashop.repository.OrderRepository;
-import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +22,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
+    private final OrderItemRepository orderItemRepository;
     private final EntityManager em;
 
     //검색
@@ -79,13 +77,17 @@ public class OrderService {
         //Item 조회
         List<Item> items = itemRepository.findAll();
         //Order 조회(날짜기준으로 조회)
-        List<Order> orders =  orderRepository.findAllByString(orderSearch);
+        //List<Order> orders =  orderRepository.findAllByString(orderSearch);
+        List<OrderItem> orderItems = orderItemRepository.findAllByString(orderSearch);
+
         //변환하여 넣을 DTOS리스트
         List<OrderItemDTO> orderItemDtos = new ArrayList<>();
+
+
         //같은이름으로 들어오는 수량을 더하기 위한 HASHMAP
         HashMap<String, Integer> hash = new HashMap<>();
-        for (Order o : orders) {
-            hash.put(o.getOrderItemName(), hash.getOrDefault(o.getOrderItemName(), 0) + o.getOrderCnt());
+        for (OrderItem o : orderItems) {
+            hash.put(o.getItem().getName(), hash.getOrDefault(o.getItem().getName(), 0) + o.getCount());
         }
         if (!hash.isEmpty()) {
             for (Item i : items) {
@@ -161,21 +163,49 @@ public class OrderService {
             //엔티티조회
             Member member = memberRepository.findOne(orderDto.getMemberId());
             Item item = itemRepository.findOne(orderDto.getItemId());
-            //배송정보 생성
-            Delivery delivery = new Delivery();
-            delivery.setAddress(member.getAddress());
-            delivery.setStatus(DeliveryStatus.READY);//2023-04-25 수정
             //주문상품 생성
-            OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), orderDto.getCount());
+            OrderItem orderItem = OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount());
             //공연명 입력
             String orderName = orderDto.getOrderName();
             //주문 생성
-            //Order order = Order.createOrder(member, delivery, orderName,orderStartDate, orderEndDate, orderItem);
             Order order = Order.createOrder(member, orderName,orderStartDate, orderEndDate, orderItem);
             //주문 저장
             orderRepository.save(order);
         }
-        return ;
+
+
+    }
+    /**
+     * 주문
+     * */
+    @Transactional
+    public void order2(List <OrderDto> orderDtoList, String startDate, int term) throws ParseException {
+        //주문 수량 확인 수량이 부족하면 뒤로
+        CheckOrderStock(orderDtoList, startDate);
+        //종료날짜 연산
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = sdf.parse(startDate);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, term);
+        //시작날짜 종료날짜 입력
+        String orderStartDate = startDate;
+        String orderEndDate = sdf.format(cal.getTime());
+
+        //order 주문생성준비
+        Member member = orderDtoList.get(0).getMember();
+        String orderName = orderDtoList.get(0).getOrderName();
+        List<OrderItem> orderItems = new ArrayList<>();
+        for(OrderDto orderDto : orderDtoList) {
+            //주문상품 생성
+            Item item = itemRepository.findOne(orderDto.getItemId());
+            orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount()));
+        }
+        //주문 생성
+        Order order = Order.createOrder(member, orderName,orderStartDate, orderEndDate, orderItems);
+        //주문 저장
+        orderRepository.save(order);
+
     }
 
     @Transactional
@@ -190,7 +220,7 @@ public class OrderService {
         delivery.setAddress(member.getAddress());
         delivery.setStatus(DeliveryStatus.READY);//2023-04-25 수정
         //주문상품 생성
-        OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), count);
+        OrderItem orderItem = OrderItem.OrderItem(item, item.getPrice(), count);
 
         //주문 생성
         //Order order = Order.createOrder(member, delivery, orderItem);
@@ -224,8 +254,24 @@ public class OrderService {
 
     //검색
     public List<Order> findOrders(OrderSearch orderSearch) {
-        return orderRepository.findAllByString(orderSearch);
-
+        List<Order> orders = orderRepository.findAllByString(orderSearch);
+        List<Order> result = new ArrayList<>();
+        for (Order order : orders) {
+            for (OrderItem orderItem : order.getOrderItems()) {
+                Order tmpOrder = new Order();
+                tmpOrder.getOrderItems().add(orderItem);
+                tmpOrder.setOrderDate(order.getOrderDate());
+                tmpOrder.setOrderName(order.getOrderName());
+                tmpOrder.setMember(order.getMember());
+                tmpOrder.setOrderStartDate(order.getOrderStartDate());
+                tmpOrder.setOrderEndDate(order.getOrderEndDate());
+                tmpOrder.setStatus(order.getStatus());
+                tmpOrder.setId(order.getId());
+                result.add(tmpOrder);
+            }
+        }
+        Collections.sort(result);
+        return result;
     }
 }
 

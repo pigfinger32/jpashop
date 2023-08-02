@@ -3,6 +3,7 @@ package jpabook.jpashop.controller;
 import jpabook.jpashop.Service.ItemService;
 import jpabook.jpashop.Service.MemberService;
 import jpabook.jpashop.Service.OrderService;
+import jpabook.jpashop.Service.UserSecurityService;
 import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.OrderSearch;
@@ -27,6 +28,7 @@ public class OrderController {
     private final OrderService orderService;
     private final MemberService memberService;
     private final ItemService itemService;
+    private final UserSecurityService userSecurityService;
 
     @GetMapping("/orderItems")
     public String itemList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
@@ -37,7 +39,7 @@ public class OrderController {
         model.addAttribute("items", items);
 
         //List<Order> orders = orderService.findOrders(orderSearch);
-        List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
+        List<OrderItemDTO> itemList = orderService.findItemsOfPossible2(orderSearch);
         model.addAttribute("itemList", itemList);
         model.addAttribute("startDate", orderSearch.getFindDate());
 
@@ -64,17 +66,8 @@ public class OrderController {
                         @RequestParam("startDate") String startDate,
                         @RequestParam("term") int term) throws ParseException {
 
-        //orderService.order(memberId, itemId, count);
-        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
-        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(UserRole.ADMIN))) {
-//            System.out.println("loggedinUser = " + loggedinUser.getAuthorities());
-//        }
-        //*****로그인체크부분 추가할것.
-        if ("anonymousUser".equals(userId)){
-            throw new IllegalStateException("로그인 후 주문 하세요.");
-        }
+        //유저로그인체크
+        String userId = userSecurityService.LoginUserCheck();
         Member member = memberService.findByLoginId(userId);
 
         //orderDtoList 생성
@@ -86,15 +79,17 @@ public class OrderController {
             //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
             orderDto.setStartDate(strArr[0]);
             orderDto.setMemberId(member.getId());
+            orderDto.setMember(member);
             orderDto.setOrderName(strArr[2]);
             orderDto.setItemId(Long.parseLong(strArr[3]));
             orderDto.setCount(Integer.parseInt(strArr[4]));
             orderDto.setTerm(Integer.parseInt(strArr[5]));
             orderDtoList.add(orderDto);
         }
-        orderService.order(orderDtoList, startDate, term);
+        orderService.order2(orderDtoList, startDate, term);
         return "redirect:/";
     }
+
 
 /*    @PostMapping(value="/order")
     public String order(@RequestParam("memberId") Long memberId,

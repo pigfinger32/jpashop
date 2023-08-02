@@ -156,6 +156,7 @@ function changItem(idx) {
         var tmpDate = document.getElementById("date").value
         var tmpMemberId = document.getElementById("member").value //memberID 고민해 어디다 넣을지.
         var tmpOrderName = document.getElementById("name").value
+        tmpOrderName.replace(" ","")
         var tmpItemId = document.getElementById("item").value
         var target = document.getElementById("item");
         var tmpItemText = target.options[target.selectedIndex].text;
