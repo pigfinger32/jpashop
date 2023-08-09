@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true))
         ;
-        http.csrf().disable();//2023-07-19 HttpSecurity를 추가하면서 H2-console에도 접근되지 않아 403에러발생. 일단 disable처리. 추후권한문제 해결해야함
+        http.csrf().disable(); //2023-07-19 HttpSecurity를 추가하면서 H2-console에도 접근되지 않아 403에러발생. 일단 disable처리. 추후권한문제 해결해야함
 
         return http.build();
     }

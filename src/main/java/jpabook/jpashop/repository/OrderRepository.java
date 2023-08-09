@@ -7,6 +7,7 @@ import jpabook.jpashop.domain.OrdersDTO;
 import jpabook.jpashop.domain.item.FlagSection;
 import jpabook.jpashop.domain.item.Item;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,7 @@ public class OrderRepository {
 
     public void save(Order order) {
         em.persist(order);
+        em.flush();//
     }
 
     public Order findOne(Long id) {

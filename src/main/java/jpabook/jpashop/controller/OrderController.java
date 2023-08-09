@@ -10,16 +10,16 @@ import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class OrderController {
         model.addAttribute("items", items);
 
         //List<Order> orders = orderService.findOrders(orderSearch);
-        List<OrderItemDTO> itemList = orderService.findItemsOfPossible2(orderSearch);
+        List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
         model.addAttribute("itemList", itemList);
         model.addAttribute("startDate", orderSearch.getFindDate());
 
@@ -64,7 +64,7 @@ public class OrderController {
     public String order(//@RequestParam List<OrderDto> orderDtoList,
                         @RequestParam (name="addItem", required=true) List<String> addItemList,
                         @RequestParam("startDate") String startDate,
-                        @RequestParam("term") int term) throws ParseException {
+                        @RequestParam("term") int term) throws ParseException, InterruptedException {
 
         //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
@@ -86,8 +86,37 @@ public class OrderController {
             orderDto.setTerm(Integer.parseInt(strArr[5]));
             orderDtoList.add(orderDto);
         }
-        orderService.order2(orderDtoList, startDate, term);
+        //동시성TEST
+        int numberOfThreads = 2;
+        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        service.execute(() -> {
+            try {
+                orderService.order(orderDtoList, startDate, term);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            latch.countDown();
+        });
+        service.execute(() -> {
+            try {
+                orderService.order(orderDtoList, startDate, term);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            latch.countDown();
+        });
+        latch.await();
+
         return "redirect:/";
+
+        //동시성 TEST 끝
+//        orderService.order(orderDtoList, startDate, term);
+//        return "redirect:/";
     }
 
 

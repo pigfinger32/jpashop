@@ -1,13 +1,13 @@
 package jpabook.jpashop.repository;
 
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.List;
@@ -30,8 +30,24 @@ public class OrderItemRepository {
         return em.createQuery("select oi from OrderItem oi", OrderItem.class)
                 .getResultList();
     }
+
+    // 공연명을 통한 검색
+
+    // 날짜를 통한 검색
+
+    //주문시 수량조회 락추가
+    //@Lock(value = LockModeType.PESSIMISTIC_WRITE)
+    public List<OrderItem> findAllByStringWithDbLock(OrderSearch orderSearch) {
+
+        return findAllByStringInMakingQuery(orderSearch);
+    }
+
     public List<OrderItem> findAllByString(OrderSearch orderSearch) {
 
+        return findAllByStringInMakingQuery(orderSearch);
+    }
+
+    private List<OrderItem> findAllByStringInMakingQuery(OrderSearch orderSearch) {
         //String jpql = "select o from Order o left join o.member m  ";
         String jpql = " select oi from OrderItem oi" +
                                 " join fetch oi.order o " +

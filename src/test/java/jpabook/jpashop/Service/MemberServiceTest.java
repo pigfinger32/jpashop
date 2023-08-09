@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,10 +28,15 @@ public class MemberServiceTest {
         Member member = new Member();
         member.setName("kim");
 
+
         //when
         Long saveId = memberService.join(member);
 
         //then
+        List<Member> memberList = memberService.findMembers();
+        for (Member member1 : memberList) {
+            System.out.println("member1.getName() = " + member1.getName());
+        }
         assertEquals(member, memberRepository.findOne(saveId));
     }
 
