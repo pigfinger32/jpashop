@@ -29,6 +29,8 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-web:5.6.0'
 	implementation 'org.springframework.security:spring-security-config:5.6.0'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.7.3'
+
 
 
 
