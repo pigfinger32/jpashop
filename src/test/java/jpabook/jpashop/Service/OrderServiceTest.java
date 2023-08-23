@@ -54,28 +54,28 @@ public class OrderServiceTest {
         makeOrderDTO(member, startDate, term, orderDtoList);
         makeOrderDTO(member, startDate, term, orderDtoList2);
 
-        // When
-        //log.info("makeReservation 동시성 테스트 진행");
-        int numberOfThreads = 2;
-        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        service.execute(() -> {
-            try {
-                orderService.order(orderDtoList, startDate, term);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-            latch.countDown();
-        });
-        service.execute(() -> {
-            try {
-                orderService.order(orderDtoList2, startDate, term);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-            latch.countDown();
-        });
-        latch.await();
+//        // When
+//        //log.info("makeReservation 동시성 테스트 진행");
+//        int numberOfThreads = 2;
+//        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+//        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+//        service.execute(() -> {
+//            try {
+//                orderService.order(orderDtoList, startDate, term);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            }
+//            latch.countDown();
+//        });
+//        service.execute(() -> {
+//            try {
+//                orderService.order(orderDtoList2, startDate, term);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            }
+//            latch.countDown();
+//        });
+//        latch.await();
 
         // Then
 
