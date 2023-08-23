@@ -29,11 +29,15 @@ dependencies {
 //
 //	compile('org.springframework.boot:spring-boot-starter-web')
 //	testCompile('org.springframework.boot:spring-boot-starter-web')
-	// mysql
-	//implementation 'mysql:mysql-connector-java:8.0.34'
-	//h2 DB 사용하려면 위 mysql 주석처리하고 아래 h2 주석제거할것.
+	// *mysql
+	//runtimeOnly 'mysql:mysql-connector-java'
+
+	//*h2 DB 사용하려면 위 mysql 주석처리하고 아래 h2 주석제거할것.
 	//runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'mysql:mysql-connector-java'
+
+	//*RDS Maria DB 드라이버 등록
+	implementation 'org.mariadb.jdbc:mariadb-java-client'
+
 
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -50,7 +54,6 @@ dependencies {
 
 
 	testCompileOnly 'junit:junit:4.13.2'
-	compileOnly 'org.projectlombok:lombok'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -18,24 +18,38 @@ spring:
 #      org.hibernate.SQL: debug
 #    #  org.hibernate.type: trace
 
-    #mysql
-    url: jdbc:mysql://localhost:3306/jpabook?useSSL=false&allowPublicKeyRetrieval=true
-    username: admin
-    password: 1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#    #mysql
+#    url: jdbc:mysql://localhost:3306/jpabook?useSSL=false&allowPublicKeyRetrieval=true
+#    username: admin
+#    password: 1234
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    open-in-view: true
+#    hibernate:
+#      ddl-auto: create
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#      use-new-id-generator-mappings: false
+#    show-sql: true
+#    properties:
+#      hibernate.format_sql: true
+#      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+#
+#
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
 
-  jpa:
-    open-in-view: true
-    hibernate:
-      ddl-auto: create
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      use-new-id-generator-mappings: false
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
-      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+    datasource:
+      url: jdbc:mariadb://rds엔드포인트:포트명/database이름
+      username: db계정
+      password: db계정 비밀번호
+      driver-class-name: org.mariadb.jdbc.Driver
 
+    jpa:
+      hibernate:
+        ddl-auto: none
 
 logging:
   level:
