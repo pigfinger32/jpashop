@@ -87,36 +87,36 @@ public class OrderController {
             orderDtoList.add(orderDto);
         }
         //동시성TEST
-        int numberOfThreads = 2;
-        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        service.execute(() -> {
-            try {
-                orderService.order(orderDtoList, startDate, term);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            latch.countDown();
-        });
-        service.execute(() -> {
-            try {
-                orderService.order(orderDtoList, startDate, term);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            latch.countDown();
-        });
-        latch.await();
-
-        return "redirect:/";
+//        int numberOfThreads = 2;
+//        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+//        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+//        service.execute(() -> {
+//            try {
+//                orderService.order(orderDtoList, startDate, term);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            latch.countDown();
+//        });
+//        service.execute(() -> {
+//            try {
+//                orderService.order(orderDtoList, startDate, term);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            latch.countDown();
+//        });
+//        latch.await();
+//
+//        return "redirect:/";
 
         //동시성 TEST 끝
-//        orderService.order(orderDtoList, startDate, term);
-//        return "redirect:/";
+        orderService.order(orderDtoList, startDate, term);
+        return "redirect:/";
     }
 
 
