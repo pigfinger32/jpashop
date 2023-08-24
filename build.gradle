@@ -37,7 +37,7 @@ dependencies {
 	//runtimeOnly 'mysql:mysql-connector-java'
 
 	//*h2 DB 사용하려면 위 mysql 주석처리하고 아래 h2 주석제거할것.
-	runtimeOnly 'com.h2database:h2'
+	//runtimeOnly 'com.h2database:h2'
 
 	//*RDS Maria DB 드라이버 등록
 	implementation 'org.mariadb.jdbc:mariadb-java-client'
