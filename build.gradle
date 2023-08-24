@@ -5,9 +5,7 @@ plugins {
 }
 
 jar {
-	manifest {
-		attributes 'Main-Class': 'jpabook.jpashop.JpashopApplication'
-	}
+	enabled = false
 }
 
 group = 'jpabook'
