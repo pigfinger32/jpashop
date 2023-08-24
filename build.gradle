@@ -7,7 +7,7 @@ plugins {
 
 jar {
 	manifest {
-		attributes 'Main-Class': 'jpabook.jpashop.JpashopApplication'
+		attributes 'Main-Class': 'com.package.app.Class'
 	}
 }
 
