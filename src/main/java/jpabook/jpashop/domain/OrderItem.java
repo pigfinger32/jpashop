@@ -12,7 +12,7 @@ import static javax.persistence.FetchType.*;
 @Entity
 @Getter @Setter
 //@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderItem extends BaseEntity {
+public class OrderItem  {
 
     @Id @GeneratedValue
     @Column(name = "order_item_id")

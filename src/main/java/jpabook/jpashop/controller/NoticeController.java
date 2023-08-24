@@ -46,7 +46,7 @@ public class NoticeController {
         notice.setViewcnt("0");
         if(notice.getName() == "")
             notice.setName("ADMIN");
-        notice.setCreatedDate(LocalDateTime.now());
+        //notice.setCreatedDate(LocalDateTime.now());
         noticeService.NoticeAdd(notice);
         return "redirect:/notices/notices";
     }

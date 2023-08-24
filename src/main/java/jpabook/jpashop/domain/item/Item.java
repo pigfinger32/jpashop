@@ -1,6 +1,5 @@
 package jpabook.jpashop.domain.item;
 
-import jpabook.jpashop.domain.BaseEntity;
 import jpabook.jpashop.exception.NotEnoughStockException;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Getter @Setter
-public abstract class Item extends BaseEntity {
+public abstract class Item  {
 
     @Id @GeneratedValue
     @Column(name = "item_id")

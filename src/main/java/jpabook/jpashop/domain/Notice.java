@@ -11,7 +11,7 @@ import javax.persistence.Id;
 
 @Entity
 @Getter @Setter
-public class Notice extends BaseEntity {
+public class Notice  {
     @Id
     @GeneratedValue
     @Column(name = "notice_id")
