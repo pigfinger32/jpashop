@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>여수시 가로등배너 예약사이트</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Bootstrap icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <!-- Google fonts-->
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,600;1,600&amp;display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,500;0,600;0,700;1,300;1,500;1,600;1,700&amp;display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;1,400&amp;display=swap" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script type="text/javascript">
+            //jQuery의 ready함수는 document가 준비되는 시점에 실행된다.
+            jQuery(document).ready(function() {
+                var checkCookie = getCookie("mycookie");
+                if(checkCookie == 'popupEnd') {
+                    $("#myModal").modal("hide");
+                } else {
+                    $("#myModal").modal("show");
+                }
+            });
+
+            function setCookie(name, value, expiredays){
+                var today = new Date();
+                console.log(today.getDate())
+                today.setDate(today.getDate() + expiredays);//현재시간에 하루를 더함
+                document.cookie = name + '=' + escape(value) + '; expires=' + today.toGMTString();
+            }
+
+            function getCookie(name) {
+                var cookie = document.cookie;
+                if (document.cookie != "") {
+                    var cookie_array = cookie.split("; ");
+                    console.log(cookie_array)
+                    for ( var index in cookie_array) {
+                        var cookie_name = cookie_array[index].split("=");
+                        if (cookie_name[0] == "mycookie") {
+                            return cookie_name[1];
+                        }
+                    }
+                }
+                return;
+            }
+            $("#modal-today-close").click(function() {
+                $("#myModal").modal("hide");
+                setCookie("mycookie", 'popupEnd', 1);
+            })
+            function closeModal() {
+                $("#myModal").modal("hide");
+            }
+
+
+            function todayCloseModal() {
+                $("#myModal").modal('hide');
+                setCookie("mycookie", 'popupEnd', 1);
+            }
+</script>
+    </head>
+
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-sm" id="mainNav">
+            <div class="container px-5">
+                <a class="navbar-brand fw-bold" href="#page-top">여수시 가로등배너 예약</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="bi-list"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+                        <li class="nav-item"><a class="nav-link me-lg-3" href="#features">Home</a></li>
+                        <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
+                        <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+                        <li class="nav-item"><a class="nav-link me-lg-3" th:href="@{/members/new}">회원가입</a></li>
+                    </ul>
+<!--                    sec:authorize="hasRole('ADMIN')"-->
+                    <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                        <span class="d-flex align-items-center">
+                            <i class="bi-chat-text-fill me-2"></i>
+                            <span class="small">담당자 연락하기</span>
+                        </span>
+                    </button>
+                    <button sec:authorize="hasRole('ADMIN')" class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" onclick="location.href='/items'">
+                        <span class="d-flex align-items-center">
+                            <i class="bi-chat-text-fill me-2"></i>
+                            <span  class="small">구간 등록</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Masthead header-->
+        <header class="masthead">
+            <div class="container px-5"  >
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/information'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 운영안내</span>
+                    </span>
+                </button>
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/orders'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 지정게시대현황</span>
+                    </span>
+                </button>
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/orderItems'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">가로기 게첨 신청하기</span>
+                    </span>
+                </button>
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/myOrders'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">내신청현황</span>
+                    </span>
+                </button>
+                <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" onclick="location.href='/notices/notices'">
+                    <span class="d-flex align-items-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">공지사항</span>
+                    </span>
+                </button>
+                <div class="row gx-5 align-items-center">
+                    <div class="masthead-device-mockup">
+                        <div class="screen bg-black">
+                            <!-- PUT CONTENTS HERE:-->
+                            <img style="max-width: 780px; height: 434px" src="assets/img/yeasuFlagPlace_BeforeAfterCallAccount.png" alt="..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Footer-->
+        <footer class="bg-black text-center py-5">
+            <div class="container px-5">
+                <div class="text-white-50 small">
+                    <div class="mb-2">&copy; Your Website 2023. All Rights Reserved.</div>
+                    <a href="#!">Privacy</a>
+                    <span class="mx-1">&middot;</span>
+                    <a href="#!">Terms</a>
+                    <span class="mx-1">&middot;</span>
+                    <a href="#!">FAQ</a>
+                </div>
+            </div>
+        </footer>
+        <!-- 공지사항 Modal-->
+        <div class="modal" id="myModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">공지</h5>
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="text-align : center;">
+                        <img style="max-width: 80%; height: 80%" src="assets/img/Notice1.jpg" alt="..." />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id = "modal-today-close" onclick="todayCloseModal()" >today</button>
+                        <button type="button" class="btn btn-secondary" id = "modal-close" onclick="closeModal()" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Feedback Modal-->
+        <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary-to-secondary p-4">
+                        <h5 class="modal-title font-alt text-white" id="feedbackModalLabel">담당자 연락하기</h5>
+                        <button class="btn-close btn-close-white" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body border-0 p-4">
+                        <!-- * * * * * * * * * * * * * * *-->
+                        <!-- * * SB Forms Contact Form * *-->
+                        <!-- * * * * * * * * * * * * * * *-->
+                        <!-- This form is pre-integrated with SB Forms.-->
+                        <!-- To make this form functional, sign up at-->
+                        <!-- https://startbootstrap.com/solution/contact-forms-->
+                        <!-- to get an API token!-->
+                        <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                            <!-- Name input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="name" type="text" placeholder="Enter your name..." readonly="redaonly" />
+                                <label for="name">이상기</label>
+                            </div>
+                            <!-- Email address input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="email" type="email" placeholder="name@example.com" readonly="redaonly"  />
+                                <label for="email">ideabanner2021@naver.com</label>
+                            </div>
+                            <!-- Phone number input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="phone" type="tel" placeholder="(123) 456-7890" readonly="redaonly"  />
+                                <label for="phone">010-8744-0026</label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js">
+        </script>
+
+
+
+    </body>
+
+</html>
+
+

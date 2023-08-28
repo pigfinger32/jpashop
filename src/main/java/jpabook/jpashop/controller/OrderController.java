@@ -30,8 +30,33 @@ public class OrderController {
     private final ItemService itemService;
     private final UserSecurityService userSecurityService;
 
+    @GetMapping("/layout")
+    public String layout(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //유저로그인체크
+        String userId = userSecurityService.LoginUserCheck();
+        if(userId == "anonymousUser") //로그인 안했다면
+            return "login_form";
+
+        List<Order> orders = orderService.findOrders(orderSearch);
+        model.addAttribute("orders", orders);
+        model.addAttribute("date", orderSearch.getFindDate());
+        model.addAttribute("startDate", orderSearch.getFindDate());
+
+        return "layout";
+    }
+    @GetMapping("/finish")
+    public String finish(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+
+        return "order/finish";
+    }
+
     @GetMapping("/orderItems")
     public String itemList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //유저로그인체크
+        if(userSecurityService.LoginUserCheck() == "anonymousUser") //로그인 안했다면
+            return "login_form";
+
+
         List<Member> members = memberService.findMembers();
         List<Item> items = itemService.findItems();
 
@@ -119,20 +144,13 @@ public class OrderController {
         return "redirect:/";
     }
 
-
-/*    @PostMapping(value="/order")
-    public String order(@RequestParam("memberId") Long memberId,
-                        //@RequestParam List<OrderDto> orderDtoList,
-                        //@RequestParam("startDate") Long startDate,
-                        @RequestParam("itemId") Long itemId,
-                        @RequestParam("count") int count) {
-
-        orderService.order(memberId, itemId, count);
-        return "redirect:/orders";
-    }*/
-
     @GetMapping("/orders")
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //유저로그인체크
+        String userId = userSecurityService.LoginUserCheck();
+        if(userId == "anonymousUser") //로그인 안했다면
+            return "login_form";
+
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
         model.addAttribute("date", orderSearch.getFindDate());
@@ -143,6 +161,10 @@ public class OrderController {
 
     @GetMapping("/myOrders")
     public String myOrderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //유저로그인체크
+        if(userSecurityService.LoginUserCheck() == "anonymousUser") //로그인 안했다면
+            return "login_form";
+
         //나의 로그인 정보로 이름을 구해 OrderSearch에 name을 넣어줌
         Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
         //*****로그인체크부분 추가할것.
