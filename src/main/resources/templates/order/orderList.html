@@ -1,78 +1,81 @@
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
-<head th:replace="fragments/header :: header"/>
-<body id="page-top" style="padding-top : 100px">
-<div class="container">
-    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-    <div>
-        <div>
-            <form th:object="${orderSearch}" class="form-inline">
-                <label for="date">날짜를 선택하세요:
-                    <input type="date"
-                           id="date"
-                           max="2040-06-20"
-                           min="2022-07-01"
-                           value="2077-06-15"
-                           th:field="*{findDate}" class="form-control">
-                </label>
-<!--                <div class="form-group mb-2">-->
-<!--                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>-->
-<!--                </div>-->
-<!--                <div class="form-group mb-2">-->
-<!--                    <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>-->
-<!--                </div>-->
-                <div class="form-group mx-sm-1 mb-2">
-                    <select th:field="*{orderStatus}" class="form-control" style="font-size=10px;display:none ">
-                        <option value="">주문상태</option>
-                        <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
-                                th:value="${status}"
-                                th:text="${status}">option
-                        </option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary mb-2">검색</button>
-            </form>
-        </div>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>회원명</th>
-                <th>구간명</th>
-                <th>공연명</th>
-                <th>가격</th>
-                <th>수량</th>
-                <th>상태</th>
-                <th>시작</th>
-                <th>종료</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${orders}">
-                <td th:text="${item.member.name}"></td>
-                <td th:text="${item.orderItems[0].item.name}"></td>
-                <td th:text="${item.orderName}"></td>
-                <td th:text="${item.orderItems[0].orderPrice}"></td>
-                <td th:text="${item.orderItems[0].count}"></td>
-                <td th:text="${item.status}"></td>
-                <td th:text="${item.orderStartDate}"></td>
-                <td th:text="${item.orderEndDate}"></td>
-                <td>
-<!--                    <a th:if="${item.status.name() == 'ORDER'}" href="#"-->
-                    <a href="#"
-                       th:href="'javascript:cancel('+${item.id}+')'"
-                       sec:authorize="hasRole('ADMIN')"
-                       class="btn btn-danger">CANCEL</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div th:replace="fragments/footer :: footer"/>
-</div> <!-- /container -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
+      layout:decorate="layout">
+<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
 
-</body>
-<script th:inline="javascript">
+<th:block layout:fragment="content">
+    <!-- Begin Page Content -->
+    <body id="page-top" >
+    <div class="container">
+        <div>
+            <div>
+                <form th:object="${orderSearch}" class="form-inline">
+                    <label for="date">날짜를 선택하세요:
+                        <input type="date"
+                               id="date"
+                               max="2040-06-20"
+                               min="2022-07-01"
+                               value="2077-06-15"
+                               th:field="*{findDate}" class="form-control">
+                    </label>
+                    <!--                <div class="form-group mb-2">-->
+                    <!--                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>-->
+                    <!--                </div>-->
+                    <!--                <div class="form-group mb-2">-->
+                    <!--                    <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>-->
+                    <!--                </div>-->
+                    <div class="form-group mx-sm-1 mb-2">
+                        <select th:field="*{orderStatus}" class="form-control" style="font-size=10px;display:none ">
+                            <option value="">주문상태</option>
+                            <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
+                                    th:value="${status}"
+                                    th:text="${status}">option
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">검색</button>
+                </form>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>회원명</th>
+                    <th>구간명</th>
+                    <th>공연명</th>
+                    <th>가격</th>
+                    <th>수량</th>
+                    <th>상태</th>
+                    <th>시작</th>
+                    <th>종료</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${orders}">
+                    <td th:text="${item.member.name}"></td>
+                    <td th:text="${item.orderItems[0].item.name}"></td>
+                    <td th:text="${item.orderName}"></td>
+                    <td th:text="${item.orderItems[0].orderPrice}"></td>
+                    <td th:text="${item.orderItems[0].count}"></td>
+                    <td th:text="${item.status}"></td>
+                    <td th:text="${item.orderStartDate}"></td>
+                    <td th:text="${item.orderEndDate}"></td>
+                    <td>
+                        <!--                    <a th:if="${item.status.name() == 'ORDER'}" href="#"-->
+                        <a href="#"
+                           th:href="'javascript:cancel('+${item.id}+')'"
+                           sec:authorize="hasRole('ADMIN')"
+                           class="btn btn-danger">CANCEL</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- /container -->
+
+    </body>
+    <script th:inline="javascript">
 var startDate = [[${date}]];
 if (startDate){
     document.getElementById('date').value = startDate;
@@ -89,6 +92,101 @@ if (startDate){
     }
 
 </script>
+</th:block>
 </html>
+
+
+<!--<!DOCTYPE HTML>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">-->
+<!--<head th:replace="fragments/header :: header"/>-->
+<!--<body id="page-top" style="padding-top : 100px">-->
+<!--<div class="container">-->
+<!--    <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
+<!--    <div>-->
+<!--        <div>-->
+<!--            <form th:object="${orderSearch}" class="form-inline">-->
+<!--                <label for="date">날짜를 선택하세요:-->
+<!--                    <input type="date"-->
+<!--                           id="date"-->
+<!--                           max="2040-06-20"-->
+<!--                           min="2022-07-01"-->
+<!--                           value="2077-06-15"-->
+<!--                           th:field="*{findDate}" class="form-control">-->
+<!--                </label>-->
+<!--&lt;!&ndash;                <div class="form-group mb-2">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                <div class="form-group mb-2">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                </div>&ndash;&gt;-->
+<!--                <div class="form-group mx-sm-1 mb-2">-->
+<!--                    <select th:field="*{orderStatus}" class="form-control" style="font-size=10px;display:none ">-->
+<!--                        <option value="">주문상태</option>-->
+<!--                        <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"-->
+<!--                                th:value="${status}"-->
+<!--                                th:text="${status}">option-->
+<!--                        </option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <button type="submit" class="btn btn-primary mb-2">검색</button>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--        <table class="table table-striped">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th>회원명</th>-->
+<!--                <th>구간명</th>-->
+<!--                <th>공연명</th>-->
+<!--                <th>가격</th>-->
+<!--                <th>수량</th>-->
+<!--                <th>상태</th>-->
+<!--                <th>시작</th>-->
+<!--                <th>종료</th>-->
+<!--                <th></th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--            <tr th:each="item : ${orders}">-->
+<!--                <td th:text="${item.member.name}"></td>-->
+<!--                <td th:text="${item.orderItems[0].item.name}"></td>-->
+<!--                <td th:text="${item.orderName}"></td>-->
+<!--                <td th:text="${item.orderItems[0].orderPrice}"></td>-->
+<!--                <td th:text="${item.orderItems[0].count}"></td>-->
+<!--                <td th:text="${item.status}"></td>-->
+<!--                <td th:text="${item.orderStartDate}"></td>-->
+<!--                <td th:text="${item.orderEndDate}"></td>-->
+<!--                <td>-->
+<!--&lt;!&ndash;                    <a th:if="${item.status.name() == 'ORDER'}" href="#"&ndash;&gt;-->
+<!--                    <a href="#"-->
+<!--                       th:href="'javascript:cancel('+${item.id}+')'"-->
+<!--                       sec:authorize="hasRole('ADMIN')"-->
+<!--                       class="btn btn-danger">CANCEL</a>-->
+<!--                </td>-->
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--    </div>-->
+<!--    <div th:replace="fragments/footer :: footer"/>-->
+<!--</div> &lt;!&ndash; /container &ndash;&gt;-->
+
+<!--</body>-->
+<!--<script th:inline="javascript">-->
+<!--var startDate = [[${date}]];-->
+<!--if (startDate){-->
+<!--    document.getElementById('date').value = startDate;-->
+<!--} else{-->
+<!--    document.getElementById('date').value = new Date().toISOString().substring(0, 10);-->
+<!--}-->
+
+<!--    function cancel(id) {-->
+<!--        var form = document.createElement("form");-->
+<!--        form.setAttribute("method", "post");-->
+<!--        form.setAttribute("action", "/orders/" + id + "/cancel");-->
+<!--        document.body.appendChild(form);-->
+<!--        form.submit();-->
+<!--    }-->
+
+<!--</script>-->
+<!--</html>-->
 
 
