@@ -20,14 +20,14 @@ import java.util.Optional;
 public class NoticeController {
     private final NoticeService noticeService;
 
-    @GetMapping("notices/notices")
+    @GetMapping("/notices")
     public String notices(Model model) {
         List<Notice> notices = noticeService.NoticeList();
         model.addAttribute("notices", notices);
         return "notices/notices";
     }
 
-    @GetMapping("notices/{uid}")
+    @GetMapping("/notices/{uid}")
     public String notice(@PathVariable("uid") long id, Model model) {
         noticeService.ViewcntUpdate(id);
         Notice result = noticeService.NoticeOne(id);
@@ -36,12 +36,12 @@ public class NoticeController {
         log.info("notice={}", notice);
         return "notices/notice";
     }
-    @GetMapping("notices/add")
+    @GetMapping("/notices/add")
     public String addForm(Model model) {
         model.addAttribute("notice", new Notice());
         return "notices/addForm";
     }
-    @PostMapping("notices/add")
+    @PostMapping("/notices/add")
     public String addNotice(@ModelAttribute Notice notice, RedirectAttributes redirectAttributes) {
         notice.setViewcnt("0");
         if(notice.getName() == "")
@@ -51,12 +51,12 @@ public class NoticeController {
         return "redirect:/notices/notices";
     }
 
-    @RequestMapping("notices/{uid}/delete")
+    @RequestMapping("/notices/{uid}/delete")
     public String deleteNotice(@PathVariable long uid) {
         noticeService.NoticeDelete(uid);
         return "redirect:/notices/notices";
     }
-    @GetMapping("notices/{uid}/edit")
+    @GetMapping("/notices/{uid}/edit")
     public String edit(@PathVariable long uid, Model model) {
         Notice notice = noticeService.NoticeOne(uid);
         model.addAttribute("notice", notice);
@@ -65,7 +65,7 @@ public class NoticeController {
         return "notices/editForm";
     }
 
-    @PostMapping("notices/{uid}/edit")
+    @PostMapping("/notices/{uid}/edit")
     public String edit(@PathVariable long uid, @ModelAttribute Notice notice) {
         notice.setId(uid);
         noticeService.NoticeUpdate(notice);

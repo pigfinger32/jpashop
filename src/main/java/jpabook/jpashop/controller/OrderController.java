@@ -68,8 +68,6 @@ public class OrderController {
         model.addAttribute("itemList", itemList);
         model.addAttribute("startDate", orderSearch.getFindDate());
 
-
-
         return "order/createOrder";
     }
 

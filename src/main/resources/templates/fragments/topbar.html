@@ -12,21 +12,27 @@
         </button>
 
         <!-- Topbar Search -->
-        <form
-                class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-            <div class="input-group">
-                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                       aria-label="Search" aria-describedby="basic-addon2">
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">
-                        <i class="fas fa-search fa-sm"></i>
-                    </button>
-                </div>
+        <div class="copyright text-center my-auto"  >
+            <div class="content" style="margin-left:200px;">
+                <img src="assets/img/logo.png" >
             </div>
-        </form>
+        </div>
+
+<!--        <form-->
+<!--                class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">-->
+<!--            <div class="input-group">-->
+<!--                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."-->
+<!--                       aria-label="Search" aria-describedby="basic-addon2">-->
+<!--                <div class="input-group-append">-->
+<!--                    <button class="btn btn-primary" type="button">-->
+<!--                        <i class="fas fa-search fa-sm"></i>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </form>-->
 
         <!-- Topbar Navbar -->
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto" style="margin-right:200px;">
 
             <!-- Nav Item - Search Dropdown (Visible Only XS) -->
             <li class="nav-item dropdown no-arrow d-sm-none">
@@ -53,6 +59,9 @@
             </li>
 
             <!-- Nav Item - Messages -->
+<!--            <div class="content" style="float:left;">-->
+<!--                <img src="assets/img/logo.png" >-->
+<!--            </div>-->
             <li class="nav-item dropdown no-arrow mx-1">
                 <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
                 <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>

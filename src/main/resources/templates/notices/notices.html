@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
       layout:decorate="layout">
 <!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
 
@@ -16,11 +16,11 @@
       <div class="col">
         <button class="btn btn-primary float-end"
                 onclick="location.href='addForm.html'"
-                th:onclick="|location.href='@{/notices/add}'|"
+                sec:authorize="hasRole('ADMIN')"
+                th:onclick="|location.href='notices/add'|"
                 type="button" >글 등록</button>
       </div>
     </div>
-
     <hr class="my-4">
     <div>
       <table class="table">
@@ -36,8 +36,8 @@
         </thead>
         <tbody>
         <tr th:each="notice : ${notices}">
-          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>
-          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.subject}">제목</a></td>
+          <td><a href="item.html" th:href="notices/{uid}(uid=${notice.id})" th:text="${notice.id}">글 ID</a></td>
+          <td><a href="item.html" th:href="notices/{uid}(uid=${notice.id})" th:text="${notice.subject}">제목</a></td>
           <td th:text="${notice.name}">작성자</td>
           <td th:text="${notice.viewcnt}">조회수</td>
           <td th:text="${notice.createdDate}">등록일</td>
