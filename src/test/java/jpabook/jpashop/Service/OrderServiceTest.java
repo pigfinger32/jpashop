@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -41,11 +42,6 @@ public class OrderServiceTest {
         member.setName("abc");
         String startDate = "2023-08-09";
         int term = 30;
-        //log.info("makeReservation 동시성 테스트 시작");
-
-        // Given
-        //log.info("makeReservation 동시성 테스트 준비");
-
 
         //orderDtoList 생성
         List<OrderDto> orderDtoList = new ArrayList<>();
@@ -54,49 +50,9 @@ public class OrderServiceTest {
         makeOrderDTO(member, startDate, term, orderDtoList);
         makeOrderDTO(member, startDate, term, orderDtoList2);
 
-//        // When
-//        //log.info("makeReservation 동시성 테스트 진행");
-//        int numberOfThreads = 2;
-//        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-//        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-//        service.execute(() -> {
-//            try {
-//                orderService.order(orderDtoList, startDate, term);
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            }
-//            latch.countDown();
-//        });
-//        service.execute(() -> {
-//            try {
-//                orderService.order(orderDtoList2, startDate, term);
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            }
-//            latch.countDown();
-//        });
-//        latch.await();
-
         // Then
 
-
     }
-    @Test
-    public void selectMember() {
-        Member member = memberService.findByLoginId("admin");
-        System.out.println("member.getName() = " + member.getName());
-        return;
-    }
-    @Test
-    public void insertMember() {
-        Member member = new Member();
-        member.setName("ajsep");
-        Long memberId = memberService.join(member);
-        System.out.println("member.getMemberId() = " + memberService.findOne(memberId));
-
-        return;
-    }
-
     private static void makeOrderDTO(Member member, String startDate, int term, List<OrderDto> orderDtoList) {
         OrderDto orderDto = new OrderDto();
         //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
@@ -109,6 +65,37 @@ public class OrderServiceTest {
         orderDto.setTerm(term);
         orderDtoList.add(orderDto);
     }
+    @Test
+    public void insertMember() {
+        Member member = new Member();
+        member.setName("ajsep");
+        Long memberId = memberService.join(member);
+        System.out.println("member.getMemberId() = " + memberService.findOne(memberId));
+
+        assertEquals(member, memberService.findOne(memberId));
+
+        return;
+    }
+
+
+    private Member createMember() {
+        Member member = new Member();
+        member.setName("회원1");
+        member.setAddress(new Address("서울", "강가", "123-123"));
+        em.persist(member);
+        return member;
+    }
+
+    private Book createBook(String name, int price, int stockQuantity) {
+        Book book = new Book();
+        book.setName(name);
+        book.setStockQuantity(stockQuantity);
+        book.setPrice(price);
+        em.persist(book);
+        return book;
+    }
+
+
 
 //    @Test(expected = NotEnoughStockException.class)
 //    public void 상품주문_주문수량초과() throws Exception {
@@ -145,21 +132,5 @@ public class OrderServiceTest {
 //
 //    }
 
-
-    private Member createMember() {
-        Member member = new Member();
-        member.setName("회원1");
-        member.setAddress(new Address("서울", "강가", "123-123"));
-        em.persist(member);
-        return member;
-    }
-    private Book createBook(String name, int price, int stockQuantity) {
-        Book book = new Book();
-        book.setName(name);
-        book.setStockQuantity(stockQuantity);
-        book.setPrice(price);
-        em.persist(book);
-        return book;
-    }
 
 }

@@ -27,8 +27,6 @@ public class MemberServiceTest {
         //given
         Member member = new Member();
         member.setName("kim");
-
-
         //when
         Long saveId = memberService.join(member);
 
