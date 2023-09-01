@@ -19,7 +19,7 @@ script: "./gradlew clean build"
 
 
 before_deploy:
-    - zip -r guangju-springboot2-webservice
+    - zip -r guangju-springboot2-webservice *
     - mkdir -p deploy
     - mv guangju-springboot2-webservice.zip deploy/guangju-springboot2-webservice.zip
 
