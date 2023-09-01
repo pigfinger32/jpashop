@@ -1,44 +1,44 @@
 spring:
   datasource:
-#    #h2DB
-#    url: jdbc:h2:tcp://localhost/~/jpashop
-#    username: sa
-#    password:
-#    driver-class-name: org.h2.Driver
-#    jpa:
-#      hibernate:
-#        ddl-auto: create
-#      properties:
-#        hibernate:
-#          #        show_sql: true
-#          format_sql: true
-#
-#    logging.level:
-#      org.hibernate.SQL: debug
-#      org.hibernate.type: trace
-
-    #mysql
-    url: jdbc:mysql://localhost:3306/jpabook?useSSL=false&allowPublicKeyRetrieval=true
-    username: admin
-    password: 1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
+    #h2DB
+    url: jdbc:h2:tcp://localhost/~/jpashop
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
-    open-in-view: true
     hibernate:
       ddl-auto: none
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      use-new-id-generator-mappings: false
-    show-sql: true
     properties:
-      hibernate.format_sql: true
-      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+      hibernate:
+        #        show_sql: true
+        format_sql: true
 
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.type: trace
 
-logging:
-  level:
-    org.hibernate.SQL: debug
+#    #mysql
+#    url: jdbc:mysql://localhost:3306/jpabook?useSSL=false&allowPublicKeyRetrieval=true
+#    username: admin
+#    password: 1234
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    open-in-view: true
+#    hibernate:
+#      ddl-auto: none
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#      use-new-id-generator-mappings: false
+#    show-sql: true
+#    properties:
+#      hibernate.format_sql: true
+#      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+#
+#
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
 
 #    datasource:
 #      url: jdbc:mariadb://rds엔드포인트:포트명/database이름
