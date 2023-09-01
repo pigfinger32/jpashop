@@ -10,7 +10,7 @@ public class JpashopApplication {
 	public static void main(String[] args) {
 
 		Hello hello = new Hello();
-		hello.setData("hello");
+		hello.setData("hello22");//한번더 배포 테스트 port 8082로 바뀌는지 확인
 		String data = hello.getData();
 		System.out.println("data = " + data);
 
