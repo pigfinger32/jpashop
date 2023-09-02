@@ -41,7 +41,7 @@ deploy:
 
     - provider: codedeploy
       access_key_id: $AWS_ACCESS_KEY #$AWS_ACCESS_KEY # Travis repo settings에 설정된 값
-      secret_access_key: $AWS_SECRET_KEY #$AWS_SECRET_KEY # Travis repo settings에 설정된 값
+      secret_access_key: $AWS_SECRET_KEY #$AWS_SECRET_KEY # Travis repo settings에 설정된 값 재등록
       bucket: guangju-springboot-build # S3 버킷
       key: guangju-springboot2-webservice.zip # 빌드 파일을 압축해서 전달
       bundle_type: zip # 압축 확장자
