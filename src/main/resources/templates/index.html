@@ -6,13 +6,171 @@
 
 <th:block layout:fragment="content">
     <!-- Begin Page Content -->
-    <div class="row gx-5 align-items-center">
-        <div class="masthead-device-mockup">
-            <div class="screen bg-black">
-                <!-- PUT CONTENTS HERE:-->
-<!--                <img style="max-width: 780px; height: 434px" src="assets/img/yeasuFlagPlace_BeforeAfterCallAccount.png" alt="..." />-->
+    <div id="container">
+        <!-- #wrap -->
+        <div id="wrap">
+            <!-- container -->
+            <div class="container">
+                <div class="m-auto row pt-3 pb-3 m-0">
+                    <div class="col-12 col-lg-7 mb-3 mb-lg-0 pt-4 pr-0 pr-lg-3 pt-lg-0 pl-0 mt-5 mt-lg-0">
+                        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                            <ol class="carousel-indicators">
+                                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                                <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+                            </ol>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="assets/img/mv_2.jpg" class="d-block w-100" alt="..." />
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="assets/img/mv_3.jpg" class="d-block w-100" alt="..." />
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="assets/img/mv_4.jpg" class="d-block w-100" alt="..." />
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="assets/img/mv_5.jpg" class="d-block w-100" alt="..." />
+                                </div>
+                            </div>
+                            <div class="controls-slogan">
+                            </div>
+                            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5 p-0">
+
+<!--                        &lt;!&ndash; Approach &ndash;&gt;-->
+<!--                        <div class="card shadow mb-4">-->
+<!--                            <div class="card-header py-3">-->
+<!--                                <h6 class="m-0 font-weight-bold text-primary">공지사항</h6>-->
+<!--                            </div>-->
+<!--                            <div class="card-body">-->
+<!--                                <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce-->
+<!--                                    CSS bloat and poor page performance. Custom CSS classes are used to create-->
+<!--                                    custom components and custom utility classes.</p>-->
+<!--                                <p class="mb-0">Before working with this theme, you should become familiar with the-->
+<!--                                    Bootstrap framework, especially the utility classes.</p>-->
+<!--                                -->
+<!--                            </div>-->
+<!--                        </div>-->
+                        <!-- Project Card Example -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary"><a href="notices">공지사항</a></h6>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="small font-weight-bold"> 10월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.09.04</span></h4>
+                                <h4 class="small font-weight-bold"> 9월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.08.04</span></h4>
+                                <h4 class="small font-weight-bold"> 8월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.07.04</span></h4>
+                                <h4 class="small font-weight-bold"> 7월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.06.04</span></h4>
+                                <h4 class="small font-weight-bold"> 6월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.05.04</span></h4>
+                                <h4 class="small font-weight-bold"> 5월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.04.04</span></h4>
+                                <h4 class="small font-weight-bold"> 4월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.03.04</span></h4>
+                                <h4 class="small font-weight-bold"> 3월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.02.04</span></h4>
+                                <h4 class="small font-weight-bold"> 2월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2023.01.04</span></h4>
+                                <h4 class="small font-weight-bold"> 1월 현수막 예약 접수시 필독사항 <span
+                                        class="float-right">2022.12.04</span></h4>
+                            </div>
+                        </div>
+
+
+                    <form name="form2"  method="post">
+                        <input type="hidden" name="r_no"  id="r_no">
+                    </form>
+<!--                    <script>-->
+<!--						function fnViewCall(m){-->
+<!--						   $("#r_no").val($("span#p_num"+m).text());-->
+<!--						   document.form2.target="_self";-->
+<!--						   document.form2.action="sub07-01View.jsp";-->
+<!--						   document.form2.submit();-->
+<!--						}-->
+<!--					</script>-->
+
+                    <div class="row bg-white m-0 mt-3 pt-3  b-r5">
+
+                        <!-- Content Row -->
+                        <div class="row">
+
+                            <!-- Earnings (Monthly) Card Example -->
+                            <div class="col-xl-6 col-md-6 mb-4">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    관내 운영중인 지정게시대 현황</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="orders">지정게시대 현황</a></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Earnings (Monthly) Card Example -->
+                            <div class="col-xl-6 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    신청방법, 현수막 규격 및 유의사항</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="information">이용안내확인</a></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="far fa-eye fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Content Row -->
+
+
+
+
+                    </div>
             </div>
+
         </div>
+        <!-- /custom-main-container -->
+
+        <!-- /mainbody3 -->
     </div>
+    <!-- /#wrap -->
+
+    </div>
+
+
+<!--    <div class="row gx-5 align-items-center">-->
+<!--        <div class="masthead-device-mockup">-->
+<!--            <div class="screen bg-black">-->
+<!--                &lt;!&ndash; PUT CONTENTS HERE:&ndash;&gt;-->
+<!--&lt;!&ndash;                <img style="max-width: 780px; height: 434px" src="assets/img/yeasuFlagPlace_BeforeAfterCallAccount.png" alt="..." />&ndash;&gt;-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 </th:block>
 </html>
