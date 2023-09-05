@@ -1,5 +1,6 @@
 SpringBoot-Project-JPAshop  
 스프링 부트 + 여수 가로등 배너 예약 사이트  
+link : https://876b-218-39-27-208.ngrok-free.app/
 
 🖥️ 프로젝트 소개  
 여수 가로등 배너 예약 사이트 입니다.  
