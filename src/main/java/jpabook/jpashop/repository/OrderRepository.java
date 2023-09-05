@@ -2,13 +2,7 @@ package jpabook.jpashop.repository;
 
 import jpabook.jpashop.domain.Order;
 
-import jpabook.jpashop.domain.OrderItem;
-import jpabook.jpashop.domain.OrdersDTO;
-import jpabook.jpashop.domain.item.FlagSection;
-import jpabook.jpashop.domain.item.Item;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
