@@ -37,7 +37,7 @@ public class OrderController {
         //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
         if(userId == "anonymousUser") //로그인 안했다면
-            return "login_form1"; //충돌테스트 수정 메소드 login_form으로 변경할것.
+            return "login_form1"; //123충돌테스트 수정 메소드 login_form으로 변경할것.
 
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
