@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 public class OrderController {
 	
 	//made by branch-swagger
+	//made by branch-new_swagger
     private final OrderService orderService;
     private final MemberService memberService;
     private final ItemService itemService;
