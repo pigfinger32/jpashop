@@ -37,19 +37,34 @@ public class OrderController {
         //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
         if(userId == "anonymousUser") //로그인 안했다면
-            return "login_form";
+            return "login_form1"; //충돌테스트 수정 메소드 login_form으로 변경할것.
 
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
         model.addAttribute("date", orderSearch.getFindDate());
         model.addAttribute("startDate", orderSearch.getFindDate());
 
-        return "layout";
+        return "layout1"; //충돌테스트 수정 메소드 layout으로 변경할것.
+    }
+    //충돌테스트 추가 메소드
+    @GetMapping("/layout2")
+    public String layout2(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        //유저로그인체크
+        String userId = userSecurityService.LoginUserCheck();
+        if(userId == "anonymousUser") //로그인 안했다면
+            return "login_form2";
+
+        List<Order> orders = orderService.findOrders(orderSearch);
+        model.addAttribute("orders", orders);
+        model.addAttribute("date", orderSearch.getFindDate());
+        model.addAttribute("startDate", orderSearch.getFindDate());
+
+        return "layout2";
     }
     @GetMapping("/finish")
     public String finish(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
 
-        return "order/finish";
+        return "order/finish2";
     }
 
     @GetMapping("/orderItems")
