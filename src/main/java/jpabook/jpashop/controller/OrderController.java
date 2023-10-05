@@ -32,7 +32,8 @@ public class OrderController {
     private final ItemService itemService;
     private final UserSecurityService userSecurityService;
 
-    @GetMapping("/layout")
+    //@GetMapping("/layout")
+    @GetMapping("/layout2") //충돌테스트 내용이 주석처리되고 변경된 내역 추가
     public String layout(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
         //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
