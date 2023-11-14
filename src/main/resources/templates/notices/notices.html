@@ -36,11 +36,11 @@
         </thead>
         <tbody>
         <tr th:each="notice : ${notices}">
-          <td><a href="item.html" th:href="notices/{uid}(uid=${notice.id})" th:text="${notice.id}">글 ID</a></td>
-          <td><a href="item.html" th:href="notices/{uid}(uid=${notice.id})" th:text="${notice.subject}">제목</a></td>
+          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>        
+          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.subject}">제목</a></td>
           <td th:text="${notice.name}">작성자</td>
           <td th:text="${notice.viewcnt}">조회수</td>
-          <td th:text="${notice.createdDate}">등록일</td>
+          <td th:text="${notice.createddate}">등록일</td>
         </tr>
         </tbody>
       </table>
@@ -52,63 +52,3 @@
 </th:block>
 </html>
 
-<!--
-
-
-<!DOCTYPE HTML>
-<html lang="ko-kr">
-<html xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="header">
-  <meta charset="UTF-8">
-  &lt;!&ndash; Bootstrap CSS &ndash;&gt;
-  <link th:href="@{/css/bootstrap.min.css}"
-        href="/css/bootstrap.min.css" rel="stylesheet">
-
-</head>
-<body style="padding-top : 50px">
-<div class="container" style="max-width: 1000px">
-  <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-  <div class="py-5 text-center">
-&lt;!&ndash;    <h2 th:text="#{page.notices}">글 목록</h2>&ndash;&gt;
-    <h2 >공지사항</h2>
-  </div>
-
-  <div class="row">
-    <div class="col">
-      <button class="btn btn-primary float-end"
-              onclick="location.href='addForm.html'"
-              th:onclick="|location.href='@{/notices/add}'|"
-              type="button" >글 등록</button>
-    </div>
-  </div>
-
-  <hr class="my-4">
-  <div>
-    <table class="table">
-      <thead>
-      <tr>
-        <th >ID</th>
-        <th >제목</th>
-        <th >작성자</th>
-        <th >조회수</th>
-        <th >등록일</th>
-
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="notice : ${notices}">
-        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>
-        <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.subject}">제목</a></td>
-        <td th:text="${notice.name}">작성자</td>
-        <td th:text="${notice.viewcnt}">조회수</td>
-        <td th:text="${notice.createdDate}">등록일</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-
-</div> &lt;!&ndash; /container &ndash;&gt;
-
-</body>
-</html>
--->
