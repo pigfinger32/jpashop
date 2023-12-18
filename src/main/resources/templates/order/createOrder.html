@@ -23,11 +23,8 @@
                     <button type="submit" class="btn btn-primary mb-2">검색</button>
                 </form>
             </div>
-<!--            <div id="testImg" style="text-align : center;" >-->
             <div style="text-align : center;" >
-                <img src="assets/img/yeasuFlagMap2.png" width="867" height="611" alt="테스트이미지" />
-                <!--            <button class="btn1" type="button" value="1" onclick="changItem(this.value)" >1구간</button>-->
-                <!--            <button class="btn2" type="button" value="2" onclick="changItem(this.value)" >2구간</button>-->
+                <img src="assets/img/yeasuFlagMap2.png" width="867" height="611" alt="테스트이미지" />                
             </div>
 
             <table class="table table-striped">
@@ -55,7 +52,7 @@
             </table>
 
         </div>
-        <form role="form" action="/order" method="post">
+        <form role="form" action="/order" method="post" onsubmit="return checkItemsBeforeSubmit();">
             <label for="date" style="font-size=10px;display:none " >날짜를 선택하세요:
                 <input type="date"
                        id="startDate"
@@ -67,8 +64,7 @@
                        style="font-size=10px;display:none ">
             </label>
             <div class="form-group">
-                <select name="memberId" id="member" class="form-control" style="font-size=10px;display:none ">
-                    <!--            <select name="memberId" id="member" class="form-control">-->
+                <select name="memberId" id="member" class="form-control" style="font-size=10px;display:none ">                    
                     <option value="" style="font-size=10px;display:none ">회원선택</option>
                     <option th:each="member : ${members}"
                             th:value="${member.id}"
@@ -76,12 +72,10 @@
                 </select>
             </div>
             <div class="form-group">
-                <!--            <label for="count">공연명</label>-->
                 <input type="text" name="name" class="form-control" id="name"
                        placeholder="공연명을 입력하세요.">
             </div>
             <div class="form-group">
-                <!--            <select name="itemId" id="item" class="form-control" style="font-size=10px;display:none ">-->
                 <select name="itemId" id="item" class="form-control" >
                     <option value="">구간선택</option>
                     <option th:each="item : ${items}"
@@ -125,9 +119,8 @@
             </ul>
             <div id="total-price">총 금액 : <span></span></div>
 
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">예약하기</button>
         </form>
-<!--        <div th:replace="fragments/footer :: footer"/>-->
     </div>
     
     </body>
@@ -153,6 +146,17 @@
 	        document.getElementById('newItem').removeChild(obj.parentNode);
 	        document.getElementById('itemCount').removeChild(obj.parentNode);
 	    }
+	    
+	    function checkItemsBeforeSubmit() {
+		    var addItems = document.getElementsByName('addItem'); // 'addItem'인 input 요소들을 모두 가져옵니다.
+		    
+		    if(!addItems.length) { // 가져온 'addItem' 요소들의 개수가 0이라면
+		        alert('상품을 추가해주세요.');
+		        return false; // 폼 제출을 중지합니다.
+		    }
+		    
+		    return true; // 폼 제출을 계속합니다.
+		}
 	
 	    const add_textbox = () => {
 			
