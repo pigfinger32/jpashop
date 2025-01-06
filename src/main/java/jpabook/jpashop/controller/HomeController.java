@@ -1,21 +1,36 @@
 package jpabook.jpashop.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
+import jpabook.jpashop.Service.NoticeService;
+import jpabook.jpashop.domain.Notice;
+
 @Slf4j
+@Controller
+@RequiredArgsConstructor
 public class HomeController {
+	
+	private final NoticeService noticeService;
 
     @RequestMapping("/")
-    public String home() {
+    public String home(Model model) {
+    	List<Notice> notices = noticeService.NoticeList();
+        model.addAttribute("notices", notices);
         log.info("home controller");
         return "index";
     }
     @RequestMapping("/index")
-    public String index() {
+    public String index(Model model) {
+    	List<Notice> notices = noticeService.NoticeList();
+        model.addAttribute("notices", notices);
         log.info("home controller");
         return "index";
     }
@@ -29,6 +44,7 @@ public class HomeController {
         log.info("home information");
         return "information";
     }
+    
 
 
 

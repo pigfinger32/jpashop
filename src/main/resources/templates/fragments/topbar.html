@@ -11,25 +11,12 @@
             <i class="fa fa-bars"></i>
         </button>
 
-        <!-- Topbar Search -->
-        <div class="copyright text-center my-auto"  >
+        <!-- Topbar Logo -->
+        <div class="copyright text-center my-auto">
             <div class="content" style="margin-left:200px;">
-                <img src="assets/img/logo.png" >
+                <img src="/assets/img/logo.png" alt="Logo">
             </div>
         </div>
-
-<!--        <form-->
-<!--                class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">-->
-<!--            <div class="input-group">-->
-<!--                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."-->
-<!--                       aria-label="Search" aria-describedby="basic-addon2">-->
-<!--                <div class="input-group-append">-->
-<!--                    <button class="btn btn-primary" type="button">-->
-<!--                        <i class="fas fa-search fa-sm"></i>-->
-<!--                    </button>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </form>-->
 
         <!-- Topbar Navbar -->
         <ul class="navbar-nav ml-auto" style="margin-right:200px;">
@@ -40,7 +27,7 @@
                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-search fa-fw"></i>
                 </a>
-                <!-- Dropdown - Messages -->
+                <!-- Dropdown - Search -->
                 <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
                      aria-labelledby="searchDropdown">
                     <form class="form-inline mr-auto w-100 navbar-search">
@@ -58,10 +45,7 @@
                 </div>
             </li>
 
-            <!-- Nav Item - Messages -->
-<!--            <div class="content" style="float:left;">-->
-<!--                <img src="assets/img/logo.png" >-->
-<!--            </div>-->
+            <!-- Nav Item - Authentication Links -->
             <li class="nav-item dropdown no-arrow mx-1">
                 <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
                 <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
@@ -69,12 +53,12 @@
 
             <div class="topbar-divider d-none d-sm-block"></div>
 
-            <!-- Nav Item - User Information -->
+            <!-- Nav Item - User Registration -->
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link" th:href="@{/members/new}">회원가입</a>
             </li>
 
-            <!-- Nav Item - User Information -->
+            <!-- Nav Item - Admin Section -->
             <li class="nav-item dropdown no-arrow mx-1">
                 <a class="nav-link" sec:authorize="hasRole('ADMIN')" onclick="location.href='/items'">
                     <i class="far fa-eye"></i>
@@ -82,20 +66,12 @@
                 </a>
             </li>
 
-<!--            <li class="nav-item active">-->
-<!--                <a class="nav-link" href="/information">-->
-<!--                    <i class="far fa-eye"></i>-->
-<!--                    <span>가로기 운영안내</span>-->
-<!--                </a>-->
-<!--            </li>-->
-
             <!-- Nav Item - User Information -->
-            <li class="nav-item dropdown no-arrow" >
+            <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle" sec:authorize="isAuthenticated()" href="#" id="userDropdown" role="button"
                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="mr-2 d-none d-lg-inline text-gray-600 small">My Account</span>
-                    <img class="img-profile rounded-circle"
-                         src="img/undraw_profile.svg">
+                    <img class="img-profile rounded-circle" src="img/undraw_profile.svg" alt="Profile">
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -116,11 +92,6 @@
 
     </nav>
     <!-- End of Topbar -->
-
-<!--    &lt;!&ndash; Topbar &ndash;&gt;-->
-<!--    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">-->
-<!--        <h1>Topbar Section</h1>-->
-<!--    </nav>-->
 
 </th:block>
 </html>

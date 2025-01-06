@@ -54,28 +54,14 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary"><a href="notices">공지사항</a></h6>
                             </div>
-                            <div class="card-body">
-                                <h4 class="small font-weight-bold"> 10월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.09.04</span></h4>
-                                <h4 class="small font-weight-bold"> 9월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.08.04</span></h4>
-                                <h4 class="small font-weight-bold"> 8월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.07.04</span></h4>
-                                <h4 class="small font-weight-bold"> 7월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.06.04</span></h4>
-                                <h4 class="small font-weight-bold"> 6월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.05.04</span></h4>
-                                <h4 class="small font-weight-bold"> 5월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.04.04</span></h4>
-                                <h4 class="small font-weight-bold"> 4월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.03.04</span></h4>
-                                <h4 class="small font-weight-bold"> 3월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.02.04</span></h4>
-                                <h4 class="small font-weight-bold"> 2월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2023.01.04</span></h4>
-                                <h4 class="small font-weight-bold"> 1월 현수막 예약 접수시 필독사항 <span
-                                        class="float-right">2022.12.04</span></h4>
-                            </div>
+						    <div class="card-body">
+						        <div th:each="notice : ${notices}">
+						            <h4 class="small font-weight-bold">
+						                <a th:href="@{/notices/{id}(id=${notice.id})}" th:text="${notice.subject}"></a>
+						                <span class="float-right" th:text="${notice.createdDate}"></span>
+						            </h4>
+						        </div>
+						    </div>
                         </div>
 
 
@@ -141,14 +127,5 @@
 
     </div>
 
-
-<!--    <div class="row gx-5 align-items-center">-->
-<!--        <div class="masthead-device-mockup">-->
-<!--            <div class="screen bg-black">-->
-<!--                &lt;!&ndash; PUT CONTENTS HERE:&ndash;&gt;-->
-<!--&lt;!&ndash;                <img style="max-width: 780px; height: 434px" src="assets/img/yeasuFlagPlace_BeforeAfterCallAccount.png" alt="..." />&ndash;&gt;-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
 </th:block>
 </html>

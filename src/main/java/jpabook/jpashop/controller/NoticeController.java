@@ -4,15 +4,12 @@ import jpabook.jpashop.Service.NoticeService;
 import jpabook.jpashop.domain.Notice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.jni.Time;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -48,13 +45,13 @@ public class NoticeController {
             notice.setName("ADMIN");
         //notice.setCreatedDate(LocalDateTime.now());
         noticeService.NoticeAdd(notice);
-        return "redirect:/notices/notices";
+        return "redirect:/notices";
     }
 
     @RequestMapping("/notices/{uid}/delete")
     public String deleteNotice(@PathVariable long uid) {
         noticeService.NoticeDelete(uid);
-        return "redirect:/notices/notices";
+        return "redirect:/notices";
     }
     @GetMapping("/notices/{uid}/edit")
     public String edit(@PathVariable long uid, Model model) {

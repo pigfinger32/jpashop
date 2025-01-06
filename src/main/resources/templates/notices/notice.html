@@ -1,45 +1,41 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
-      layout:decorate="../layout">
-<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      xmlns:sec="http://www.w3.org/1999/xhtml"
+      layout:decorate="layout">
 
 <th:block layout:fragment="content">
-  <!-- Begin Page Content -->
-  <body >
+  <body>
   <div class="container" style="max-width: 1000px">
     <div class="py-5 text-center">
-      <h2 >글 상세</h2>
+      <h2>글 상세</h2>
     </div>
 
-    <!-- 추가 -->
-    <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
+    <!--  <h2 th:if="${param.status}" th:text="'저장 완료'"></h2> -->
 
     <div>
-      <label for="noticeId" >ID</label>
-      <input type="text" id="noticeId" name="noticeId" class="form-control" value="1" th:value="${notice.id}" readonly>
+      <label for="noticeId">ID</label>
+      <input type="text" id="noticeId" name="noticeId" class="form-control" th:value="${notice.id}" readonly>
     </div>
     <div>
-      <label for="noticeSubject" >제목</label>
-      <input type="text" id="noticeSubject" name="noticeSubject" class="form-control" value="상품A" th:value="${notice.subject}" readonly>
+      <label for="noticeSubject">제목</label>
+      <input type="text" id="noticeSubject" name="noticeSubject" class="form-control" th:value="${notice.subject}" readonly>
     </div>
     <div>
-      <label for="name" >작성자</label>
-      <input type="text" id="name" name="name" class="form-control" value="작성자"  th:value="${notice.name}" readonly>
+      <label for="name">작성자</label>
+      <input type="text" id="name" name="name" class="form-control" th:value="${notice.name}" readonly>
     </div>
     <div>
-      <label for="viewcnt" >조회수</label>
-      <input type="text" id="viewcnt" name="viewcnt" class="form-control" value="10" th:value="${notice.viewcnt}" readonly>
+      <label for="viewcnt">조회수</label>
+      <input type="text" id="viewcnt" name="viewcnt" class="form-control" th:value="${notice.viewcnt}" readonly>
     </div>
-
     <div>
-      <label for="createdDate" >등록일</label>
-      <input type="text" id="createdDate" name="createdDate" class="form-control" value="10" th:value="${notice.createddate}" readonly>
+      <label for="createdDate">등록일</label>
+      <input type="text" id="createdDate" name="createdDate" class="form-control" th:value="${notice.createdDate}" readonly>
     </div>
-
     <div>
-      <label for="contents" >글 내용</label>
-      <input type="text" id="contents" name="contents" class="form-control" value="10" th:value="${notice.contents}" readonly>
+      <label for="contents">글 내용</label>
+      <textarea id="contents" name="contents" class="form-control" th:text="${notice.contents}" readonly></textarea>
     </div>
 
     <hr class="my-4">
@@ -47,29 +43,21 @@
     <div class="row">
       <div class="col">
         <button class="w-100 btn btn-primary btn-lg"
-                onclick="location.href='editForm.html'"
                 th:onclick="|location.href='@{/notices/{uid}/edit(uid=${notice.id})}'|"
-                type="button" >상품 수정</button>
+                type="button">수정</button>
       </div>
       <div class="col">
         <button class="w-100 btn btn-secondary btn-lg"
-                onclick="location.href='items.html'"
-                th:onclick="|location.href='@{/notices/notices}'|"
-                type="button" >목록으로</button>
+                th:onclick="|location.href='@{/notices}'|"
+                type="button">목록으로</button>
       </div>
-
       <div class="col">
         <button class="w-100 btn btn-secondary btn-lg"
-                onclick="location.href='items.html'"
                 th:onclick="|location.href='@{/notices/{uid}/delete(uid=${notice.id})}'|"
-                type="button" >삭제</button>
+                type="button">삭제</button>
       </div>
     </div>
-
   </div> <!-- /container -->
   </body>
-
 </th:block>
 </html>
-
-

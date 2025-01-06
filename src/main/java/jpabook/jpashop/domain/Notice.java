@@ -17,6 +17,6 @@ public class Notice  {
     private String contents;
     private String name;
     private String viewcnt;
-    private String createddate;
+    private String createdDate;
 
 }

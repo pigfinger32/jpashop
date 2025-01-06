@@ -6,10 +6,10 @@
 
 <th:block layout:fragment="content">
   <!-- Begin Page Content -->
-  <body >
+  <body>
   <div class="container" style="max-width: 1000px">
     <div class="py-5 text-center">
-      <h2 >공지사항</h2>
+      <h2>공지사항</h2>
     </div>
 
     <div class="row">
@@ -18,7 +18,7 @@
                 onclick="location.href='addForm.html'"
                 sec:authorize="hasRole('ADMIN')"
                 th:onclick="|location.href='notices/add'|"
-                type="button" >글 등록</button>
+                type="button">글 등록</button>
       </div>
     </div>
     <hr class="my-4">
@@ -26,21 +26,20 @@
       <table class="table">
         <thead>
         <tr>
-          <th >ID</th>
-          <th >제목</th>
-          <th >작성자</th>
-          <th >조회수</th>
-          <th >등록일</th>
-
+          <th style="width: 10%;">ID</th>
+          <th style="width: 40%;">제목</th> <!-- 제목 컬럼을 40%로 설정 -->
+          <th style="width: 20%;">작성자</th>
+          <th style="width: 10%;">조회수</th> <!-- 조회수 컬럼을 10%로 설정 -->
+          <th style="width: 20%;">등록일</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="notice : ${notices}">
-          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>        
+          <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.id}">글 ID</a></td>
           <td><a href="item.html" th:href="@{/notices/{uid}(uid=${notice.id})}" th:text="${notice.subject}">제목</a></td>
           <td th:text="${notice.name}">작성자</td>
           <td th:text="${notice.viewcnt}">조회수</td>
-          <td th:text="${notice.createddate}">등록일</td>
+          <td th:text="${notice.createdDate}">등록일</td>
         </tr>
         </tbody>
       </table>
@@ -51,4 +50,3 @@
   </body>
 </th:block>
 </html>
-

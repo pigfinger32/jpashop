@@ -33,7 +33,7 @@ public class NoticeRepository {
     }
 
     public List<Notice> findAll() {
-        return em.createQuery("select n from Notice n", Notice.class)
+        return em.createQuery("select n from Notice n order by n.id desc", Notice.class)
                 .getResultList();
     }
 
