@@ -26,6 +26,9 @@
             <div style="text-align : center;" >
                 <img src="assets/img/yeasuFlagMap2.png" width="867" height="611" alt="테스트이미지" />                
             </div>
+            
+            <!-- 지도 추가 -->
+            <div id="map" style="width: 100%; height: 500px; margin-top: 20px;"></div>
 
             <table class="table table-striped">
                 <thead>
@@ -123,7 +126,42 @@
         </form>
     </div>
     
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f"></script>
+    
     </body>
+    
+    <script>
+        var mapContainer = document.getElementById('map');
+        var mapOptions = {
+            center: new kakao.maps.LatLng(34.76115809915164, 127.66235695810306), // 지도의 중심 좌표
+            level: 3 // 지도의 확대 레벨
+        };
+
+        var map = new kakao.maps.Map(mapContainer, mapOptions);
+        
+        var markerData = [
+            { title: '위치 1', lat: 34.761, lng: 127.662 },
+            { title: '위치 2', lat: 34.762, lng: 127.663 },
+            { title: '위치 3', lat: 34.763, lng: 127.664 }
+        ];
+
+        function addMarker(data) {
+            var position = new kakao.maps.LatLng(data.lat, data.lng);
+            var marker = new kakao.maps.Marker({
+                position: position,
+                title: data.title
+            });
+
+            marker.setMap(map);
+
+            kakao.maps.event.addListener(marker, 'click', function() {
+                map.setCenter(position);
+            });
+        }
+
+        markerData.forEach(addMarker);
+    </script>
+    
     <script th:inline="javascript">
 		
 		var startDate = [[${startDate}]];
