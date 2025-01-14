@@ -2,33 +2,32 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="layout">
-<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
-
 <th:block layout:fragment="content">
-    <!-- Begin Page Content -->
-    <body id="page-top" >
+    <body id="page-top">
     <div class="container">
         <div>
             <div>
                 <form th:object="${orderSearch}" class="form-inline">
                     <label for="date">날짜를 선택하세요:
-                        <input type="date"
-                               id="date"
-                               name="startDate"
-                               max="2040-06-20"
-                               min="2022-07-01"
-                               value="2077-06-15"
-                               th:field="*{findDate}" class="form-control">
+                        <input type="date" id="date" name="startDate" max="2040-06-20" min="2022-07-01" value="2077-06-15" th:field="*{findDate}" class="form-control">
                     </label>
                     <button type="submit" class="btn btn-primary mb-2">검색</button>
                 </form>
             </div>
-            <div style="text-align : center;" >
-                <img src="assets/img/yeasuFlagMap2.png" width="867" height="611" alt="테스트이미지" />                
+            <div style="text-align: center;">
+                <img src="assets/img/yeasuFlagMap2.png" width="867" height="611" alt="테스트이미지" />
             </div>
-            
-            <!-- 지도 추가 -->
-            <div id="map" style="width: 100%; height: 500px; margin-top: 20px;"></div>
+
+            <div style="display: flex;">
+                <!-- 왼쪽 마커 리스트 -->
+                <div id="markerList" style="width: 250px; height: 500px; border: 1px solid #ccc; padding: 10px; margin-right: 20px; overflow-y: auto;">
+                    <h4>마커 리스트</h4>
+                    <ul id="markerItems"></ul>
+                </div>
+
+                <!-- 지도 추가 -->
+                <div id="map" style="width: 100%; height: 500px; margin-top: 20px;"></div>
+            </div>
 
             <table class="table table-striped">
                 <thead>
@@ -39,7 +38,6 @@
                     <th>총수량</th>
                     <th>현재게시수량</th>
                     <th>잔여수량</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -56,224 +54,242 @@
 
         </div>
         <form role="form" action="/order" method="post" onsubmit="return checkItemsBeforeSubmit();">
-            <label for="date" style="font-size=10px;display:none " >날짜를 선택하세요:
-                <input type="date"
-                       id="startDate"
-                       name="startDate"
-                       max="2040-06-20"
-                       min="2022-07-01"
-                       value="2077-06-15"
-                       class="form-control"
-                       style="font-size=10px;display:none ">
-            </label>
-            <div class="form-group">
-                <select name="memberId" id="member" class="form-control" style="font-size=10px;display:none ">                    
-                    <option value="" style="font-size=10px;display:none ">회원선택</option>
-                    <option th:each="member : ${members}"
-                            th:value="${member.id}"
-                            th:text="${member.name}" />
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="text" name="name" class="form-control" id="name"
-                       placeholder="공연명을 입력하세요.">
-            </div>
-            <div class="form-group">
-                <select name="itemId" id="item" class="form-control" >
-                    <option value="">구간선택</option>
-                    <option th:each="item : ${items}"
-                            th:value="${item.id}"
-                            th:text="${item.name}" />
-                </select>
-            </div>
-            <div class="form-group">
-                <select name="count" id="count" class="form-control">
-                    <option value='' selected>-- 주문 수량을 선택하세요 --</option>
-                    <option value=5>5</option>
-                    <option value=10>10</option>
-                    <option value=15>15</option>
-                    <option value=20>20</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="count">주문기간(일)</label>
-
-                <input type="radio" id="15Day" name="term" value="15">
-                <label for="15Day">15Day</label>
-                <input type="radio" id="30Day" name="term" value="30" checked>
-                <label for="30Day">30Day</label>
-                <input class='btn btn-default remove-button' style="float: right;" type="button"  value="추가" onclick="add_textbox()">
-            </div>
-            <!-- 아이템 추가 버튼 -->
-            <div id="newItem">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th style="text-align: center;">아이템(구간)</th>
-                        <th style="text-align: center;">주문수량</th>
-                        <th style="text-align: center;">주문기간(일)</th>
-                    </tr>
-                    </thead>
-                </table>
-            </div>
-            <!-- 아이템 추가 버튼 -->
-            </ul>
-            <ul id="selected-result">
-            </ul>
-            <div id="total-price">총 금액 : <span></span></div>
-
+            <!-- 추가 폼 내용 생략 -->
             <button type="submit" class="btn btn-primary">예약하기</button>
         </form>
     </div>
-    
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f"></script>
-    
-    </body>
-    
+
+    <!-- 카카오 지도 API 스크립트 로드 -->
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&libraries=services"></script>
+
     <script>
-        var mapContainer = document.getElementById('map');
-        var mapOptions = {
-            center: new kakao.maps.LatLng(34.76115809915164, 127.66235695810306), // 지도의 중심 좌표
-            level: 3 // 지도의 확대 레벨
-        };
-
-        var map = new kakao.maps.Map(mapContainer, mapOptions);
-        
-        var markerData = [
-            { title: '위치 1', lat: 34.761, lng: 127.662 },
-            { title: '위치 2', lat: 34.762, lng: 127.663 },
-            { title: '위치 3', lat: 34.763, lng: 127.664 }
+	    var mapContainer = document.getElementById('map');
+	    var mapOptions = {
+	        center: new kakao.maps.LatLng(34.76115809915164, 127.66235695810306),
+	        level: 7
+	    };
+	
+	    var map = new kakao.maps.Map(mapContainer, mapOptions);
+	
+	    // 마커 데이터 설정 (출발지, 경유지, 도착지)
+	    var markerData = [
+	        { title: '1구간 죽림부영1차 - 시청', start: { lat: 34.760894471170936, lng: 127.63051606033149 }, end: { lat: 34.76138848025408, lng: 127.66226049611164 } }, // 죽림부영1차 - 시청
+	        { title: '2구간 롯데마트 - 도원사거리', start: { lat: 34.77712905887084, lng: 127.65183315250596 }, end: { lat: 34.76108013580642, lng: 127.6559448787141 } }, // 롯데마트 - 도원사거리
+	        { 
+	            title: '3구간 쌍봉사거리 - 망마경기장', 
+	            start: { lat: 34.767313067159186, lng: 127.66264643664994 }, // 쌍봉사거리
+	            via: { lat:  34.76126108952319, lng: 127.66330803248847 }, // 시청 (경유지)
+	            end: { lat: 34.755935182123096, lng: 127.67454758385038 } // 망마경기장
+	        },
+            // { title: '4구간 흥국실내체육관4거리교차로 - 선소로', start: { lat: 34.7674, lng: 127.6680 }, end: { lat: 34.7700, lng: 127.6700 } }, // 흥국실내체육관
+            // { title: '5구간 도원사거리 - 소호요트장', start: { lat: 34.7690, lng: 127.6700 }, end: { lat: 34.7720, lng: 127.6720 } }, // 도원사거리
+            // { title: '6구간 선소대교입구 - 예울마루 - 웅천자이아파트', start: { lat: 34.7710, lng: 127.6720 }, end: { lat: 34.7740, lng: 127.6750 } }, // 선소대교입구
+            // { title: '7구간 제일모직사택(구) - 웅천CGV - 웅천자이아파트', start: { lat: 34.7730, lng: 127.6740 }, end: { lat: 34.7760, lng: 127.6780 } }, // 제일모직사택
+            // { title: '8구간 웅천CGV - 송현3거리 - 하수종말처리장', start: { lat: 34.7750, lng: 127.6760 }, end: { lat: 34.7780, lng: 127.6800 } }, // 웅천CGV
+            // { title: '9구간 송현삼거리 - 여서동로타리 - 한재터널', start: { lat: 34.7790, lng: 127.6800 }, end: { lat: 34.7800, lng: 127.6830 } }, // 송현삼거리
+            // { title: '10구간 시전삼거리 - 11호광장', start: { lat: 34.7810, lng: 127.6820 }, end: { lat: 34.7820, lng: 127.6850 } }, // 시전삼거리
+            // { title: '11구간 11호광장 - 여수터미널', start: { lat: 34.7830, lng: 127.6840 }, end: { lat: 34.7840, lng: 127.6870 } }, // 11호광장
+            // { title: '12구간 엑스포역 - 오동도입구', start: { lat: 34.7850, lng: 127.6860 }, end: { lat: 34.7860, lng: 127.6890 } }, // 엑스포역
+            // { title: '13구간 서교동로타리 - 이순신광장 - 낭만포차거리', start: { lat: 34.7870, lng: 127.6880 }, end: { lat: 34.7880, lng: 127.6910 } }, // 서교동로타리
+            // { title: '14구간 서교동로타리 - 월호동 주민센터', start: { lat: 34.7890, lng: 127.6920 }, end: { lat: 34.7900, lng: 127.6950 } } // 서교동로타리
         ];
+	
+	    var markers = [];
+	    var polyline = null;
+	
+	    // 마커 추가 함수
+	    function addMarker(data, index) {
+	        var position = new kakao.maps.LatLng(data.start.lat, data.start.lng);
+	        var marker = new kakao.maps.Marker({
+	            position: position,
+	            title: data.title
+	        });
+	
+	        marker.setMap(map);
+	        markers.push(marker);
+	
+	        // 마커 클릭 시 경로 그리기
+	        kakao.maps.event.addListener(marker, 'click', function() {
+	            if (data.via) {
+	                drawRoute(data.start, data.via, data.end); // 출발지, 경유지, 도착지
+	            } else {
+	                drawRoute(data.start, null, data.end); // 출발지와 도착지
+	            }
+	        });
+	
+	        // 리스트에 마커 추가
+	        var listItem = document.createElement('li');
+	        listItem.textContent = data.title;
+	        listItem.style.cursor = 'pointer';
+	        listItem.onclick = function() {
+	            if (data.via) {
+	                drawRoute(data.start, data.via, data.end); // 출발지, 경유지, 도착지
+	            } else {
+	                drawRoute(data.start, null, data.end); // 출발지와 도착지
+	            }
+	        };
+	        document.getElementById('markerItems').appendChild(listItem);
+	    }
+	
+	    // 경로 그리기 함수
+		function drawRoute(start, via, end) {
+		    if (polyline) {
+		        polyline.setMap(null); // 이전 경로 삭제
+		    }
+		
+		    // 출발지, 경유지, 도착지 좌표
+		    var startLatLng = `${start.lng},${start.lat}`;
+		    var endLatLng = `${end.lng},${end.lat}`;
+		    
+		    var viaLatLng = via ? `${via.lng},${via.lat}` : ''; // 경유지가 있는 경우에만 추가
+		
+		    // 카카오 REST API를 사용하여 경로 요청
+		    var apiUrl = `https://apis-navi.kakaomobility.com/v1/directions?origin=${startLatLng}${via ? `&via=${viaLatLng}` : ''}&destination=${endLatLng}`;
+		    var REST_API_KEY = 'cb6bb524c6246946ca58cebae8122f32'; // REST API 키
+		
+		    fetch(apiUrl, {
+		        method: 'GET',
+		        headers: {
+		            'Authorization': `KakaoAK ${REST_API_KEY}`,
+		            'Content-Type': 'application/json'
+		        }
+		    })
+		    .then(response => {
+		        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+		        return response.json();
+		    })
+		    .then(data => {
+		        if (data.routes.length > 0) {
+		            var routePath = data.routes[0].sections.flatMap(section =>
+		                section.roads.flatMap(road =>
+		                    road.vertexes.map((v, i) =>
+		                        i % 2 === 0 ? new kakao.maps.LatLng(road.vertexes[i + 1], v) : null
+		                    )
+		                )
+		            ).filter(v => v);
+		
+		            // 경로를 Polyline으로 지도에 표시
+		            polyline = new kakao.maps.Polyline({
+		                path: routePath,
+		                strokeWeight: 5, // 선의 두께
+		                strokeColor: '#FF0000', // 선의 색깔 (빨간색)
+		                strokeOpacity: 1, // 선의 불투명도
+		                strokeStyle: 'solid' // 선의 스타일
+		            });
+		
+		            polyline.setMap(map); // 경로 지도에 표시
+		        } else {
+		            console.error('길찾기 실패: 경로가 없습니다.');
+		        }
+		    })
+		    .catch(error => {
+		        console.error('길찾기 요청 실패:', error);
+		    });
+		}
+	
+	    // 모든 마커 추가
+	    markerData.forEach(addMarker);
+	</script>
+    </body>
 
-        function addMarker(data) {
-            var position = new kakao.maps.LatLng(data.lat, data.lng);
-            var marker = new kakao.maps.Marker({
-                position: position,
-                title: data.title
-            });
+    <script th:inline="javascript">
+        var startDate = [[${startDate}]];
 
-            marker.setMap(map);
-
-            kakao.maps.event.addListener(marker, 'click', function() {
-                map.setCenter(position);
-            });
+        if (startDate){
+            document.getElementById('date').value = startDate;
+            document.getElementById('startDate').value = startDate;
+        } else {
+            document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+            document.getElementById('startDate').value = new Date().toISOString().substring(0, 10);
         }
 
-        markerData.forEach(addMarker);
+        function changItem(idx) {
+            var target = document.getElementById('item');   //대상 셀렉트 id
+            target.options[idx].selected = true;   //options에 대상 option의 index를 넣으시면 됩니다.
+        }
+
+        const remove = (obj) => {
+            document.getElementById('newItem').removeChild(obj.parentNode);
+            document.getElementById('itemCount').removeChild(obj.parentNode);
+        }
+
+        function checkItemsBeforeSubmit() {
+            var addItems = document.getElementsByName('addItem'); // 'addItem'인 input 요소들을 모두 가져옵니다.
+
+            if (!addItems.length) { // 가져온 'addItem' 요소들의 개수가 0이라면
+                alert('상품을 추가해주세요.');
+                return false; // 폼 제출을 중지합니다.
+            }
+
+            return true; // 폼 제출을 계속합니다.
+        }
+
+        const add_textbox = () => {
+            const newItem = document.getElementById("newItem");
+            const itemCount = document.getElementById("itemCount");
+
+            // 유효성 검사 1. 입력 유효성 검사
+            var tmpOrderName = document.getElementById("name").value.replace(" ", "");
+            var tmpCount = document.getElementById("count").value;
+            var tmpTerm = document.querySelector('input[name="term"]:checked').value;
+            var tmpItemId = document.getElementById("item").value;
+            if (tmpOrderName === "") {
+                alert("공연명을 입력하세요.");
+                return;
+            }
+            if (tmpItemId === "") {
+                alert("구간을 선택하세요.");
+                return;
+            }
+            if (tmpCount === "") {
+                alert("주문 수량을 입력하세요.");
+                return;
+            }
+            if (tmpTerm === "") {
+                alert("주문 기간을 선택하세요.");
+                return;
+            }
+
+            // 유효성 검사 2. 같은 아이템을 선택하면 삭제하고 넣으라고 되돌려 보내기
+            // 기존에 동일한 구간이 추가되었는지 확인
+            var existingItems = newItem.getElementsByTagName('p');
+            for (var i = 0; i < existingItems.length; i++) {
+                var existingItemId = existingItems[i].getElementsByTagName('input')[3].value.split('%')[3];
+                if (existingItemId === tmpItemId) {
+                    alert("이미 추가된 구간입니다. 삭제 후 추가하세요.");
+                    return;
+                }
+            }
+
+            var newP = document.createElement('p');
+            newP.className = "input-group"; // Bootstrap의 input-group 클래스를 사용합니다.
+
+            //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간 -->
+            var tmpDate = document.getElementById("date").value;
+            var tmpMemberId = document.getElementById("member").value; // memberID 고민해 어디다 넣을지.
+            var tmpOrderName = document.getElementById("name").value;
+            tmpOrderName.replace(" ", "");
+            var tmpItemId = document.getElementById("item").value;
+            var target = document.getElementById("item");
+            var tmpItemText = target.options[target.selectedIndex].text;
+            var tmpCount = document.getElementById("count").value;
+            var tmpTerm = document.querySelector('input[name="term"]:checked').value;
+            // %로 구분하여 문자열 저장함.
+            var addString = tmpDate + "%" + tmpMemberId + "%" + tmpOrderName + "%" + tmpItemId + "%" + tmpCount + "%" + tmpTerm;
+
+            // 생성되는 input에 class='form-control' 추가. 각 input 및 button 요소의 스타일을 조정합니다.
+            newP.innerHTML = "<input readonly type='text' size='17' class='form-control input-item' style='text-align:center' value=" + tmpItemText + ">" +
+                "<input readonly type='text' size='17' class='form-control input-item' style='text-align:center' value=" + tmpCount + ">" +
+                "<input readonly type='text' size='20' class='form-control input-item' style='text-align:center' value=" + tmpTerm + ">" +
+                "<input type='hidden' name='addItem' value=" + addString + ">" +
+                "<input type='button' class='btn btn-default remove-button' value='삭제' onclick='remove(this)'>";
+
+            newItem.appendChild(newP);
+            itemCount.appendChild(newP);
+        }
     </script>
-    
-    <script th:inline="javascript">
-		
-		var startDate = [[${startDate}]];
-		
-		if (startDate){
-		    document.getElementById('date').value = startDate;
-		    document.getElementById('startDate').value = startDate;
-		} else{
-		    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
-		    document.getElementById('startDate').value = new Date().toISOString().substring(0, 10);
-		}
-	
-	
-		function changItem(idx) {
-	      var target = document.getElementById('item');   //대상 셀렉트 id
-	      target.options[idx].selected = true;   //options에 대상 option의 index를 넣으시면 됩니다.
-	    }
-	
-	    const remove = (obj) => {
-	        document.getElementById('newItem').removeChild(obj.parentNode);
-	        document.getElementById('itemCount').removeChild(obj.parentNode);
-	    }
-	    
-	    function checkItemsBeforeSubmit() {
-		    var addItems = document.getElementsByName('addItem'); // 'addItem'인 input 요소들을 모두 가져옵니다.
-		    
-		    if(!addItems.length) { // 가져온 'addItem' 요소들의 개수가 0이라면
-		        alert('상품을 추가해주세요.');
-		        return false; // 폼 제출을 중지합니다.
-		    }
-		    
-		    return true; // 폼 제출을 계속합니다.
-		}
-	
-	    const add_textbox = () => {
-			
-			const newItem = document.getElementById("newItem");
-	        const itemCount = document.getElementById("itemCount");
-			
-			//유효성 검사 1. 입력 유효성 검사
-			var tmpOrderName = document.getElementById("name").value.replace(" ","");
-		    var tmpCount = document.getElementById("count").value
-		    var tmpTerm = document.querySelector('input[name="term"]:checked').value;
-		    var tmpItemId = document.getElementById("item").value
-		    if (tmpOrderName === "") {
-		        alert("공연명을 입력하세요.");
-		        return;
-		    }
-		    if (tmpItemId === "") {
-		        alert("구간을 선택하세요.");
-		        return;
-		    }
-		    if (tmpCount === "") {
-		        alert("주문 수량을 입력하세요.");
-		        return;
-		    }
-		    if (tmpTerm === "") {
-		        alert("주문 기간을 선택하세요.");
-		        return;
-		    }
-		    
-		    //유효성 검사 2.같은 아이템을 선택하면 삭제하고 넣으라고 되돌려 보내기
-		    // 기존에 동일한 구간이 추가되었는지 확인
-		    var existingItems = newItem.getElementsByTagName('p');
-		    for (var i = 0; i < existingItems.length; i++) {
-		        var existingItemId = existingItems[i].getElementsByTagName('input')[3].value.split('%')[3];
-		        if (existingItemId === tmpItemId) {
-		            alert("이미 추가된 구간입니다. 삭제 후 추가하세요.");
-		            return;
-		        }
-		    }
-		    
-		    
-	        var newP = document.createElement('p');
-    		newP.className = "input-group"; // Bootstrap의 input-group 클래스를 사용합니다.
-	        
-	        //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간 -->
-	        var tmpDate = document.getElementById("date").value
-	        var tmpMemberId = document.getElementById("member").value //memberID 고민해 어디다 넣을지.
-	        var tmpOrderName = document.getElementById("name").value;
-	        tmpOrderName.replace(" ","")
-	        var tmpItemId = document.getElementById("item").value
-	        var target = document.getElementById("item");
-	        var tmpItemText = target.options[target.selectedIndex].text;
-	        var tmpCount = document.getElementById("count").value
-	        var tmpTerm = document.querySelector('input[name="term"]:checked').value;
-	        //%로 구분하여 문자열 저장함.
-	        var addString = tmpDate + "%" + tmpMemberId + "%" + tmpOrderName + "%" + tmpItemId + "%" + tmpCount + "%" + tmpTerm
-	
-	        // 생성되는 input에 class='form-control' 추가. 각 input 및 button 요소의 스타일을 조정합니다.
-		    newP.innerHTML = "<input readonly type='text' size='17' class='form-control input-item' style='text-align:center' value="+tmpItemText+ ">" +
-		                     "<input readonly type='text' size='17' class='form-control input-item' style='text-align:center' value="+tmpCount+ ">" +
-		                     "<input readonly type='text' size='20' class='form-control input-item' style='text-align:center' value="+tmpTerm+ ">" +
-		                     "<input type='hidden' name='addItem' value="+addString+ ">" +
-		                     "<input type='button' class='btn btn-default remove-button' value='삭제' onclick='remove(this)'>";
-
-    newItem.appendChild(newP);
-    itemCount.appendChild(newP);
-	
-	    }
-
-	</script>
-<style>
-#testImg{
-  position : relative;
-  width: 867;
-  height: 611;
-  display: flex;
-  justify-content: center;
-  text-align : center;
-}
-</style>
+    </body>
 </th:block>
 </html>
 
+               
