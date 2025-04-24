@@ -5,6 +5,8 @@ import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.SessionConst;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -20,14 +23,18 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class MemberController {
 
     private final MemberService memberService;
 
     @GetMapping("/login")
     public String login() {
+    	System.out.println("abc");
         return "login_form";
     }
+    
+    
 
     @GetMapping("/members/new")
     public String createForm(Model model) {
@@ -81,27 +88,27 @@ public class MemberController {
 //        return "members/login";
 //    }
 //
-//    @PostMapping("members/loginDo")
-//    public String loginDo(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletRequest request ) {
-//        if (bindingResult.hasErrors()) {
-//            return "/members/login";
-//        }
-//        List<Member> loginMemberList = memberService.login(form.getLoginId(), form.getPw());
-//
-//
-//        if (loginMemberList.isEmpty()) {
-//            bindingResult.reject("loginFail", "아이디 또는 비밀번호가 맞지 않습니다.");
-//            return "/members/login";
-//        }
-//
-//        //로그인 성공 처리
-//        //세션이 있으면 있는 세션 반환, 없으면 신규 세션을 생성
-//        HttpSession session = request.getSession();
-//        //세션에 로그인 회원 정보 보관
-//        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMemberList.get(0));
-//
-//        return "redirect:/";
-//    }
+    @PostMapping("members/loginDo")
+    public String loginDo(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletRequest request ) {
+        if (bindingResult.hasErrors()) {
+            return "/members/login";
+        }
+        List<Member> loginMemberList = memberService.login(form.getLoginId(), form.getPw());
+
+
+        if (loginMemberList.isEmpty()) {
+            bindingResult.reject("loginFail", "아이디 또는 비밀번호가 맞지 않습니다.");
+            return "/members/login";
+        }
+
+        //로그인 성공 처리
+        //세션이 있으면 있는 세션 반환, 없으면 신규 세션을 생성
+        HttpSession session = request.getSession();
+        //세션에 로그인 회원 정보 보관
+        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMemberList.get(0));
+
+        return "redirect:/";
+    }
 //
 //    @PostMapping("members/logout")
 //    public String logoutV3(HttpServletRequest request) {
