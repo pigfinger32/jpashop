@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout">
+<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
+
+<th:block layout:fragment="content">
+    <!-- Begin Page Content -->
+    <body id="page-top" >
+    <div class="container">
+        <div>
+            <div>
+                <form th:object="${orderSearch}" class="form-inline">
+                    <label for="date">날짜를 선택하세요:
+                        <input type="date"
+                               id="date"
+                               max="2040-06-20"
+                               min="2022-07-01"
+                               value="2077-06-15"
+                               th:field="*{findDate}" class="form-control">
+                    </label>
+                    <div class="form-group mb-2">
+                        <!-- 회원명 검색 필드. ReportResDTO에 회원 이름 필드가 없어서 결과 테이블에 직접 표시하기는 어렵습니다. -->
+                        <input style="font-size: 10px;" type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>
+                    </div>
+                    <div class="form-group mb-2">
+                        <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>
+                    </div>
+                    <div class="form-group mx-sm-1 mb-2">
+                        <select th:field="*{orderStatus}" class="form-control">
+                            <option value="">주문상태</option>
+                            <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
+                                    th:value="${status}"
+                                    th:text="${status.name()}">option <!-- Enum 값을 문자열로 출력 -->
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">검색</button>
+                </form>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>주문 시작일</th>
+                    <th>회원 ID</th>
+                    <th>상품 ID</th>
+                    <th>공연명</th>
+                    <th>가격</th>
+                    <th>수량</th>
+                    <th>상태</th>
+                    <th>공연 시작 시간</th>
+                    <th>공연 종료 시간</th>
+                    <th>주문 합계 금액</th>
+                    <th></th> <!-- 취소 버튼 컬럼 -->
+                </tr>
+                </thead>
+                <tbody>
+                <!-- reportList를 순회합니다. -->
+                <tr th:each="report : ${reportList}">
+                    <!-- 롤업 ROW (memberId가 null인 경우)와 일반 ROW를 구분하여 표시 -->
+
+                    <!-- 주문 시작일 -->
+                    <td th:text="${report.memberId != null ? report.startDate : '-'}"></td>
+                    <!-- 회원 ID -->
+                    <td th:text="${report.memberId != null ? report.memberId : '-'}"></td>
+                    <!-- 상품 ID -->
+                    <td th:text="${report.memberId != null ? report.itemId : '-'}"></td>
+                    <!-- 공연명 -->
+                    <td th:text="${report.memberId != null ? report.orderName : '-'}"></td>
+                    <!-- 가격: 쉼표 포맷 적용, 롤업 ROW는 '-' 표시 -->
+                    <td th:text="${report.memberId != null ? #numbers.formatInteger(report.orderPrice, 0, 'COMMA') : '-'}"></td>
+                    <!-- 수량 -->
+                    <td th:text="${report.memberId != null ? report.count : '-'}"></td>
+                    <!-- 상태: Enum name 출력, 롤업 ROW는 '-' 표시 -->
+                    <td th:text="${report.memberId != null ? (report.status != null ? report.status.name() : '-') : '-'}"></td>
+                    <!-- 공연 시작 시간 -->
+                    <td th:text="${report.memberId != null ? report.orderStartDate : '-'}"></td>
+                    <!-- 공연 종료 시간: 롤업 ROW일 때 '합계' 표시 -->
+                    <td th:text="${report.memberId != null ? report.orderEndDate : '합계'}"></td>
+                    <!-- 주문 합계 금액: 쉼표 포맷 적용 (롤업 ROW 포함) -->
+                    <td th:text="${#numbers.formatInteger(report.orderSum, 0, 'COMMA')}"></td>
+
+                    <!-- 취소 버튼 컬럼: 일반 ROW에만 표시 -->
+                    <td th:if="${report.memberId != null}">
+                        <!-- 취소 버튼 로직 (ReportResDTO에 orderId 필드를 추가해야 활성화 가능) -->
+                        <!--
+                        <a th:if="${report.status != null and report.status.name() == 'ORDER'}" href="#"
+                           th:href="'javascript:cancel('+${report.orderId}+')'"
+                           class="btn btn-danger">CANCEL</a>
+                        -->
+                    </td>
+                    <td th:if="${report.memberId == null}">
+                         <!-- 총합 ROW에는 버튼을 표시하지 않음 -->
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- /container -->
+
+    </body>
+    <script th:inline="javascript">
+// 날짜 입력 필드 기본값 설정 스크립트
+var startDate = [[${startDate}]]; // 컨트롤러에서 모델에 담아준 startDate (orderSearch.findDate) 사용
+var dateInput = document.getElementById('date');
+if (startDate) {
+    dateInput.value = startDate;
+} else {
+    // startDate가 없으면 오늘 날짜로 설정
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+    var dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = yyyy + '-' + mm + '-' + dd;
+}
+
+
+    // 취소 버튼 동작 스크립트 (현재 DTO에 orderId가 없어서 동작하지 않습니다. DTO 수정 필요)
+    /*
+    function cancel(id) {
+        var form = document.createElement("form");
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "/myOrders/" + id + "/cancel"); // /myOrders/{orderId}/cancel 경로 사용
+        document.body.appendChild(form);
+        form.submit();
+    }
+    */
+
+</script>
+</th:block>
+</html>

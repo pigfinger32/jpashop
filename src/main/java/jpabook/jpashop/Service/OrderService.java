@@ -128,7 +128,12 @@ public class OrderService {
         for(OrderDto orderDto : orderDtoList) {
             //주문상품 생성
             Item item = itemRepository.findOne(orderDto.getItemId());
-            orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount()));
+            if(term == 15) {
+            	orderItems.add(OrderItem.OrderItem(item, item.getPrice()/2, orderDto.getCount())); //주문기간이 15일이면 가격의 2/1 가격이 입력됨.
+            } else {
+            	orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount())); //주문기간이 30일이면 정가격
+            }
+            
         }
         //주문 생성
         Order order = Order.createOrder(member, orderName,orderStartDate, orderEndDate, orderItems);

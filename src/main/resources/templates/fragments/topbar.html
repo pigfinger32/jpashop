@@ -60,9 +60,17 @@
 
             <!-- Nav Item - Admin Section -->
             <li class="nav-item dropdown no-arrow mx-1">
-                <a class="nav-link" sec:authorize="hasRole('ADMIN')" onclick="location.href='/items'">
+                <a class="nav-link" sec:authorize="hasRole('ADMIN')" onclick="location.href='/items'"style="cursor: pointer;">
                     <i class="far fa-eye"></i>
                     <span>구간 등록</span>
+                </a>
+            </li>
+            
+            <!-- Nav Item - Admin Section -->
+            <li class="nav-item dropdown no-arrow mx-1">
+                <a class="nav-link" sec:authorize="hasRole('ADMIN')" onclick="location.href='/report'"style="cursor: pointer;">
+                    <i class="far fa-eye"></i>
+                    <span>가로기 결산</span>
                 </a>
             </li>
 

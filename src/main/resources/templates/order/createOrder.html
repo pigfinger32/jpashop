@@ -54,7 +54,7 @@
 
         </div>
         <form role="form" action="/order" method="post" onsubmit="return checkItemsBeforeSubmit();">
-            <label for="date" style="font-size=10px;display:none " >날짜를 선택하세요:
+            <label for="date" style="font-size:10px;display:none " >날짜를 선택하세요:
                 <input type="date"
                        id="startDate"
                        name="startDate"
@@ -62,11 +62,11 @@
                        min="2022-07-01"
                        value="2077-06-15"
                        class="form-control"
-                       style="font-size=10px;display:none ">
+                       style="font-size:10px;display:none ">
             </label>
             <div class="form-group">
-                <select name="memberId" id="member" class="form-control" style="font-size=10px;display:none ">                    
-                    <option value="" style="font-size=10px;display:none ">회원선택</option>
+                <select name="memberId" id="member" class="form-control" style="font-size:10px;display:none ">                    
+                    <option value="" style="font-size:10px;display:none ">회원선택</option>
                     <option th:each="member : ${members}"
                             th:value="${member.id}"
                             th:text="${member.name}" />
@@ -258,6 +258,7 @@
 
     <script th:inline="javascript">
         var startDate = [[${startDate}]];
+        
 
         if (startDate){
             document.getElementById('date').value = startDate;
