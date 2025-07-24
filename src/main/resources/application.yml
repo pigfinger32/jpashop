@@ -1,50 +1,21 @@
 spring:
   datasource:
-#    #h2DB
-#    url: jdbc:h2:tcp://localhost/~/jpashop
-#    username: sa
-#    password:
-#    driver-class-name: org.h2.Driver
-#  jpa:
-#    hibernate:
-#      ddl-auto: none
-#    properties:
-#      hibernate:
-#        #        show_sql: true
-#        format_sql: true
-#
-#logging.level:
-#  org.hibernate.SQL: debug
-#  org.hibernate.type: trace
+    # 기존 RDS (flagmysql) 설정은 주석 처리됨
+     url: jdbc:mysql://flagmysql.cpakwuq24j8f.ap-northeast-2.rds.amazonaws.com:3306/jpashop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+     username: root
+     password: 12341234
+     driver-class-name: com.mysql.cj.jdbc.Driver
 
-    #mysql-local
-#    url: jdbc:mysql://localhost:3306/jpabook?useSSL=false&allowPublicKeyRetrieval=true
-#    username: admin
-#    password: 1234
+    # localhost MySQL 설정 (활성화됨)
+#    url: jdbc:mysql://localhost:3306/jpabook?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+#    username: root
+#    password: 12341234!
 #    driver-class-name: com.mysql.cj.jdbc.Driver
-#
-#  jpa:
-#    open-in-view: true
-#    hibernate:
-#      ddl-auto: none
-#      naming:
-#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-#      use-new-id-generator-mappings: false
-#    show-sql: true
-#    properties:
-#      hibernate.format_sql: true
-#      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
-      
-    #mysql-prob
-    url: jdbc:mysql://jpashop.cpakwuq24j8f.ap-northeast-2.rds.amazonaws.com:3306/jpashop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: admin
-    password: 12341234
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: none # 개발 시 ddl-auto: update 사용 가능
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       use-new-id-generator-mappings: false
@@ -53,22 +24,6 @@ spring:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
 
-
 logging:
   level:
     org.hibernate.SQL: debug
-
-#    datasource:
-#      url: jdbc:mariadb://rds엔드포인트:포트명/database이름
-#      username: db계정
-#      password: db계정 비밀번호
-#      driver-class-name: org.mariadb.jdbc.--
-#
-#    jpa:
-#      hibernate:
-#        ddl-auto: none
-#
-#logging:
-#  level:
-#    org.hibernate.SQL: debug
-

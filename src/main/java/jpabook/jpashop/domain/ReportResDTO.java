@@ -10,6 +10,8 @@ public class ReportResDTO {
 	
     private Long memberId; //주문회원
     
+    private String memberName; // *** 새로 추가된 회원명 필드 ***
+    
     private Long itemId; //상품명
 
     private String orderName; //공연명

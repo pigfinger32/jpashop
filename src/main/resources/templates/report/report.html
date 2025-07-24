@@ -42,8 +42,8 @@
                 <thead>
                 <tr>
                     <th>주문 시작일</th>
-                    <th>회원 ID</th>
-                    <th>상품 ID</th>
+                    <th>회원명</th>
+                    <th>구간</th>
                     <th>공연명</th>
                     <th>가격</th>
                     <th>수량</th>
@@ -62,7 +62,7 @@
                     <!-- 주문 시작일 -->
                     <td th:text="${report.memberId != null ? report.startDate : '-'}"></td>
                     <!-- 회원 ID -->
-                    <td th:text="${report.memberId != null ? report.memberId : '-'}"></td>
+                    <td th:text="${report.memberId != null ? report.memberName : '-'}"></td>
                     <!-- 상품 ID -->
                     <td th:text="${report.memberId != null ? report.itemId : '-'}"></td>
                     <!-- 공연명 -->

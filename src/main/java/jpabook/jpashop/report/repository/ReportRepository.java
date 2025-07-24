@@ -27,21 +27,23 @@ public class ReportRepository {
 	        // 네이티브 SQL 쿼리 작성 시작
 	        StringBuilder sql = new StringBuilder();
 	        sql.append("SELECT ");
-	        sql.append("    od.orderStartDate AS startDate, "); // ReportResDTO 필드에 맞게 매핑
-	        sql.append("    od.member_id AS memberId, "); // ReportResDTO 필드에 맞게 매핑
-	        sql.append("    oi.item_id AS itemId, "); // OrderItem의 item_id 사용 (롤업 시 null이 될 수 있음)
-	        sql.append("    od.orderName AS orderName, ");
-	        sql.append("    oi.orderPrice AS orderPrice, "); // OrderItem의 orderPrice 사용 (롤업 시 null이 될 수 있음)
-	        sql.append("    oi.count AS count, "); // OrderItem의 count 사용 (롤업 시 null이 될 수 있음)
-	        sql.append("    od.status AS status, ");
-	        sql.append("    od.orderStartDate AS orderStartDate, ");
-	        sql.append("    od.orderEndDate AS orderEndDate, ");
+	        sql.append("    od.orderStartDate AS startDate, "); // 인덱스 0
+	        sql.append("    od.member_id AS memberId, "); // 인덱스 1
+            sql.append("    m.name AS memberName, ");     // *** 새로 추가된 회원명, 인덱스 2 ***
+	        sql.append("    oi.item_id AS itemId, "); // 인덱스 3 (기존 2에서 이동)
+	        sql.append("    od.orderName AS orderName, "); // 인덱스 4 (기존 3에서 이동)
+	        sql.append("    oi.orderPrice AS orderPrice, "); // 인덱스 5 (기존 4에서 이동)
+	        sql.append("    oi.count AS count, "); // 인덱스 6 (기존 5에서 이동)
+	        sql.append("    od.status AS status, "); // 인덱스 7 (기존 6에서 이동)
+	        sql.append("    od.orderStartDate AS orderStartDate, "); // 인덱스 8 (기존 7에서 이동)
+	        sql.append("    od.orderEndDate AS orderEndDate, "); // 인덱스 9 (기존 8에서 이동)
 	        // 롤업된 총합을 위해 COUNT * ORDERPRICE의 합계를 사용
-	        sql.append("    SUM(oi.count * oi.orderPrice) AS orderSum ");
+	        sql.append("    SUM(oi.count * oi.orderPrice) AS orderSum "); // 인덱스 10 (기존 9에서 이동)
 	        sql.append("FROM ");
 	        sql.append("    orders od ");
 	        sql.append("LEFT JOIN ");
 	        sql.append("    OrderItem oi ON od.order_id = oi.order_id ");
+            sql.append(" JOIN Member m ON od.member_id = m.member_id"); // *** Member 테이블 항상 조인 ***
 
 	        // WHERE 절 조건 추가
 	        boolean isFirstCondition = true;
@@ -57,11 +59,8 @@ public class ReportRepository {
 	            sql.append(" od.status = :status");
 	        }
 
-	        // 회원 이름 검색 (Member 테이블 조인이 필요합니다. 여기서는 orders 테이블에 member_id가 있으므로 직접 사용할 수 있으나, 회원이름으로 검색하려면 Member 테이블 조인이 필요합니다.)
-	        // 회원 이름을 기준으로 검색하려면 orders 테이블과 Member 테이블을 JOIN 해야 합니다.
-	        // SQL 쿼리에 Member 테이블 JOIN 추가
+	        // 회원 이름 검색 (Member 테이블 조인은 위에서 이미 했습니다)
 	        if (StringUtils.hasText(orderSearch.getMemberName())) {
-	             sql.append(" JOIN Member m ON od.member_id = m.member_id"); // Member 테이블 조인
 	            if (isFirstCondition) {
 	                sql.append(" WHERE");
 	                isFirstCondition = false;
@@ -126,32 +125,48 @@ public class ReportRepository {
 	        List<Object[]> resultList = nativeQuery.getResultList();
 	        List<ReportResDTO> dtoList = new ArrayList<>();
 	        
-	        int rowCnt = 1;
+	        int rowCnt = 1; // 행 카운트 초기화
 
 	        for (Object[] row : resultList) {
 	            ReportResDTO dto = new ReportResDTO();
-	            
+
+	            // 현재 행이 결과 리스트의 마지막 행인지 확인 (ROLLUP 결과 행으로 가정)
 	            if(rowCnt == resultList.size()) {
-	            	dto.setOrderEndDate("합계"); // od.orderEndDate
-		            // row[9]는 orderSum int 타입으로 매핑 (SUM 결과는 보통 Long 또는 BigDecimal로 나오므로 형변환 필요)
-		            dto.setOrderSum(row[9] != null ? ((Number) row[9]).intValue() : 0); // SUM(oi.count * oi.orderPrice)
-	            	
+	            	// 마지막 ROW (총합 행):
+	            	// '공연 종료 시간' (새로운 인덱스 9)에 '합계' 문자열 설정
+	            	dto.setOrderEndDate("합계");
+		            // '주문 합계 금액' (새로운 인덱스 10)에 총합 금액 설정
+		            // SUM 결과는 보통 Long 또는 BigDecimal로 나오므로 int로 형변환
+		            dto.setOrderSum(row[10] != null ? ((Number) row[10]).intValue() : 0); // SUM(oi.count * oi.orderPrice)
+
+		            // 나머지 필드들 (0-8)은 여기서 별도로 설정하지 않습니다.
+		            // ReportResDTO 객체가 생성될 때 객체 타입 필드는 null, 기본 타입(int 등)은 0으로 초기화된 상태를 그대로 사용합니다.
+
 	            } else {
-	            	// 결과 컬럼 순서에 맞게 매핑합니다.
-		            // SQL 쿼리의 SELECT 절 순서와 일치해야 합니다.
-		            dto.setStartDate((String) row[0]); // od.orderStartDate
-		            // row[1]은 MemberId Long 타입으로 매핑 시 Long.valueOf(row[1].toString()) 또는 (Long) row[1] 사용 (DB 드라이버에 따라 다름)
-		            dto.setMemberId(row[1] != null ? ((Number) row[1]).longValue() : null); // od.member_id
-		            // row[2]는 ItemId Long 타입으로 매핑
-		            dto.setItemId(row[2] != null ? ((Number) row[2]).longValue() : null); // oi.item_id
-		            dto.setOrderName((String) row[3]); // od.orderName
-		            // row[4]는 orderPrice int 타입으로 매핑
-		            dto.setOrderPrice(row[4] != null ? ((Number) row[4]).intValue() : 0); // oi.orderPrice
-		            // row[5]는 count int 타입으로 매핑
-		            dto.setCount(row[5] != null ? ((Number) row[5]).intValue() : 0); // oi.count
-		            // row[6]은 status String 또는 Enum 타입으로 매핑 (DB에 저장된 형식에 따라)
-		            // String으로 가져와서 Enum으로 변환하거나, 필요에 따라 String으로 그대로 사용
-		            String statusStr = (String) row[6];
+	            	// 일반 ROW: 모든 컬럼 값을 DTO에 매핑
+	            	// SQL 쿼리의 SELECT 절 순서와 Object[] 배열의 인덱스가 일치해야 합니다.
+
+		            dto.setStartDate((String) row[0]); // od.orderStartDate - 인덱스 0
+
+		            // memberId (인덱스 1)
+		            dto.setMemberId(row[1] != null ? ((Number) row[1]).longValue() : null);
+
+		            // memberName (새로운 인덱스 2)
+	                dto.setMemberName((String) row[2]);
+
+		            // itemId (새로운 인덱스 3) - 원래 인덱스 2
+		            dto.setItemId(row[3] != null ? ((Number) row[3]).longValue() : null); // oi.item_id
+
+		            dto.setOrderName((String) row[4]); // od.orderName - 원래 인덱스 3
+
+		            // orderPrice (새로운 인덱스 5) - 원래 인덱스 4
+		            dto.setOrderPrice(row[5] != null ? ((Number) row[5]).intValue() : 0); // oi.orderPrice
+
+		            // count (새로운 인덱스 6) - 원래 인덱스 5
+		            dto.setCount(row[6] != null ? ((Number) row[6]).intValue() : 0); // oi.count
+
+		            // status (새로운 인덱스 7) - 원래 인덱스 6
+		            String statusStr = (String) row[7];
 		            if (statusStr != null) {
 		                try {
 		                     dto.setStatus(OrderStatus.valueOf(statusStr));
@@ -159,16 +174,17 @@ public class ReportRepository {
 		                    dto.setStatus(null); // 매핑할 수 없는 상태값인 경우
 		                }
 		            } else {
-		                dto.setStatus(null); // 롤업 ROW의 경우 NULL
+		                dto.setStatus(null); // DB 값이 NULL인 경우
 		            }
-		            dto.setOrderStartDate((String) row[7]); // od.orderStartDate
-		            dto.setOrderEndDate((String) row[8]); // od.orderEndDate
-		            // row[9]는 orderSum int 타입으로 매핑 (SUM 결과는 보통 Long 또는 BigDecimal로 나오므로 형변환 필요)
-		            dto.setOrderSum(row[9] != null ? ((Number) row[9]).intValue() : 0); // SUM(oi.count * oi.orderPrice)
+
+		            dto.setOrderStartDate((String) row[8]); // od.orderStartDate - 원래 인덱스 7
+		            dto.setOrderEndDate((String) row[9]); // od.orderEndDate - 원래 인덱스 8
+		            // orderSum (새로운 인덱스 10) - 원래 인덱스 9
+		            // 이 ROW의 합계
+		            dto.setOrderSum(row[10] != null ? ((Number) row[10]).intValue() : 0); // SUM(oi.count * oi.orderPrice)
 	            }
 
-	            
-	            rowCnt++;
+	            rowCnt++; // 행 카운트 증가
 	            dtoList.add(dto);
 	        }
 
