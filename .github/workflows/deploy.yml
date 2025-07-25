@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew build -x test # 테스트(test)는 건너뛰고 빌드 (-x test는 빌드 시간 단축 목적)
         # 이 단계에서 build/libs/ 에 JAR 파일이 생성됩니다.
 
-      # --- 1단계: 빌드된 JAR 파일을 EC2 사용자 홈 디렉토리(~)로 전송 ---
+      # === 1단계: 빌드된 JAR 파일을 EC2 사용자 홈 디렉토리(~)로 전송 ===
       # (파일명은 원본 그대로 전송됩니다. 예: jpashop-1.0.1-SNAPSHOT-20250725060054.jar)
       - name: Transfer JAR to EC2
         uses: appleboy/scp-action@master # 파일을 전송하기 위한 액션 사용
@@ -37,9 +37,7 @@ jobs:
           username: ${{ secrets.EC2_USER }} # EC2 인스턴스 사용자명 (GitHub Secret)
           key: ${{ secrets.EC2_SSH_KEY }} # EC2 접속용 SSH 키 (GitHub Secret)
           source: "build/libs/*.jar" # GitHub Actions 러너에서 빌드된 JAR 파일의 경로 (와일드카드 사용)
-          # 파일을 받을 곳을 사용자 홈 디렉토리로 변경.
-          # scp-action은 source의 디렉토리 구조를 target에 복사합니다.
-          target: "/home/${{ secrets.EC2_USER }}/" # <--- 변경 없음. /home/ubuntu/ 로 전송
+          target: "/home/${{ secrets.EC2_USER }}/" # EC2 사용자 홈 디렉토리로 전송 (예: /home/ubuntu/)
 
       # === 2단계: SSH를 통해 EC2에서 배포 스크립트 실행 (전송된 파일 처리) ===
       - name: Execute Deployment Script on EC2
@@ -48,55 +46,57 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: | # EC2에서 실행될 쉘 스크립트 (JAR 파일이 이미 홈 디렉토리에 원본 파일명으로 있다고 가정)
-            APP_PATH="/opt/jpashop-app" # 애플리케이션의 최종 배포 경로 (예시 경로, 변경 가능)
-            FINAL_JAR_NAME="jpashop-app.jar" # <--- EC2 내 최종 경로에 저장될 고정된 JAR 파일명 (원하는 이름으로)
-            CURRENT_APP_PATH="$APP_PATH/$FINAL_JAR_NAME" # 최종적으로 JAR 파일이 위치할 전체 경로
+          # 스크립트를 YAML 내부 변수로 전달하여 파싱 오류 가능성 최소화
+          script: |
+            # --- 변수 정의 ---
+            EC2_TARGET_USER="${{ secrets.EC2_USER }}" # EC2 접속 사용자명을 변수로 저장
+            APP_PATH="/opt/jpashop-app" # 애플리케이션의 최종 배포 경로
+            FINAL_JAR_NAME="jpashop-app.jar" # EC2 내 최종 경로에 저장될 고정된 JAR 파일명
+            CURRENT_APP_PATH="$APP_PATH/$FINAL_JAR_NAME" # 최종 JAR 파일의 전체 경로
 
-            # --- 핵심 수정 부분 ---
-            # 사용자 홈 디렉토리 내, scp-action이 생성한 'build/libs' 디렉토리 안에서 JAR 파일을 찾습니다.
-            TRANSFER_SOURCE_PATH=$(find /home/${{ secrets.EC2_USER }}/build/libs -maxdepth 1 -name "jpashop-*.jar" -print -quit) # <--- 경로 수정!
-
-            if [ -z "$TRANSFER_SOURCE_PATH" ]; then # 찾지 못했다면 에러 발생
-                echo "Error: No jpashop JAR file found in /home/${{ secrets.EC2_USER }}/build/libs after transfer. Deployment aborted."
-                exit 1 # 스크립트 종료
-            fi
-            # --- /핵심 수정 부분 ---
-            
+            # --- 애플리케이션 디렉토리 준비 ---
             echo "Ensuring application directory exists with proper permissions..."
-            # /opt/jpashop-app 디렉토리가 없으면 sudo 권한으로 생성합니다.
-            sudo mkdir -p $APP_PATH
-            # 생성된 디렉토리의 소유권을 EC2 접속 사용자(예: ubuntu)에게 줍니다.
-            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_PATH
+            sudo mkdir -p "$APP_PATH" # 디렉토리 생성
+            sudo chown "$EC2_TARGET_USER":"$EC2_TARGET_USER" "$APP_PATH" # 소유권 변경
 
-            # 현재 실행 중인 Spring Boot 애플리케이션 PID 확인 및 종료
-            # 최종 JAR 파일명을 기준으로 프로세스를 찾습니다.
-            CURRENT_PID=$(pgrep -f "java -jar $APP_PATH/$FINAL_JAR_NAME")
+            # --- 전송된 JAR 파일 찾기 ---
+            # 사용자 홈 디렉토리 내, scp-action이 생성한 'build/libs' 디렉토리 안에서 JAR 파일을 찾습니다.
+            TRANSFER_SOURCE_PATH=$(find "/home/$EC2_TARGET_USER/build/libs" -maxdepth 1 -name "jpashop-*.jar" -print -quit)
+
+            if [ -z "$TRANSFER_SOURCE_PATH" ]; then # JAR 파일을 찾지 못했다면 에러 처리
+                echo "Error: No jpashop JAR file found in /home/$EC2_TARGET_USER/build/libs after transfer. Deployment aborted."
+                exit 1 # 스크립트 종료 및 워크플로우 실패
+            fi
+            
+            # --- 기존 애플리케이션 종료 ---
+            echo "Checking for existing application process..."
+            CURRENT_PID=$(pgrep -f "java -jar $CURRENT_APP_PATH") # 현재 실행 중인 프로세스 PID 확인
             if [ -n "$CURRENT_PID" ]; then # PID가 존재하면
               echo "Existing application process found. PID: $CURRENT_PID. Killing it..."
-              sudo kill -9 $CURRENT_PID # 강제 종료 (sudo 권한 필요)
+              sudo kill -9 "$CURRENT_PID" # 강제 종료
               sleep 5 # 프로세스 종료를 기다립니다.
+            else
+              echo "No existing application process found."
             fi
 
-            echo "Moving new JAR file from source to $APP_PATH..."
-            # 전송된 파일을 최종 경로로 이동시키면서, 고정된 이름(FINAL_JAR_NAME)으로 변경합니다.
-            sudo mv "$TRANSFER_SOURCE_PATH" "$CURRENT_APP_PATH"
-            
-            # JAR 파일에 실행 권한 부여 (필수)
-            sudo chmod +x $CURRENT_APP_PATH
+            # --- JAR 파일 이동 및 권한 설정 ---
+            echo "Moving new JAR file to $APP_PATH..."
+            sudo mv "$TRANSFER_SOURCE_PATH" "$CURRENT_APP_PATH" # 전송된 파일을 최종 경로로 이동
+            sudo chmod +x "$CURRENT_APP_PATH" # 실행 권한 부여
 
+            # --- 새로운 애플리케이션 시작 ---
             echo "Starting new application..."
-            # 애플리케이션을 EC2 접속 사용자(예: ubuntu) 권한으로 백그라운드에서 실행합니다.
-            # 로그는 $APP_PATH/nohup.out 파일에 저장됩니다.
-            sudo -u ${{ secrets.EC2_USER }} nohup java -jar $CURRENT_APP_PATH > $APP_PATH/nohup.out 2>&1 &
+            # EC2 접속 사용자 권한으로 백그라운드에서 실행, 로그는 파일에 저장
+            sudo -u "$EC2_TARGET_USER" nohup java -jar "$CURRENT_APP_PATH" > "$APP_PATH/nohup.out" 2>&1 &
 
-            sleep 10 # 애플리케이션이 시작될 시간을 충분히 기다립니다.
+            sleep 10 # 애플리케이션 시작을 기다립니다.
 
+            # --- 배포 성공 여부 확인 ---
             echo "Deployment finished. Checking if new process is running..."
-            # 새로 시작된 애플리케이션 프로세스가 있는지 확인합니다.
-            NEW_PID=$(pgrep -f "java -jar $APP_PATH/$FINAL_JAR_NAME")
+            NEW_PID=$(pgrep -f "java -jar $CURRENT_APP_PATH") # 새로 시작된 프로세스 PID 확인
             if [ -n "$NEW_PID" ]; then
               echo "New application is running. PID: $NEW_PID"
             else
               echo "Failed to start new application. Check $APP_PATH/nohup.out for details."
-              exit 1 # 애플리케이션 시작에 실패하면 워크플로우를 종료합니다.
+              exit 1 # 애플리케이션 시작 실패 시 워크플로우 실패
+            fi
