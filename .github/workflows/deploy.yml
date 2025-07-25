@@ -9,76 +9,67 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest # GitHub Actions 러너 환경 (Ubuntu 최신 버전)
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code # 깃허브 리포지토리 코드 가져오기
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 11 # 자바 11 JDK 설정
+      - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'temurin' # OpenJDK 배포판 중 하나 (Oracle OpenJDK, Eclipse Adoptium 등 선택 가능)
+          distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew # gradlew 스크립트 실행 권한 부여
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle # Spring Boot 애플리케이션 빌드
-        run: ./gradlew build -x test # 테스트(test)는 건너뛰고 빌드 (-x test는 빌드 시간 단축 목적. 테스트가 중요하다면 삭제)
-        # build/libs/your-app-name-0.0.1-SNAPSHOT.jar 와 같은 JAR 파일이 생성됩니다.
+      - name: Build with Gradle
+        run: ./gradlew build -x test # build/libs/jpashop-1.0.1-SNAPSHOT.jar 가 생성됩니다.
 
-      - name: Configure SSH Key Permissions # SSH 키 파일 권한 설정 (보안 강화)
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa # GitHub Secret에 저장된 키 내용을 파일로 저장
-          chmod 600 ~/.ssh/id_rsa # 키 파일에 대한 권한을 소유자만 읽고 쓸 수 있도록 설정
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts # SSH 호스트 키를 known_hosts에 추가 (첫 연결 시 확인 방지)
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }} # 환경 변수로 Secrets 사용
-
-      - name: Deploy to EC2 # EC2로 배포
-        uses: appleboy/ssh-action@master # SSH를 통해 원격 서버 명령 실행 및 파일 전송을 위한 GitHub Action
+      - name: Deploy to EC2 # Deploy to EC2 단계 수정
+        uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP 주소 (Secrets에서 가져옴)
-          username: ${{ secrets.EC2_USER }} # EC2 인스턴스 사용자명 (Secrets에서 가져옴)
-          key: ${{ secrets.EC2_SSH_KEY }} # EC2 접속용 SSH 키 (Secrets에서 가져옴)
-          script: | # EC2에서 실행될 쉘 스크립트
-            # Spring Boot 애플리케이션이 배포될 경로 (예: /opt/your-app/)
-            APP_PATH="/opt/your-app" # 실제 애플리케이션 경로로 수정하세요. (톰캣 홈 디렉토리가 아닐 수도 있습니다.)
-            JAR_NAME="jpashop-1.0.1-SNAPSHOT.jar" # 빌드된 JAR 파일명으로 수정하세요.
-            OLD_JAR_PATH="$APP_PATH/$JAR_NAME"
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          # Source와 Target 옵션으로 JAR 파일을 직접 전송
+          source: "build/libs/jpashop-1.0.1-SNAPSHOT.jar" # 빌드된 JAR 파일 경로
+          target: "/tmp/jpashop-1.0.1-SNAPSHOT.jar" # EC2의 임시 디렉토리로 먼저 전송 (일반 사용자도 권한 있는 곳)
+          script: | # EC2에서 실행될 스크립트
+            # 애플리케이션의 최종 배포 경로
+            APP_PATH="/opt/your-app" # 이 디렉토리는 나중에 sudo 권한으로 생성하고 사용할 것입니다.
+            JAR_NAME="jpashop-1.0.1-SNAPSHOT.jar"
+            CURRENT_APP_PATH="$APP_PATH/$JAR_NAME" # 최종적으로 JAR 파일이 위치할 경로
 
-            # 배포 경로로 이동 또는 생성
-            mkdir -p $APP_PATH
-            cd $APP_PATH
+            echo "Ensuring application directory exists with proper permissions..."
+            # /opt/your-app 디렉토리가 없으면 생성하고, 권한 설정
+            # sudo 권한으로 디렉토리 생성 및 소유권 설정
+            sudo mkdir -p $APP_PATH
+            # EC2_USER는 ubuntu@ip... 의 ubuntu 사용자입니다. 이 사용자에게 디렉토리 소유권을 줍니다.
+            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_PATH
 
             # 현재 실행 중인 애플리케이션 PID 확인 및 종료
-            CURRENT_PID=$(pgrep -f $JAR_NAME) # JAR 파일 이름으로 PID 찾기
-            if [ -n "$CURRENT_PID" ]; then # PID가 존재하면
+            CURRENT_PID=$(pgrep -f $JAR_NAME)
+            if [ -n "$CURRENT_PID" ]; then
               echo "Existing application process found. PID: $CURRENT_PID. Killing it..."
-              kill -9 $CURRENT_PID # 강제 종료
-              sleep 5 # 프로세스 종료 대기
+              sudo kill -9 $CURRENT_PID
+              sleep 5
             fi
 
-            # 기존 JAR 파일 삭제 또는 백업 (선택 사항)
-            if [ -f "$OLD_JAR_PATH" ]; then
-              echo "Removing old JAR file..."
-              rm $OLD_JAR_PATH
-            fi
+            echo "Moving new JAR file from /tmp to $APP_PATH..."
+            # /tmp로 전송된 파일을 sudo 권한으로 실제 앱 경로로 이동
+            sudo mv /tmp/$JAR_NAME $APP_PATH/$JAR_NAME
+            
+            # JAR 파일에 실행 권한 부여
+            sudo chmod +x $CURRENT_APP_PATH
 
-            # 새로운 JAR 파일 전송 (GitHub Actions Runner -> EC2)
-            # 이 단계는 scp-action을 사용하는 대신 ssh-action 내에서 파일을 직접 가져오는 방식으로 변경됨
-            echo "Copying new JAR file from GitHub Actions runner..."
-            # GitHub Actions Runner에서 EC2로 JAR 파일을 복사합니다.
-            # 이 명령은 GitHub Actions 러너에서 실행되므로, 로컬 빌드 경로를 기준으로 합니다.
-            # artifacts 디렉토리에서 빌드된 JAR 파일을 EC2의 현재 디렉토리($APP_PATH)로 scp 복사합니다.
-            # 이는 appleboy/scp-action을 사용하는 것과 유사한 효과를 줍니다.
-            scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ./build/libs/$JAR_NAME $EC2_USER@$EC2_HOST:$APP_PATH/$JAR_NAME
-
-            # 새로운 JAR 파일 실행
             echo "Starting new application..."
-            nohup java -jar $APP_PATH/$JAR_NAME > $APP_PATH/nohup.out 2>&1 & # 백그라운드에서 실행하고 로그는 nohup.out에 저장
+            # 애플리케이션을 sudo로 실행하거나, sudo로 해당 사용자로 전환하여 실행
+            # 백그라운드 실행을 위해 'nohup' 사용. 로그는 앱 경로의 nohup.out에 저장
+            sudo -u ${{ secrets.EC2_USER }} nohup java -jar $CURRENT_APP_PATH > $APP_PATH/nohup.out 2>&1 &
+            # `sudo -u ${{ secrets.EC2_USER }}`를 사용하면, ${{ secrets.EC2_USER }} (예: ubuntu) 권한으로 명령을 실행합니다.
+
             sleep 10 # 애플리케이션 시작 대기
 
             echo "Deployment finished. Checking if new process is running..."
@@ -86,6 +77,6 @@ jobs:
             if [ -n "$NEW_PID" ]; then
               echo "New application is running. PID: $NEW_PID"
             else
-              echo "Failed to start new application."
-              exit 1 # 실패 시 워크플로우 종료
+              echo "Failed to start new application. Check $APP_PATH/nohup.out for details."
+              exit 1
             fi
