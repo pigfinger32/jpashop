@@ -41,59 +41,89 @@ jobs:
 
       # === 2단계: SSH를 통해 EC2에서 배포 스크립트 실행 (전송된 파일 처리) ===
       - name: Execute Deployment Script on EC2
-        uses: appleboy/ssh-action@master # SSH를 통해 원격 서버 명령 실행 액션 사용
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          # 스크립트를 YAML 내부 변수로 전달하여 파싱 오류 가능성 최소화
-          script: |
+          script: | # EC2에서 실행될 쉘 스크립트
             # --- 변수 정의 ---
-            EC2_TARGET_USER="${{ secrets.EC2_USER }}" # EC2 접속 사용자명을 변수로 저장
-            APP_PATH="/opt/jpashop-app" # 애플리케이션의 최종 배포 경로
-            FINAL_JAR_NAME="jpashop-app.jar" # EC2 내 최종 경로에 저장될 고정된 JAR 파일명
-            CURRENT_APP_PATH="$APP_PATH/$FINAL_JAR_NAME" # 최종 JAR 파일의 전체 경로
+            EC2_TARGET_USER="${{ secrets.EC2_USER }}"
+            APP_PATH="/opt/jpashop-app"
+            FINAL_JAR_NAME="jpashop-app.jar"
+            CURRENT_APP_PATH="$APP_PATH/$FINAL_JAR_NAME"
+            APP_PORT="8080" # <-- 애플리케이션 포트
 
             # --- 애플리케이션 디렉토리 준비 ---
             echo "Ensuring application directory exists with proper permissions..."
-            sudo mkdir -p "$APP_PATH" # 디렉토리 생성
-            sudo chown "$EC2_TARGET_USER":"$EC2_TARGET_USER" "$APP_PATH" # 소유권 변경
+            sudo mkdir -p "$APP_PATH"
+            sudo chown "$EC2_TARGET_USER":"$EC2_TARGET_USER" "$APP_PATH"
 
             # --- 전송된 JAR 파일 찾기 ---
-            # 사용자 홈 디렉토리 내, scp-action이 생성한 'build/libs' 디렉토리 안에서 JAR 파일을 찾습니다.
             TRANSFER_SOURCE_PATH=$(find "/home/$EC2_TARGET_USER/build/libs" -maxdepth 1 -name "jpashop-*.jar" -print -quit)
-
-            if [ -z "$TRANSFER_SOURCE_PATH" ]; then # JAR 파일을 찾지 못했다면 에러 처리
+            if [ -z "$TRANSFER_SOURCE_PATH" ]; then
                 echo "Error: No jpashop JAR file found in /home/$EC2_TARGET_USER/build/libs after transfer. Deployment aborted."
-                exit 1 # 스크립트 종료 및 워크플로우 실패
+                exit 1
             fi
             
-            # --- 기존 애플리케이션 종료 ---
-            echo "Checking for existing application process..."
-            CURRENT_PID=$(pgrep -f "java -jar $CURRENT_APP_PATH") # 현재 실행 중인 프로세스 PID 확인
-            if [ -n "$CURRENT_PID" ]; then # PID가 존재하면
-              echo "Existing application process found. PID: $CURRENT_PID. Killing it..."
-              sudo kill -9 "$CURRENT_PID" # 강제 종료
-              sleep 5 # 프로세스 종료를 기다립니다.
-            else
-              echo "No existing application process found."
+            # --- 핵심 수정: 모든 관련된 Java 프로세스 종료 + 포트 점유 프로세스 종료 ---
+            echo "Attempting to terminate all relevant Java processes and processes on port $APP_PORT..."
+
+            # 1. 'sudo -u <user> nohup java -jar' 명령 패턴으로 부모 프로세스 찾기 (가장 정확한 프로세스 패턴)
+            #    이전 PID (36942)와 유사한 패턴으로 찾습니다.
+            RUNNING_ROOT_NOHUP_JAVA_PIDS=$(pgrep -f "sudo -u ${EC2_TARGET_USER} nohup java -jar $CURRENT_APP_PATH") # <--- 패턴 수정
+            if [ -n "$RUNNING_ROOT_NOHUP_JAVA_PIDS" ]; then
+                echo "Found root nohup Java process with PID(s): $RUNNING_ROOT_NOHUP_JAVA_PIDS. Killing them gracefully first..."
+                echo "$RUNNING_ROOT_NOHUP_JAVA_PIDS" | xargs -r sudo kill
+                sleep 5 # 종료 대기 시간
             fi
+
+            # 2. 'java -jar' 명령 패턴으로 직접 실행된 자식 프로세스 찾기 (혹시 부모가 죽은 후 남은 경우)
+            RUNNING_CHILD_JAVA_PIDS=$(pgrep -f "java -jar $CURRENT_APP_PATH") # <--- 패턴 수정
+            if [ -n "$RUNNING_CHILD_JAVA_PIDS" ]; then
+                echo "Found child Java process with PID(s): $RUNNING_CHILD_JAVA_PIDS. Killing them gracefully..."
+                echo "$RUNNING_CHILD_JAVA_PIDS" | xargs -r sudo kill
+                sleep 5 # 종료 대기 시간
+            fi
+
+            # 3. $APP_PORT (8080)을 사용 중인 모든 프로세스 강제 종료 시도 (가장 확실한 포트 정리)
+            PORT_LISTENING_PIDS=$(sudo lsof -t -i :"$APP_PORT")
+            if [ -n "$PORT_LISTENING_PIDS" ]; then
+                echo "Found processes listening on port $APP_PORT with PID(s): $PORT_LISTENING_PIDS. Forcibly killing them..."
+                echo "$PORT_LISTENING_PIDS" | xargs -r sudo kill -9 # 강제 종료
+                sleep 5 # 종료 대기 시간
+            else
+                echo "No process found on port $APP_PORT."
+            fi
+
+            # 최종적으로 어떤 프로세스도 남아있지 않은지 다시 확인 (방어적 코드)
+            # 이주환8238님의 경우는 pgrep -f "java"만으로도 충분히 남아있는지 확인할 수 있습니다.
+            # sudo lsof -t -i :"$APP_PORT" 를 같이 쓰면 좋지만,
+            # 포트 문제는 애플리케이션 시작시 발견될 것이므로, 여기서는 자바 프로세스만 확인해도 됩니다.
+            FINAL_PROCESS_CHECK=$(pgrep -f "java") 
+            if [ -n "$FINAL_PROCESS_CHECK" ]; then
+                echo "Critical Warning: Some Java processes still running after kill attempts!"
+                echo "Remaining Java PIDs: $FINAL_PROCESS_CHECK"
+                exit 1 # 잠재적인 문제를 무시하지 않고 워크플로우를 실패시킴 (이 부분은 선택 사항, 문제 해결을 위해 유지)
+            else
+                echo "All relevant processes successfully terminated."
+            fi
+            # --- /핵심 수정 ---
 
             # --- JAR 파일 이동 및 권한 설정 ---
             echo "Moving new JAR file to $APP_PATH..."
-            sudo mv "$TRANSFER_SOURCE_PATH" "$CURRENT_APP_PATH" # 전송된 파일을 최종 경로로 이동
-            sudo chmod +x "$CURRENT_APP_PATH" # 실행 권한 부여
+            sudo mv "$TRANSFER_SOURCE_PATH" "$CURRENT_APP_PATH"
+            sudo chmod +x "$CURRENT_APP_PATH"
 
             # --- 새로운 애플리케이션 시작 ---
             echo "Starting new application..."
-            # EC2 접속 사용자 권한으로 백그라운드에서 실행, 로그는 파일에 저장
             sudo -u "$EC2_TARGET_USER" nohup java -jar "$CURRENT_APP_PATH" > "$APP_PATH/nohup.out" 2>&1 &
 
             sleep 10 # 애플리케이션 시작을 기다립니다.
 
             # --- 배포 성공 여부 확인 ---
             echo "Deployment finished. Checking if new process is running..."
-            NEW_PID=$(pgrep -f "java -jar $CURRENT_APP_PATH") # 새로 시작된 프로세스 PID 확인
+            NEW_PID=$(pgrep -f "java -jar $CURRENT_APP_PATH")
             if [ -n "$NEW_PID" ]; then
               echo "New application is running. PID: $NEW_PID"
             else
