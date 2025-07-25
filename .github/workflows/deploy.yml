@@ -28,6 +28,9 @@ jobs:
         run: ./gradlew build -x test # 테스트(test)는 건너뛰고 빌드 (-x test는 빌드 시간 단축 목적)
         # build/libs/jpashop-1.0.1-SNAPSHOT.jar 와 같은 JAR 파일이 생성됩니다.
 
+      - name: List build outputs # <--- 이 단계 추가
+        run: ls -l build/libs/
+
       # === 새로운 단계: JAR 파일을 EC2로 전송 ===
       - name: Transfer JAR to EC2
         uses: appleboy/scp-action@master # appleboy/scp-action을 사용하여 파일 전송
