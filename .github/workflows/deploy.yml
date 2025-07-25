@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # GitHub Actions 러너 환경 (Ubuntu 최신 버전)
 
     steps:
       - name: Checkout Code
@@ -19,42 +19,49 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'temurin'
+          distribution: 'temurin' # OpenJDK 배포판 중 하나 (Oracle OpenJDK, Eclipse Adoptium 등 선택 가능)
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew # gradlew 스크립트 실행 권한 부여
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build -x test # build/libs/jpashop-1.0.1-SNAPSHOT.jar 가 생성됩니다.
+      - name: Build with Gradle # Spring Boot 애플리케이션 빌드
+        run: ./gradlew build -x test # 테스트(test)는 건너뛰고 빌드 (-x test는 빌드 시간 단축 목적)
+        # build/libs/jpashop-1.0.1-SNAPSHOT.jar 와 같은 JAR 파일이 생성됩니다.
 
-      - name: Deploy to EC2 # Deploy to EC2 단계 수정
-        uses: appleboy/ssh-action@master
+      # === 새로운 단계: JAR 파일을 EC2로 전송 ===
+      - name: Transfer JAR to EC2
+        uses: appleboy/scp-action@master # appleboy/scp-action을 사용하여 파일 전송
+        with:
+          host: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP 주소
+          username: ${{ secrets.EC2_USER }} # EC2 인스턴스 사용자명
+          key: ${{ secrets.EC2_SSH_KEY }} # EC2 접속용 SSH 키
+          source: "build/libs/jpashop-1.0.1-SNAPSHOT.jar" # GitHub Actions 러너에서의 JAR 파일 경로
+          target: "/tmp" # EC2의 임시 디렉토리 (일반 사용자도 쓰기 권한이 있는 곳)
+          # 파일은 EC2의 /tmp/jpashop-1.0.1-SNAPSHOT.jar 경로로 전송됩니다.
+
+      # === 기존 Deploy 단계를 스크립트 실행 전용으로 수정 ===
+      - name: Execute Deployment Script on EC2
+        uses: appleboy/ssh-action@master # appleboy/ssh-action을 사용하여 EC2에서 스크립트 실행
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          # Source와 Target 옵션으로 JAR 파일을 직접 전송
-          source: "build/libs/jpashop-1.0.1-SNAPSHOT.jar" # 빌드된 JAR 파일 경로
-          target: "/tmp/jpashop-1.0.1-SNAPSHOT.jar" # EC2의 임시 디렉토리로 먼저 전송 (일반 사용자도 권한 있는 곳)
-          script: | # EC2에서 실행될 스크립트
-            # 애플리케이션의 최종 배포 경로
-            APP_PATH="/opt/your-app" # 이 디렉토리는 나중에 sudo 권한으로 생성하고 사용할 것입니다.
-            JAR_NAME="jpashop-1.0.1-SNAPSHOT.jar"
+          script: | # EC2에서 실행될 쉘 스크립트 (JAR 파일이 이미 /tmp에 있다고 가정)
+            APP_PATH="/opt/jpashop-app" # 애플리케이션의 최종 배포 경로
+            JAR_NAME="jpashop-1.0.1-SNAPSHOT.jar" # 빌드된 JAR 파일명 (위에 source와 target에 명시된 파일명과 동일)
             CURRENT_APP_PATH="$APP_PATH/$JAR_NAME" # 최종적으로 JAR 파일이 위치할 경로
 
             echo "Ensuring application directory exists with proper permissions..."
-            # /opt/your-app 디렉토리가 없으면 생성하고, 권한 설정
-            # sudo 권한으로 디렉토리 생성 및 소유권 설정
+            # /opt/jpashop-app 디렉토리가 없으면 sudo 권한으로 생성하고, 소유권 설정
             sudo mkdir -p $APP_PATH
-            # EC2_USER는 ubuntu@ip... 의 ubuntu 사용자입니다. 이 사용자에게 디렉토리 소유권을 줍니다.
-            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_PATH
+            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_PATH # 앱 폴더 소유권을 사용자에게 줌
 
             # 현재 실행 중인 애플리케이션 PID 확인 및 종료
-            CURRENT_PID=$(pgrep -f $JAR_NAME)
-            if [ -n "$CURRENT_PID" ]; then
+            CURRENT_PID=$(pgrep -f $JAR_NAME) # JAR 파일 이름으로 PID 찾기
+            if [ -n "$CURRENT_PID" ]; then # PID가 존재하면
               echo "Existing application process found. PID: $CURRENT_PID. Killing it..."
-              sudo kill -9 $CURRENT_PID
-              sleep 5
+              sudo kill -9 $CURRENT_PID # 강제 종료 (sudo 권한 필요)
+              sleep 5 # 프로세스 종료 대기
             fi
 
             echo "Moving new JAR file from /tmp to $APP_PATH..."
@@ -65,10 +72,8 @@ jobs:
             sudo chmod +x $CURRENT_APP_PATH
 
             echo "Starting new application..."
-            # 애플리케이션을 sudo로 실행하거나, sudo로 해당 사용자로 전환하여 실행
-            # 백그라운드 실행을 위해 'nohup' 사용. 로그는 앱 경로의 nohup.out에 저장
+            # 애플리케이션을 EC2_USER (예: ubuntu) 권한으로 백그라운드 실행
             sudo -u ${{ secrets.EC2_USER }} nohup java -jar $CURRENT_APP_PATH > $APP_PATH/nohup.out 2>&1 &
-            # `sudo -u ${{ secrets.EC2_USER }}`를 사용하면, ${{ secrets.EC2_USER }} (예: ubuntu) 권한으로 명령을 실행합니다.
 
             sleep 10 # 애플리케이션 시작 대기
 
@@ -78,5 +83,5 @@ jobs:
               echo "New application is running. PID: $NEW_PID"
             else
               echo "Failed to start new application. Check $APP_PATH/nohup.out for details."
-              exit 1
+              exit 1 # 실패 시 워크플로우 종료
             fi
