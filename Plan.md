@@ -17,45 +17,32 @@
 
 ## 현재 작업
 
-### [TASK-001] Docker + Oracle Cloud 배포 환경 구축
-
-**설계 결론 (확정)**
-
-Oracle Cloud Free Tier ARM VM에 Docker Compose로 Spring Boot + MySQL을 올린다.
-
-```
-GitHub (master push)
-       ↓ GitHub Actions (JAR 빌드)
-       ↓ SSH로 Oracle Cloud ARM VM에 JAR 전송
-Oracle Cloud ARM VM
-       ↓ docker compose up --build
-   ┌──────────────────────────────┐
-   │  app  (Spring Boot, :8080)   │
-   │  db   (MySQL 8.0, :3306)     │
-   └──────────────────────────────┘
-```
-
-**작업 목록**
-
-- [x] `Dockerfile` 작성 (eclipse-temurin:11-jre, ARM 호환)
-- [x] `docker-compose.yml` 작성 (app + mysql, healthcheck, .env로 비밀번호 주입)
-- [x] `application.yml` 수정 (환경변수 주입 방식으로 변경, 로컬 fallback 포함)
-- [x] `.github/workflows/deploy.yml` 수정 (Oracle Cloud + Docker Compose 방식)
-- [x] CLAUDE.md 배포 섹션 업데이트
-
-**남은 작업 (사용자가 직접 해야 하는 수동 작업)**
-- [ ] Oracle Cloud 계정 생성 및 ARM VM 인스턴스 생성
-- [ ] VM에 Docker 설치
-- [ ] Oracle Cloud 보안 규칙에서 포트 8080 인바운드 허용
-- [ ] GitHub Secrets 등록: `ORACLE_HOST`, `ORACLE_USER`, `ORACLE_SSH_KEY`, `MYSQL_ROOT_PASSWORD`
-
-**제약사항**
-- Oracle ARM VM이므로 Docker 이미지는 `linux/arm64` 또는 멀티플랫폼 지원 이미지 사용
-- MySQL 데이터는 Docker volume으로 영속화 필수
-- DB 비밀번호 등 민감정보는 GitHub Secrets → 환경변수로 주입
+<!-- 여기에 작업 지시를 작성하세요 -->
 
 ---
 
 ## 완료된 작업
 
-<!-- 완료된 작업은 여기로 이동 -->
+### [TASK-001] Docker + NHN Cloud 배포 환경 구축 ✅ (2026-05-07)
+
+**인프라**
+- NHN Cloud VM: `m2.c2m4` (2코어 4GB), Ubuntu 22.04
+- 공인 IP: `180.210.82.98`
+- Docker Compose: Spring Boot(8080) + MySQL 8.0
+
+**배포 흐름**
+```
+master push → GitHub Actions (JAR 빌드)
+            → SCP: jar + Dockerfile + docker-compose.yml → VM
+            → SSH: docker compose up --build -d
+```
+
+**GitHub Secrets**
+- `SERVER_HOST` / `SERVER_USER` / `SERVER_SSH_KEY` / `MYSQL_ROOT_PASSWORD`
+
+**초기 데이터**
+- admin 계정 직접 INSERT 필요 (DB가 비어있으므로)
+```sql
+INSERT INTO Member (loginId, pw, name, company, phone, bizRegiNo)
+VALUES ('admin', 'admin1234', '관리자', '관리자', '010-0000-0000', '000-00-00000');
+```
