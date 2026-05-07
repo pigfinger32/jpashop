@@ -5,156 +5,363 @@
 
 <th:block layout:fragment="content">
 <body id="page-top">
+
+<style>
+/* ── Bottom Sheet ── */
+.bottom-sheet {
+    position: fixed;
+    bottom: -100%;
+    left: 0; right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+    z-index: 1055;
+    transition: bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 65vh;
+    overflow-y: auto;
+}
+.bottom-sheet.open { bottom: 0; }
+.sheet-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.42);
+    z-index: 1050;
+    cursor: pointer;
+}
+.sheet-overlay.open { display: block; }
+.sheet-handle {
+    width: 36px; height: 4px;
+    background: #dee2e6;
+    border-radius: 2px;
+    margin: 10px auto 0;
+}
+.sheet-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e3e6f0;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+.sheet-body { padding: 16px 20px 32px; }
+
+/* ── FullCalendar overrides ── */
+.fc .fc-button { font-size: 0.82rem !important; padding: 4px 10px !important; }
+.fc .fc-toolbar-title { font-size: 1.1rem !important; }
+.fc-event { cursor: pointer; }
+</style>
+
 <div class="container-fluid">
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0 text-gray-800">가로기 지정 게시대 현황</h1>
     </div>
 
-    <!-- 날짜 검색 폼 -->
-    <div class="card shadow mb-4">
-        <div class="card-body py-3">
-            <form th:object="${orderSearch}" class="form-inline" id="searchForm">
-                <label for="date" class="mr-2 font-weight-bold">날짜 조회</label>
-                <input type="date" id="date" max="2040-06-20" min="2022-07-01"
-                       th:field="*{findDate}" class="form-control mr-2">
-                <select th:field="*{orderStatus}" class="form-control" style="display:none">
-                    <option value="">주문상태</option>
-                    <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
-                            th:value="${status}" th:text="${status}">option</option>
-                </select>
-                <button type="submit" class="btn btn-primary">조회</button>
-            </form>
-        </div>
-    </div>
+    <!-- ── 탭 헤더 ── -->
+    <ul class="nav nav-tabs" id="orderTabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="calendar-tab" data-toggle="tab" href="#tab-calendar">
+                <i class="fas fa-calendar-alt mr-1"></i>달력
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="list-tab" data-toggle="tab" href="#tab-list">
+                <i class="fas fa-list mr-1"></i>목록
+            </a>
+        </li>
+    </ul>
 
-    <!-- 요약 통계 카드 -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-dark shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">전체</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#lists.size(orders)}">0</div>
-                        </div>
-                        <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">신청</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countOrder}">0</div>
-                        </div>
-                        <div class="col-auto"><i class="fas fa-calendar-check fa-2x text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">결제완료</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countPayed}">0</div>
-                        </div>
-                        <div class="col-auto"><i class="fas fa-check-circle fa-2x text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-secondary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">취소</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countCancel}">0</div>
-                        </div>
-                        <div class="col-auto"><i class="fas fa-times-circle fa-2x text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="tab-content" id="orderTabContent">
 
-    <!-- 예약 목록 테이블 -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">예약 목록</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="orderTable">
-                    <thead class="thead-light">
-                    <tr>
-                        <th>회원명</th>
-                        <th>구간명</th>
-                        <th>공연명</th>
-                        <th>가격</th>
-                        <th>수량</th>
-                        <th>상태</th>
-                        <th>게첨 기간</th>
-                        <th sec:authorize="hasRole('ADMIN')">관리</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="item : ${orders}"
-                        th:classappend="${item.status.name() == 'PAYED'} ? 'table-success' : (${item.status.name() == 'CANCEL'} ? 'table-secondary' : 'table-info')">
-                        <td th:text="${item.member.name}"></td>
-                        <td th:text="${item.orderItems[0].item.name}"></td>
-                        <td th:text="${item.orderName}"></td>
-                        <td th:text="${#numbers.formatInteger(item.orderItems[0].orderPrice, 0, 'COMMA') + '원'}"></td>
-                        <td th:text="${item.orderItems[0].count}"></td>
-                        <td>
-                            <span th:if="${item.status.name() == 'ORDER'}"  class="badge badge-primary">신청</span>
-                            <span th:if="${item.status.name() == 'PAYED'}"  class="badge badge-success">결제완료</span>
-                            <span th:if="${item.status.name() == 'CANCEL'}" class="badge badge-secondary">취소</span>
-                        </td>
-                        <td th:text="${item.orderStartDate + ' ~ ' + item.orderEndDate}"></td>
-                        <td sec:authorize="hasRole('ADMIN')">
-                            <button th:if="${item.status.name() == 'ORDER'}"
-                                    th:onclick="'payed(' + ${item.id} + ')'"
-                                    class="btn btn-success btn-sm mr-1">결제처리</button>
-                            <button th:onclick="'deleteOrder(' + ${item.id} + ')'"
-                                    class="btn btn-danger btn-sm">삭제</button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        <!-- ══ 달력 탭 ══ -->
+        <div class="tab-pane fade show active" id="tab-calendar">
+            <div class="card shadow mt-0" style="border-top-left-radius:0; border-top-right-radius:0;">
+                <div class="card-body p-3">
+                    <div id="calendar"></div>
+                </div>
             </div>
         </div>
+
+        <!-- ══ 목록 탭 ══ -->
+        <div class="tab-pane fade" id="tab-list">
+
+            <!-- 날짜 검색 -->
+            <div class="card shadow mt-3 mb-4">
+                <div class="card-body py-3">
+                    <form th:object="${orderSearch}" class="form-inline" id="searchForm">
+                        <label for="date" class="mr-2 font-weight-bold">날짜 조회</label>
+                        <input type="date" id="date" max="2040-06-20" min="2022-07-01"
+                               th:field="*{findDate}" class="form-control mr-2">
+                        <select th:field="*{orderStatus}" class="form-control" style="display:none">
+                            <option value="">주문상태</option>
+                            <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
+                                    th:value="${status}" th:text="${status}">option</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">조회</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 요약 통계 카드 -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-dark shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">전체</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#lists.size(orders)}">0</div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">신청</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countOrder}">0</div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-calendar-check fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">결제완료</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countPayed}">0</div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-check-circle fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-secondary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">취소</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countCancel}">0</div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-times-circle fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 예약 목록 테이블 -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">예약 목록</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                            <tr>
+                                <th>회원명</th>
+                                <th>구간명</th>
+                                <th>공연명</th>
+                                <th>가격</th>
+                                <th>수량</th>
+                                <th>상태</th>
+                                <th>게첨 기간</th>
+                                <th sec:authorize="hasRole('ADMIN')">관리</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="item : ${orders}"
+                                th:classappend="${item.status.name() == 'PAYED'} ? 'table-success' : (${item.status.name() == 'CANCEL'} ? 'table-secondary' : 'table-info')">
+                                <td th:text="${item.member.name}"></td>
+                                <td th:text="${item.orderItems[0].item.name}"></td>
+                                <td th:text="${item.orderName}"></td>
+                                <td th:text="${#numbers.formatInteger(item.orderItems[0].orderPrice, 0, 'COMMA') + '원'}"></td>
+                                <td th:text="${item.orderItems[0].count}"></td>
+                                <td>
+                                    <span th:if="${item.status.name() == 'ORDER'}"  class="badge badge-primary">신청</span>
+                                    <span th:if="${item.status.name() == 'PAYED'}"  class="badge badge-success">결제완료</span>
+                                    <span th:if="${item.status.name() == 'CANCEL'}" class="badge badge-secondary">취소</span>
+                                </td>
+                                <td th:text="${item.orderStartDate + ' ~ ' + item.orderEndDate}"></td>
+                                <td sec:authorize="hasRole('ADMIN')">
+                                    <button th:if="${item.status.name() == 'ORDER'}"
+                                            th:onclick="'payed(' + ${item.id} + ')'"
+                                            class="btn btn-success btn-sm mr-1">결제처리</button>
+                                    <button th:onclick="'deleteOrder(' + ${item.id} + ')'"
+                                            class="btn btn-danger btn-sm">삭제</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /목록 탭 -->
+
     </div>
+    <!-- /tab-content -->
 
 </div>
-</body>
-<script th:inline="javascript">
-    var serverDate = [[${date}]];
-    document.getElementById('date').value = serverDate || new Date().toISOString().substring(0, 10);
+<!-- /container-fluid -->
 
+<!-- ── Bottom Sheet Overlay ── -->
+<div id="sheetOverlay" class="sheet-overlay" onclick="closeSheet()"></div>
+
+<!-- ── Bottom Sheet ── -->
+<div id="bottomSheet" class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+        <h5 id="sheetTitle" class="mb-0 font-weight-bold text-gray-800 flex-grow-1 mr-3" style="word-break:keep-all;"></h5>
+        <span id="sheetBadge" class="badge px-2 py-1 mr-2" style="font-size:0.85rem;"></span>
+        <button type="button" onclick="closeSheet()" class="btn btn-sm btn-outline-secondary ml-auto">✕</button>
+    </div>
+    <div id="sheetBody" class="sheet-body"></div>
+</div>
+
+<!-- FullCalendar 6 -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script th:inline="javascript">
+    var serverDate      = [[${date}]];
+    var calendarEvents  = /*[(${calendarEventsJson})]*/ [];
+
+    /* 목록탭 날짜 인풋 초기화 */
+    var dateInput = document.getElementById('date');
+    if (dateInput) dateInput.value = serverDate || new Date().toISOString().substring(0, 10);
+
+    /* ── FullCalendar 초기화 ── */
+    var calendar = null;
+
+    function initCalendar() {
+        if (calendar) return;
+        var el = document.getElementById('calendar');
+        if (!el) return;
+        calendar = new FullCalendar.Calendar(el, {
+            locale: 'ko',
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {
+                left:   'prev,next today',
+                center: 'title',
+                right:  'dayGridMonth,listMonth'
+            },
+            buttonText: { today: '오늘', month: '월별', list: '목록' },
+            events: calendarEvents,
+            dayMaxEvents: 3,
+            eventDisplay: 'block',
+            eventClick: function(info) { openSheet(info.event); }
+        });
+        calendar.render();
+    }
+
+    /* 페이지 로드 시 달력 탭이 활성화되어 있으므로 바로 초기화 */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCalendar);
+    } else {
+        initCalendar();
+    }
+
+    /* 달력 탭으로 전환될 때 크기 재계산 */
+    var calTabEl = document.getElementById('calendar-tab');
+    if (calTabEl) {
+        calTabEl.addEventListener('shown.bs.tab', function () {
+            if (calendar) calendar.updateSize();
+            else initCalendar();
+        });
+    }
+
+    /* ── Bottom Sheet ── */
+    function openSheet(event) {
+        var props   = event.extendedProps;
+        var statusMap = {
+            ORDER:  { label: '신청',    cls: 'badge-primary' },
+            PAYED:  { label: '결제완료', cls: 'badge-success' },
+            CANCEL: { label: '취소',    cls: 'badge-secondary' }
+        };
+        var sm = statusMap[props.status] || { label: props.status, cls: 'badge-dark' };
+
+        /* FullCalendar end 는 exclusive → 표시용으로 -1일 */
+        var endDisplay = props.endDate || (event.end ? subtractDay(event.end) : props.startDate);
+
+        document.getElementById('sheetTitle').textContent = event.title;
+        var badge = document.getElementById('sheetBadge');
+        badge.textContent = sm.label;
+        badge.className   = 'badge ' + sm.cls + ' px-2 py-1';
+
+        var html = '';
+        html += '<div class="mb-2"><i class="fas fa-user mr-1 text-muted"></i>'
+             + '<strong>신청자:</strong> ' + esc(props.memberName) + '</div>';
+        html += '<div class="mb-3"><i class="fas fa-calendar-alt mr-1 text-muted"></i>'
+             + '<strong>게첨 기간:</strong> ' + esc(props.startDate) + ' ~ ' + esc(endDisplay) + '</div>';
+        html += '<hr class="my-3">';
+        html += '<h6 class="font-weight-bold mb-2">'
+             + '<i class="fas fa-map-marker-alt mr-1 text-muted"></i>구간별 수량</h6>';
+
+        if (props.items && props.items.length > 0) {
+            html += '<table class="table table-sm table-bordered mb-0">';
+            html += '<thead class="thead-light"><tr>'
+                  + '<th>구간명</th><th class="text-center" style="width:80px">수량</th>'
+                  + '</tr></thead><tbody>';
+            props.items.forEach(function (item) {
+                html += '<tr><td>' + esc(item.name) + '</td>'
+                      + '<td class="text-center font-weight-bold">' + item.count + '</td></tr>';
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<p class="text-muted small">구간 정보 없음</p>';
+        }
+
+        document.getElementById('sheetBody').innerHTML = html;
+        document.getElementById('bottomSheet').classList.add('open');
+        document.getElementById('sheetOverlay').classList.add('open');
+    }
+
+    function closeSheet() {
+        document.getElementById('bottomSheet').classList.remove('open');
+        document.getElementById('sheetOverlay').classList.remove('open');
+    }
+
+    /* FullCalendar end 는 exclusive이므로 표시할 때 -1일 보정 */
+    function subtractDay(dateObj) {
+        var d = new Date(dateObj.getTime() - 86400000);
+        return d.toISOString().substring(0, 10);
+    }
+
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ── 목록탭 액션 ── */
     function deleteOrder(id) {
         if (!confirm('정말 삭제하시겠습니까?')) return;
-        var form = document.createElement('form');
-        form.method = 'post';
-        form.action = '/orders/' + id + '/cancel';
-        document.body.appendChild(form);
-        form.submit();
+        var f = document.createElement('form');
+        f.method = 'post'; f.action = '/orders/' + id + '/cancel';
+        document.body.appendChild(f); f.submit();
     }
 
     function payed(id) {
         if (!confirm('결제완료 처리하시겠습니까?')) return;
-        var form = document.createElement('form');
-        form.method = 'post';
-        form.action = '/orders/' + id + '/payed';
-        document.body.appendChild(form);
-        form.submit();
+        var f = document.createElement('form');
+        f.method = 'post'; f.action = '/orders/' + id + '/payed';
+        document.body.appendChild(f); f.submit();
     }
 </script>
+
+</body>
 </th:block>
 </html>

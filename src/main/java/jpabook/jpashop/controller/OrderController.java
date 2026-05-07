@@ -14,10 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jpabook.jpashop.domain.OrderItem;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +34,7 @@ public class OrderController {
     private final MemberService memberService;
     private final ItemService itemService;
     private final UserSecurityService userSecurityService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping("/layout")
     public String layout(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
@@ -161,7 +166,57 @@ public class OrderController {
         model.addAttribute("countPayed",  orders.stream().filter(o -> o.getStatus() == OrderStatus.PAYED).count());
         model.addAttribute("countCancel", orders.stream().filter(o -> o.getStatus() == OrderStatus.CANCEL).count());
 
+        String calendarJson;
+        try {
+            List<Order> allOrders = orderService.findOrders(new OrderSearch());
+            calendarJson = objectMapper.writeValueAsString(buildCalendarEvents(allOrders));
+        } catch (Exception e) {
+            calendarJson = "[]";
+        }
+        model.addAttribute("calendarEventsJson", calendarJson);
+
         return "order/orderList";
+    }
+
+    private List<Map<String, Object>> buildCalendarEvents(List<Order> allOrders) {
+        Map<Long, Map<String, Object>> eventMap = new LinkedHashMap<>();
+        for (Order o : allOrders) {
+            Long id = o.getId();
+            if (!eventMap.containsKey(id)) {
+                String color = o.getStatus() == OrderStatus.PAYED  ? "#1cc88a"
+                             : o.getStatus() == OrderStatus.CANCEL ? "#858796" : "#4e73df";
+                String endDate;
+                try { endDate = LocalDate.parse(o.getOrderEndDate()).plusDays(1).toString(); }
+                catch (Exception e) { endDate = o.getOrderEndDate(); }
+
+                Map<String, Object> ev = new LinkedHashMap<>();
+                ev.put("id",    id);
+                ev.put("title", o.getOrderName());
+                ev.put("start", o.getOrderStartDate());
+                ev.put("end",   endDate);
+                ev.put("color", color);
+
+                Map<String, Object> props = new LinkedHashMap<>();
+                props.put("memberName", o.getMember().getName());
+                props.put("status",     o.getStatus().name());
+                props.put("startDate",  o.getOrderStartDate());
+                props.put("endDate",    o.getOrderEndDate());
+                props.put("items",      new ArrayList<Map<String, Object>>());
+                ev.put("extendedProps", props);
+                eventMap.put(id, ev);
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>)
+                ((Map<String, Object>) eventMap.get(id).get("extendedProps")).get("items");
+            for (OrderItem oi : o.getOrderItems()) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("name",  oi.getItem().getName());
+                item.put("count", oi.getCount());
+                items.add(item);
+            }
+        }
+        return new ArrayList<>(eventMap.values());
     }
 
     @PostMapping("/orders/{orderId}/payed")
