@@ -3,24 +3,58 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="layout">
 <th:block layout:fragment="content">
+
+<style>
+.map-marker { display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; }
+.marker-bubble {
+    padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;
+    color: #fff; white-space: nowrap;
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    transition: transform 0.15s;
+}
+.marker-bubble:hover { transform: scale(1.08); }
+.marker-bubble.selected { border-color: #333; box-shadow: 0 0 0 3px rgba(0,0,0,0.25); transform: scale(1.15); }
+.marker-tail { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid; }
+.marker-success .marker-bubble { background:#28a745; }
+.marker-success .marker-tail   { border-top-color:#28a745; }
+.marker-warning .marker-bubble { background:#ffc107; color:#333; }
+.marker-warning .marker-tail   { border-top-color:#ffc107; }
+.marker-danger  .marker-bubble { background:#dc3545; }
+.marker-danger  .marker-tail   { border-top-color:#dc3545; }
+</style>
+
 <div class="container-fluid px-4 py-3">
 
-    <!-- 날짜 검색 -->
+    <!-- 날짜 검색 + 지도 버튼 -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">게첨 날짜 조회</h6>
+            <button type="button" class="btn btn-info btn-sm"
+                    data-toggle="modal" data-target="#flagMapModal">
+                <i class="fas fa-map-marked-alt mr-1"></i>구간 지도 보기
+            </button>
         </div>
-        <div class="card-body">
+        <div class="card-body py-2">
             <form th:object="${orderSearch}" class="form-inline">
-                <input type="date" id="date" name="startDate"
-                       th:field="*{findDate}"
-                       class="form-control mr-2">
+                <input type="date" th:field="*{findDate}" class="form-control mr-2">
                 <button type="submit" class="btn btn-primary">조회</button>
             </form>
         </div>
     </div>
 
-    <!-- 구간 현황 -->
+    <!-- 카카오 지도 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">구간 위치 지도</h6>
+            <small class="text-muted">마커 클릭 시 구간이 자동 선택됩니다</small>
+        </div>
+        <div class="card-body p-0">
+            <div id="kakaoMap" style="width:100%;height:420px;border-radius:0 0 4px 4px;"></div>
+        </div>
+    </div>
+
+    <!-- 구간 현황 (프로그레스 바) -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">구간별 잔여 현황</h6>
@@ -33,22 +67,34 @@
                     <th>시작지점</th>
                     <th>종료지점</th>
                     <th>총수량</th>
-                    <th>현재게시수량</th>
-                    <th>잔여수량</th>
+                    <th style="min-width:180px">잔여 현황</th>
+                    <th>상태</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="item : ${itemList}"
-                    th:classappend="${item.curStock == 0} ? 'table-danger' : (${item.curStock le 20} ? 'table-warning' : '')">
-                    <td th:text="${item.name}"></td>
-                    <td th:text="${item.startPlace}"></td>
-                    <td th:text="${item.endPlace}"></td>
-                    <td th:text="${item.stockQuantity}"></td>
-                    <td th:text="${item.usedStock}"></td>
-                    <td>
-                        <strong th:text="${item.curStock}"
-                                th:class="${item.curStock == 0} ? 'text-danger' : 'text-success'">
-                        </strong>
+                    th:classappend="${item.curStock == 0} ? 'table-danger' : ''">
+                    <td class="font-weight-bold align-middle" th:text="${item.name}"></td>
+                    <td class="align-middle" th:text="${item.startPlace}"></td>
+                    <td class="align-middle" th:text="${item.endPlace}"></td>
+                    <td class="align-middle" th:text="${item.stockQuantity}"></td>
+                    <td class="align-middle">
+                        <div class="d-flex align-items-center">
+                            <div class="progress flex-grow-1 mr-2" style="height:20px;">
+                                <div class="progress-bar font-weight-bold"
+                                     th:classappend="${item.curStock == 0 ? 'bg-danger' : (item.curStock le 20 ? 'bg-warning' : 'bg-success')}"
+                                     role="progressbar"
+                                     th:style="|width: ${item.stockQuantity != 0 ? item.curStock * 100 / item.stockQuantity : 0}%|"
+                                     th:text="${item.curStock} + '/' + ${item.stockQuantity}">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-middle">
+                        <span class="badge badge-pill"
+                              th:classappend="${item.curStock == 0 ? 'badge-danger' : (item.curStock le 20 ? 'badge-warning' : 'badge-success')}"
+                              th:text="${item.curStock == 0 ? '마감' : (item.curStock le 20 ? '부족' : '여유')}">
+                        </span>
                     </td>
                 </tr>
                 </tbody>
@@ -63,7 +109,6 @@
         </div>
         <div class="card-body">
             <form id="orderForm" action="/order" method="post">
-                <!-- 백엔드 전송용 숨김 필드 -->
                 <input type="hidden" id="hiddenStartDate" name="startDate">
                 <input type="hidden" id="hiddenTerm" name="term" value="30">
                 <select id="memberSelect" name="memberId" style="display:none">
@@ -71,7 +116,6 @@
                 </select>
                 <div id="hiddenItemInputs"></div>
 
-                <!-- 입력 행 -->
                 <div class="row align-items-end">
                     <div class="col-md-4 form-group mb-2">
                         <label class="font-weight-bold">공연명</label>
@@ -114,7 +158,6 @@
                     </div>
                 </div>
 
-                <!-- 선택된 구간 목록 -->
                 <div id="selectedSection" style="display:none" class="mt-2">
                     <hr>
                     <h6 class="font-weight-bold mb-3">선택된 구간 목록</h6>
@@ -147,32 +190,131 @@
 
 </div>
 
+<!-- 구간 지도 모달 -->
+<div class="modal fade" id="flagMapModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold">구간 지도</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-1">
+                <img src="/assets/img/yeasuFlagMap2.png" class="img-fluid w-100" alt="구간 지도">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 카카오맵 API -->
+<script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
+
 <script th:inline="javascript">
-    var serverDate = /*[[${startDate}]]*/ null;
-    var UNIT_PRICE = 30000;
-    var selectedItems = []; // { date, memberId, orderName, itemId, itemText, count, term }
+    var serverDate   = /*[[${startDate}]]*/ null;
+    var itemListData = /*[[${itemList}]]*/ [];
+    var UNIT_PRICE   = 30000;
+    var selectedItems = [];
+
+    // 14구간 중심 좌표 (여수시 국동사거리 → 학동삼거리)
+    var SECTION_COORDS = [
+        { lat: 34.7393, lng: 127.7481 }, // 1구간
+        { lat: 34.7399, lng: 127.7450 }, // 2구간
+        { lat: 34.7363, lng: 127.7363 }, // 3구간
+        { lat: 34.7308, lng: 127.7196 }, // 4구간
+        { lat: 34.7260, lng: 127.7112 }, // 5구간
+        { lat: 34.7237, lng: 127.7038 }, // 6구간
+        { lat: 34.7251, lng: 127.6958 }, // 7구간
+        { lat: 34.7293, lng: 127.6882 }, // 8구간
+        { lat: 34.7350, lng: 127.6822 }, // 9구간
+        { lat: 34.7403, lng: 127.6769 }, // 10구간
+        { lat: 34.7452, lng: 127.6713 }, // 11구간
+        { lat: 34.7492, lng: 127.6653 }, // 12구간
+        { lat: 34.7528, lng: 127.6591 }, // 13구간
+        { lat: 34.7556, lng: 127.6525 }  // 14구간
+    ];
+
+    var overlays    = []; // { itemId, overlay, coord, item }
+    var kakaoMapObj = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
-        var date = serverDate || today;
-        document.getElementById('date').value = date;
-        document.getElementById('hiddenStartDate').value = date;
+        document.getElementById('hiddenStartDate').value = serverDate || today;
     });
 
+    /* ---- 마커 헬퍼 ---- */
+    function colorClass(curStock) {
+        return curStock === 0 ? 'marker-danger' : (curStock <= 20 ? 'marker-warning' : 'marker-success');
+    }
+
+    function markerContent(item, selected) {
+        var cc = colorClass(item.curStock);
+        var bc = 'marker-bubble' + (selected ? ' selected' : '');
+        return '<div class="map-marker ' + cc + '" onclick="onMarkerClick(\'' + item.id + '\')">'
+             + '<div class="' + bc + '">' + item.name + ' (' + item.curStock + ')</div>'
+             + '<div class="marker-tail"></div>'
+             + '</div>';
+    }
+
+    window.onMarkerClick = function (itemId) {
+        var sid = String(itemId);
+        document.getElementById('itemSelect').value = sid;
+        applyHighlight(sid);
+    };
+
+    function applyHighlight(itemId) {
+        overlays.forEach(function (o) {
+            o.overlay.setContent(markerContent(o.item, String(o.item.id) === String(itemId)));
+        });
+    }
+
+    /* ---- 카카오맵 초기화 ---- */
+    kakao.maps.load(function () {
+        var container = document.getElementById('kakaoMap');
+        kakaoMapObj = new kakao.maps.Map(container, {
+            center: new kakao.maps.LatLng(34.7390, 127.7080),
+            level: 8
+        });
+
+        itemListData.forEach(function (item, idx) {
+            var coord = SECTION_COORDS[idx];
+            if (!coord) return;
+            var overlay = new kakao.maps.CustomOverlay({
+                map: kakaoMapObj,
+                position: new kakao.maps.LatLng(coord.lat, coord.lng),
+                content: markerContent(item, false),
+                yAnchor: 1
+            });
+            overlays.push({ itemId: String(item.id), overlay: overlay, coord: coord, item: item });
+        });
+
+        document.getElementById('itemSelect').addEventListener('change', function () {
+            var id = this.value;
+            if (!id) return;
+            var found = overlays.find(function (o) { return o.itemId === id; });
+            if (found) {
+                kakaoMapObj.panTo(new kakao.maps.LatLng(found.coord.lat, found.coord.lng));
+                kakaoMapObj.setLevel(5, { animate: true });
+                applyHighlight(id);
+            }
+        });
+    });
+
+    /* ---- 주문 폼 로직 ---- */
     function onTermChange(radio) {
         document.getElementById('hiddenTerm').value = radio.value;
     }
 
     function calcPrice(count, term) {
-        var unitPrice = term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE;
-        return unitPrice * parseInt(count);
+        return (term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE) * parseInt(count);
     }
 
     function addItem() {
         var orderName = document.getElementById('orderNameInput').value.trim();
-        var itemSelect = document.getElementById('itemSelect');
-        var itemId    = itemSelect.value;
-        var itemText  = itemSelect.options[itemSelect.selectedIndex].text;
+        var sel       = document.getElementById('itemSelect');
+        var itemId    = sel.value;
+        var itemText  = sel.options[sel.selectedIndex].text;
         var count     = document.getElementById('countSelect').value;
         var term      = document.querySelector('input[name="termRadio"]:checked').value;
         var date      = document.getElementById('hiddenStartDate').value;
@@ -181,10 +323,8 @@
         if (!orderName) { alert('공연명을 입력하세요.');  return; }
         if (!itemId)    { alert('구간을 선택하세요.');    return; }
         if (!count)     { alert('수량을 선택하세요.');    return; }
-
-        if (selectedItems.some(function(i) { return i.itemId === itemId; })) {
-            alert('이미 추가된 구간입니다. 삭제 후 다시 추가하세요.');
-            return;
+        if (selectedItems.some(function (i) { return i.itemId === itemId; })) {
+            alert('이미 추가된 구간입니다. 삭제 후 다시 추가하세요.'); return;
         }
 
         selectedItems.push({
@@ -193,54 +333,44 @@
             count: count, term: term,
             price: calcPrice(count, term)
         });
-
         renderTable();
     }
 
     function removeItem(itemId) {
-        selectedItems = selectedItems.filter(function(i) { return i.itemId !== itemId; });
+        selectedItems = selectedItems.filter(function (i) { return i.itemId !== itemId; });
         renderTable();
     }
 
     function renderTable() {
         var tbody   = document.getElementById('selectedTableBody');
         var section = document.getElementById('selectedSection');
-
         if (selectedItems.length === 0) {
             section.style.display = 'none';
             tbody.innerHTML = '';
             return;
         }
-
         section.style.display = 'block';
-
-        tbody.innerHTML = selectedItems.map(function(item) {
+        tbody.innerHTML = selectedItems.map(function (item) {
             return '<tr>'
                 + '<td>' + item.itemText + '</td>'
                 + '<td>' + item.count + '</td>'
                 + '<td>' + item.term + '일</td>'
                 + '<td class="text-primary font-weight-bold">' + item.price.toLocaleString() + '원</td>'
-                + '<td><button type="button" class="btn btn-danger btn-sm" onclick="removeItem(\'' + item.itemId + '\')">삭제</button></td>'
+                + '<td><button type="button" class="btn btn-danger btn-sm"'
+                + ' onclick="removeItem(\'' + item.itemId + '\')">삭제</button></td>'
                 + '</tr>';
         }).join('');
-
-        var total = selectedItems.reduce(function(sum, i) { return sum + i.price; }, 0);
+        var total = selectedItems.reduce(function (s, i) { return s + i.price; }, 0);
         document.getElementById('totalPriceCell').textContent = total.toLocaleString() + '원';
     }
 
     function prepareSubmit() {
-        if (selectedItems.length === 0) {
-            alert('구간을 추가해주세요.');
-            return false;
-        }
-
-        // 백엔드 형식: date%memberId%orderName%itemId%count%term
-        var container = document.getElementById('hiddenItemInputs');
-        container.innerHTML = selectedItems.map(function(item) {
+        if (selectedItems.length === 0) { alert('구간을 추가해주세요.'); return false; }
+        var c = document.getElementById('hiddenItemInputs');
+        c.innerHTML = selectedItems.map(function (item) {
             var val = [item.date, item.memberId, item.orderName, item.itemId, item.count, item.term].join('%');
             return '<input type="hidden" name="addItem" value="' + val + '">';
         }).join('');
-
         return true;
     }
 </script>
