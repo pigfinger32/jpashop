@@ -34,7 +34,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "jpashop-app.jar,Dockerfile,docker-compose.yml"
+          source: "jpashop-app.jar,Dockerfile,docker-compose.yml,nginx/nginx.conf"
           target: "/home/${{ secrets.SERVER_USER }}/jpashop"
 
       - name: Deploy with Docker Compose
@@ -55,10 +55,10 @@ jobs:
 
             sleep 20
 
-            if curl -sf http://localhost:8080 > /dev/null 2>&1; then
+            if curl -sf http://localhost > /dev/null 2>&1; then
               echo "Deployment successful"
             else
               echo "Health check failed. Printing logs:"
-              docker compose logs app --tail=50
+              docker compose logs --tail=50
               exit 1
             fi
