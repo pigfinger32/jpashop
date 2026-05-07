@@ -159,6 +159,12 @@ public class OrderService {
         orderRepository.deleteById(orderId);
     }
 
+    private int extractSectionNumber(String name) {
+        if (name == null) return 0;
+        String digits = name.replaceAll("[^0-9]", "");
+        return digits.isEmpty() ? 0 : Integer.parseInt(digits);
+    }
+
     @Transactional
     public void payed(Long orderId) {
         Order order = orderRepository.findOne(orderId);
@@ -184,7 +190,11 @@ public class OrderService {
                 result.add(tmpOrder);
             }
         }
-        Collections.sort(result);
+        result.sort((a, b) -> {
+            String nameA = a.getOrderItems().isEmpty() ? "" : a.getOrderItems().get(0).getItem().getName();
+            String nameB = b.getOrderItems().isEmpty() ? "" : b.getOrderItems().get(0).getItem().getName();
+            return Integer.compare(extractSectionNumber(nameA), extractSectionNumber(nameB));
+        });
         return result;
     }
 }

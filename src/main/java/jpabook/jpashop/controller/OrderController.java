@@ -178,13 +178,28 @@ public class OrderController {
         return "order/orderList";
     }
 
+    private static final String[] COLOR_PALETTE = {
+        "#4e73df","#e74a3b","#fd7e14","#f6c23e","#6f42c1",
+        "#20c9a6","#e83e8c","#17a2b8","#795548","#607d8b",
+        "#2196f3","#ff5722","#8bc34a","#9c27b0","#00bcd4"
+    };
+
     private List<Map<String, Object>> buildCalendarEvents(List<Order> allOrders) {
+        Map<String, String> nameColorMap = new LinkedHashMap<>();
         Map<Long, Map<String, Object>> eventMap = new LinkedHashMap<>();
         for (Order o : allOrders) {
             Long id = o.getId();
             if (!eventMap.containsKey(id)) {
-                String color = o.getStatus() == OrderStatus.PAYED  ? "#1cc88a"
-                             : o.getStatus() == OrderStatus.CANCEL ? "#858796" : "#4e73df";
+                String color;
+                if (o.getStatus() == OrderStatus.CANCEL) {
+                    color = "#adb5bd";
+                } else {
+                    String name = o.getOrderName() != null ? o.getOrderName() : "";
+                    if (!nameColorMap.containsKey(name)) {
+                        nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
+                    }
+                    color = nameColorMap.get(name);
+                }
                 String endDate;
                 try { endDate = LocalDate.parse(o.getOrderEndDate()).plusDays(1).toString(); }
                 catch (Exception e) { endDate = o.getOrderEndDate(); }
