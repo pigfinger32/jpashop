@@ -218,38 +218,44 @@
     var UNIT_PRICE   = 30000;
     var selectedItems = [];
 
-    // 14구간 중심 좌표 (여수시 국동사거리 → 학동삼거리)
+    // 구간별 시작/종료 좌표 (null = 미등록)
     var SECTION_COORDS = [
-        { lat: 34.7393, lng: 127.7481 }, // 1구간
-        { lat: 34.7399, lng: 127.7450 }, // 2구간
-        { lat: 34.7363, lng: 127.7363 }, // 3구간
-        { lat: 34.7308, lng: 127.7196 }, // 4구간
-        { lat: 34.7260, lng: 127.7112 }, // 5구간
-        { lat: 34.7237, lng: 127.7038 }, // 6구간
-        { lat: 34.7251, lng: 127.6958 }, // 7구간
-        { lat: 34.7293, lng: 127.6882 }, // 8구간
-        { lat: 34.7350, lng: 127.6822 }, // 9구간
-        { lat: 34.7403, lng: 127.6769 }, // 10구간
-        { lat: 34.7452, lng: 127.6713 }, // 11구간
-        { lat: 34.7492, lng: 127.6653 }, // 12구간
-        { lat: 34.7528, lng: 127.6591 }, // 13구간
-        { lat: 34.7556, lng: 127.6525 }  // 14구간
+        { s: { lat: 34.761700, lng: 127.640006 }, e: { lat: 34.761312, lng: 127.662159 } }, // 1구간
+        { s: { lat: 34.777268, lng: 127.651583 }, e: { lat: 34.761058, lng: 127.655909 } }, // 2구간
+        { s: { lat: 34.766467, lng: 127.662748 }, e: { lat: 34.764251, lng: 127.656066 } }, // 3구간
+        null, // 4구간
+        null, // 5구간
+        null, // 6구간
+        null, // 7구간
+        null, // 8구간
+        null, // 9구간
+        null, // 10구간
+        null, // 11구간
+        null, // 12구간
+        null, // 13구간
+        null  // 14구간
     ];
 
-    var overlays    = []; // { itemId, overlay, coord, item }
+    var overlays    = []; // { itemId, polyline, overlay, midCoord, item }
     var kakaoMapObj = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
         document.getElementById('hiddenStartDate').value = serverDate || today;
+        // 날짜 조회 입력창 당일 기본값
+        var dateInput = document.getElementById('findDate');
+        if (dateInput && !dateInput.value) dateInput.value = today;
     });
 
-    /* ---- 마커 헬퍼 ---- */
+    /* ---- 색상 헬퍼 ---- */
+    function strokeColor(curStock) {
+        return curStock === 0 ? '#dc3545' : (curStock <= 20 ? '#ffc107' : '#28a745');
+    }
     function colorClass(curStock) {
         return curStock === 0 ? 'marker-danger' : (curStock <= 20 ? 'marker-warning' : 'marker-success');
     }
 
-    function markerContent(item, selected) {
+    function labelContent(item, selected) {
         var cc = colorClass(item.curStock);
         var bc = 'marker-bubble' + (selected ? ' selected' : '');
         return '<div class="map-marker ' + cc + '" onclick="onMarkerClick(\'' + item.id + '\')">'
@@ -266,7 +272,9 @@
 
     function applyHighlight(itemId) {
         overlays.forEach(function (o) {
-            o.overlay.setContent(markerContent(o.item, String(o.item.id) === String(itemId)));
+            var selected = String(o.item.id) === String(itemId);
+            o.overlay.setContent(labelContent(o.item, selected));
+            if (o.polyline) o.polyline.setOptions({ strokeWeight: selected ? 9 : 5, strokeOpacity: selected ? 1 : 0.75 });
         });
     }
 
@@ -290,20 +298,44 @@
             try {
                 var container = document.getElementById('kakaoMap');
                 kakaoMapObj = new kakao.maps.Map(container, {
-                    center: new kakao.maps.LatLng(34.7390, 127.7080),
-                    level: 8
+                    center: new kakao.maps.LatLng(34.766, 127.655),
+                    level: 7
                 });
 
                 itemListData.forEach(function (item, idx) {
                     var coord = SECTION_COORDS[idx];
-                    if (!coord) return;
+                    var polyline = null;
+                    var midLat, midLng;
+
+                    if (coord) {
+                        // 시작~종료 선 그리기
+                        var color = strokeColor(item.curStock);
+                        polyline = new kakao.maps.Polyline({
+                            map: kakaoMapObj,
+                            path: [
+                                new kakao.maps.LatLng(coord.s.lat, coord.s.lng),
+                                new kakao.maps.LatLng(coord.e.lat, coord.e.lng)
+                            ],
+                            strokeWeight: 5,
+                            strokeColor: color,
+                            strokeOpacity: 0.75,
+                            strokeStyle: 'solid'
+                        });
+                        kakao.maps.event.addListener(polyline, 'click', function () { onMarkerClick(item.id); });
+                        midLat = (coord.s.lat + coord.e.lat) / 2;
+                        midLng = (coord.s.lng + coord.e.lng) / 2;
+                    } else {
+                        return; // 좌표 미등록 구간은 건너뜀
+                    }
+
                     var overlay = new kakao.maps.CustomOverlay({
                         map: kakaoMapObj,
-                        position: new kakao.maps.LatLng(coord.lat, coord.lng),
-                        content: markerContent(item, false),
+                        position: new kakao.maps.LatLng(midLat, midLng),
+                        content: labelContent(item, false),
                         yAnchor: 1
                     });
-                    overlays.push({ itemId: String(item.id), overlay: overlay, coord: coord, item: item });
+                    overlays.push({ itemId: String(item.id), polyline: polyline, overlay: overlay,
+                                    midCoord: { lat: midLat, lng: midLng }, item: item });
                 });
 
                 document.getElementById('itemSelect').addEventListener('change', function () {
@@ -311,7 +343,7 @@
                     if (!id) return;
                     var found = overlays.find(function (o) { return o.itemId === id; });
                     if (found) {
-                        kakaoMapObj.panTo(new kakao.maps.LatLng(found.coord.lat, found.coord.lng));
+                        kakaoMapObj.panTo(new kakao.maps.LatLng(found.midCoord.lat, found.midCoord.lng));
                         kakaoMapObj.setLevel(5, { animate: true });
                         applyHighlight(id);
                     }
