@@ -154,13 +154,15 @@ public class OrderService {
      * */
     @Transactional
     public void cancle(Long orderId) {
-        //주문조회
         Order order = orderRepository.findOne(orderId);
-
-        //주문취소
         order.cancel(orderId);
         orderRepository.deleteById(orderId);
+    }
 
+    @Transactional
+    public void payed(Long orderId) {
+        Order order = orderRepository.findOne(orderId);
+        order.setStatus(OrderStatus.PAYED);
     }
 
 

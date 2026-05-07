@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -144,17 +145,29 @@ public class OrderController {
 
     @GetMapping("/orders")
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
-        //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
-        if(userId == "anonymousUser") //로그인 안했다면
+        if(userId == "anonymousUser")
             return "login_form";
+
+        if (orderSearch.getFindDate() == null || orderSearch.getFindDate().isEmpty()) {
+            orderSearch.setFindDate(LocalDate.now().toString());
+        }
 
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
         model.addAttribute("date", orderSearch.getFindDate());
         model.addAttribute("startDate", orderSearch.getFindDate());
+        model.addAttribute("countOrder",  orders.stream().filter(o -> o.getStatus() == OrderStatus.ORDER).count());
+        model.addAttribute("countPayed",  orders.stream().filter(o -> o.getStatus() == OrderStatus.PAYED).count());
+        model.addAttribute("countCancel", orders.stream().filter(o -> o.getStatus() == OrderStatus.CANCEL).count());
 
         return "order/orderList";
+    }
+
+    @PostMapping("/orders/{orderId}/payed")
+    public String payedOrder(@PathVariable("orderId") Long orderId) {
+        orderService.payed(orderId);
+        return "redirect:/orders";
     }
 
     @GetMapping("/myOrders")

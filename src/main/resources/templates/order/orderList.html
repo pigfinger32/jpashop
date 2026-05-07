@@ -2,191 +2,159 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
       layout:decorate="layout">
-<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
 
 <th:block layout:fragment="content">
-    <!-- Begin Page Content -->
-    <body id="page-top" >
-    <div class="container">
-        <div>
-            <div>
-                <form th:object="${orderSearch}" class="form-inline">
-                    <label for="date">날짜를 선택하세요:
-                        <input type="date"
-                               id="date"
-                               max="2040-06-20"
-                               min="2022-07-01"
-                               value="2077-06-15"
-                               th:field="*{findDate}" class="form-control">
-                    </label>
-                    <!--                <div class="form-group mb-2">-->
-                    <!--                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>-->
-                    <!--                </div>-->
-                    <!--                <div class="form-group mb-2">-->
-                    <!--                    <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>-->
-                    <!--                </div>-->
-                    <div class="form-group mx-sm-1 mb-2">
-                        <select th:field="*{orderStatus}" class="form-control" style="font-size=10px;display:none ">
-                            <option value="">주문상태</option>
-                            <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
-                                    th:value="${status}"
-                                    th:text="${status}">option
-                            </option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary mb-2">검색</button>
-                </form>
-            </div>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>회원명</th>
-                    <th>구간명</th>
-                    <th>공연명</th>
-                    <th>가격</th>
-                    <th>수량</th>
-                    <th>상태</th>
-                    <th>시작</th>
-                    <th>종료</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="item : ${orders}">
-                    <td th:text="${item.member.name}"></td>
-                    <td th:text="${item.orderItems[0].item.name}"></td>
-                    <td th:text="${item.orderName}"></td>
-                    <td th:text="${item.orderItems[0].orderPrice}"></td>
-                    <td th:text="${item.orderItems[0].count}"></td>
-                    <td th:text="${item.status}"></td>
-                    <td th:text="${item.orderStartDate}"></td>
-                    <td th:text="${item.orderEndDate}"></td>
-                    <td>
-                        <!--                    <a th:if="${item.status.name() == 'ORDER'}" href="#"-->
-                        <a href="#"
-                           th:href="'javascript:cancel('+${item.id}+')'"
-                           sec:authorize="hasRole('ADMIN')"
-                           class="btn btn-danger">CANCEL</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+<body id="page-top">
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">가로기 지정 게시대 현황</h1>
+    </div>
+
+    <!-- 날짜 검색 폼 -->
+    <div class="card shadow mb-4">
+        <div class="card-body py-3">
+            <form th:object="${orderSearch}" class="form-inline" id="searchForm">
+                <label for="date" class="mr-2 font-weight-bold">날짜 조회</label>
+                <input type="date" id="date" max="2040-06-20" min="2022-07-01"
+                       th:field="*{findDate}" class="form-control mr-2">
+                <select th:field="*{orderStatus}" class="form-control" style="display:none">
+                    <option value="">주문상태</option>
+                    <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
+                            th:value="${status}" th:text="${status}">option</option>
+                </select>
+                <button type="submit" class="btn btn-primary">조회</button>
+            </form>
         </div>
-    </div> <!-- /container -->
+    </div>
 
-    </body>
-    <script th:inline="javascript">
-var startDate = [[${date}]];
-if (startDate){
-    document.getElementById('date').value = startDate;
-} else{
-    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
-}
+    <!-- 요약 통계 카드 -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-dark shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">전체</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#lists.size(orders)}">0</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">신청</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countOrder}">0</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-calendar-check fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">결제완료</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countPayed}">0</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-check-circle fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">취소</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${countCancel}">0</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-times-circle fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function cancel(id) {
-        var form = document.createElement("form");
-        form.setAttribute("method", "post");
-        form.setAttribute("action", "/orders/" + id + "/cancel");
+    <!-- 예약 목록 테이블 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">예약 목록</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="orderTable">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>회원명</th>
+                        <th>구간명</th>
+                        <th>공연명</th>
+                        <th>가격</th>
+                        <th>수량</th>
+                        <th>상태</th>
+                        <th>게첨 기간</th>
+                        <th sec:authorize="hasRole('ADMIN')">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${orders}"
+                        th:classappend="${item.status.name() == 'PAYED'} ? 'table-success' : (${item.status.name() == 'CANCEL'} ? 'table-secondary' : 'table-info')">
+                        <td th:text="${item.member.name}"></td>
+                        <td th:text="${item.orderItems[0].item.name}"></td>
+                        <td th:text="${item.orderName}"></td>
+                        <td th:text="${#numbers.formatInteger(item.orderItems[0].orderPrice, 0, 'COMMA') + '원'}"></td>
+                        <td th:text="${item.orderItems[0].count}"></td>
+                        <td>
+                            <span th:if="${item.status.name() == 'ORDER'}"  class="badge badge-primary">신청</span>
+                            <span th:if="${item.status.name() == 'PAYED'}"  class="badge badge-success">결제완료</span>
+                            <span th:if="${item.status.name() == 'CANCEL'}" class="badge badge-secondary">취소</span>
+                        </td>
+                        <td th:text="${item.orderStartDate + ' ~ ' + item.orderEndDate}"></td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <button th:if="${item.status.name() == 'ORDER'}"
+                                    th:onclick="'payed(' + ${item.id} + ')'"
+                                    class="btn btn-success btn-sm mr-1">결제처리</button>
+                            <button th:onclick="'deleteOrder(' + ${item.id} + ')'"
+                                    class="btn btn-danger btn-sm">삭제</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script th:inline="javascript">
+    var serverDate = [[${date}]];
+    document.getElementById('date').value = serverDate || new Date().toISOString().substring(0, 10);
+
+    function deleteOrder(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/orders/' + id + '/cancel';
         document.body.appendChild(form);
         form.submit();
     }
 
+    function payed(id) {
+        if (!confirm('결제완료 처리하시겠습니까?')) return;
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/orders/' + id + '/payed';
+        document.body.appendChild(form);
+        form.submit();
+    }
 </script>
 </th:block>
 </html>
-
-
-<!--<!DOCTYPE HTML>-->
-<!--<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">-->
-<!--<head th:replace="fragments/header :: header"/>-->
-<!--<body id="page-top" style="padding-top : 100px">-->
-<!--<div class="container">-->
-<!--    <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
-<!--    <div>-->
-<!--        <div>-->
-<!--            <form th:object="${orderSearch}" class="form-inline">-->
-<!--                <label for="date">날짜를 선택하세요:-->
-<!--                    <input type="date"-->
-<!--                           id="date"-->
-<!--                           max="2040-06-20"-->
-<!--                           min="2022-07-01"-->
-<!--                           value="2077-06-15"-->
-<!--                           th:field="*{findDate}" class="form-control">-->
-<!--                </label>-->
-<!--&lt;!&ndash;                <div class="form-group mb-2">&ndash;&gt;-->
-<!--&lt;!&ndash;                    <input type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>&ndash;&gt;-->
-<!--&lt;!&ndash;                </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                <div class="form-group mb-2">&ndash;&gt;-->
-<!--&lt;!&ndash;                    <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>&ndash;&gt;-->
-<!--&lt;!&ndash;                </div>&ndash;&gt;-->
-<!--                <div class="form-group mx-sm-1 mb-2">-->
-<!--                    <select th:field="*{orderStatus}" class="form-control" style="font-size=10px;display:none ">-->
-<!--                        <option value="">주문상태</option>-->
-<!--                        <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"-->
-<!--                                th:value="${status}"-->
-<!--                                th:text="${status}">option-->
-<!--                        </option>-->
-<!--                    </select>-->
-<!--                </div>-->
-<!--                <button type="submit" class="btn btn-primary mb-2">검색</button>-->
-<!--            </form>-->
-<!--        </div>-->
-<!--        <table class="table table-striped">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th>회원명</th>-->
-<!--                <th>구간명</th>-->
-<!--                <th>공연명</th>-->
-<!--                <th>가격</th>-->
-<!--                <th>수량</th>-->
-<!--                <th>상태</th>-->
-<!--                <th>시작</th>-->
-<!--                <th>종료</th>-->
-<!--                <th></th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            <tr th:each="item : ${orders}">-->
-<!--                <td th:text="${item.member.name}"></td>-->
-<!--                <td th:text="${item.orderItems[0].item.name}"></td>-->
-<!--                <td th:text="${item.orderName}"></td>-->
-<!--                <td th:text="${item.orderItems[0].orderPrice}"></td>-->
-<!--                <td th:text="${item.orderItems[0].count}"></td>-->
-<!--                <td th:text="${item.status}"></td>-->
-<!--                <td th:text="${item.orderStartDate}"></td>-->
-<!--                <td th:text="${item.orderEndDate}"></td>-->
-<!--                <td>-->
-<!--&lt;!&ndash;                    <a th:if="${item.status.name() == 'ORDER'}" href="#"&ndash;&gt;-->
-<!--                    <a href="#"-->
-<!--                       th:href="'javascript:cancel('+${item.id}+')'"-->
-<!--                       sec:authorize="hasRole('ADMIN')"-->
-<!--                       class="btn btn-danger">CANCEL</a>-->
-<!--                </td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-<!--    <div th:replace="fragments/footer :: footer"/>-->
-<!--</div> &lt;!&ndash; /container &ndash;&gt;-->
-
-<!--</body>-->
-<!--<script th:inline="javascript">-->
-<!--var startDate = [[${date}]];-->
-<!--if (startDate){-->
-<!--    document.getElementById('date').value = startDate;-->
-<!--} else{-->
-<!--    document.getElementById('date').value = new Date().toISOString().substring(0, 10);-->
-<!--}-->
-
-<!--    function cancel(id) {-->
-<!--        var form = document.createElement("form");-->
-<!--        form.setAttribute("method", "post");-->
-<!--        form.setAttribute("action", "/orders/" + id + "/cancel");-->
-<!--        document.body.appendChild(form);-->
-<!--        form.submit();-->
-<!--    }-->
-
-<!--</script>-->
-<!--</html>-->
-
-
