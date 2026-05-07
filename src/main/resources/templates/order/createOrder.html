@@ -209,7 +209,8 @@
 
 <!-- 카카오맵 API -->
 <script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"
+        onerror="showMapError('카카오맵 SDK 로드 실패')"></script>
 
 <script th:inline="javascript">
     var serverDate   = /*[[${startDate}]]*/ null;
@@ -270,36 +271,56 @@
     }
 
     /* ---- 카카오맵 초기화 ---- */
-    kakao.maps.load(function () {
-        var container = document.getElementById('kakaoMap');
-        kakaoMapObj = new kakao.maps.Map(container, {
-            center: new kakao.maps.LatLng(34.7390, 127.7080),
-            level: 8
-        });
+    function showMapError(msg) {
+        var el = document.getElementById('kakaoMap');
+        if (el) el.innerHTML =
+            '<div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">'
+          + '<i class="fas fa-map-marked-alt fa-3x mb-3"></i>'
+          + '<p class="mb-1 font-weight-bold">지도를 불러올 수 없습니다</p>'
+          + '<small>' + (msg || '') + '</small>'
+          + '<small class="mt-2 text-info">카카오 개발자 콘솔 → 플랫폼 → Web → 사이트 도메인에<br>'
+          + '<strong>http://180.210.82.98:8080</strong> 등록 필요</small>'
+          + '</div>';
+    }
 
-        itemListData.forEach(function (item, idx) {
-            var coord = SECTION_COORDS[idx];
-            if (!coord) return;
-            var overlay = new kakao.maps.CustomOverlay({
-                map: kakaoMapObj,
-                position: new kakao.maps.LatLng(coord.lat, coord.lng),
-                content: markerContent(item, false),
-                yAnchor: 1
-            });
-            overlays.push({ itemId: String(item.id), overlay: overlay, coord: coord, item: item });
-        });
+    if (typeof kakao === 'undefined') {
+        showMapError('카카오맵 SDK 로드 실패 (네트워크 또는 API 키 오류)');
+    } else {
+        kakao.maps.load(function () {
+            try {
+                var container = document.getElementById('kakaoMap');
+                kakaoMapObj = new kakao.maps.Map(container, {
+                    center: new kakao.maps.LatLng(34.7390, 127.7080),
+                    level: 8
+                });
 
-        document.getElementById('itemSelect').addEventListener('change', function () {
-            var id = this.value;
-            if (!id) return;
-            var found = overlays.find(function (o) { return o.itemId === id; });
-            if (found) {
-                kakaoMapObj.panTo(new kakao.maps.LatLng(found.coord.lat, found.coord.lng));
-                kakaoMapObj.setLevel(5, { animate: true });
-                applyHighlight(id);
+                itemListData.forEach(function (item, idx) {
+                    var coord = SECTION_COORDS[idx];
+                    if (!coord) return;
+                    var overlay = new kakao.maps.CustomOverlay({
+                        map: kakaoMapObj,
+                        position: new kakao.maps.LatLng(coord.lat, coord.lng),
+                        content: markerContent(item, false),
+                        yAnchor: 1
+                    });
+                    overlays.push({ itemId: String(item.id), overlay: overlay, coord: coord, item: item });
+                });
+
+                document.getElementById('itemSelect').addEventListener('change', function () {
+                    var id = this.value;
+                    if (!id) return;
+                    var found = overlays.find(function (o) { return o.itemId === id; });
+                    if (found) {
+                        kakaoMapObj.panTo(new kakao.maps.LatLng(found.coord.lat, found.coord.lng));
+                        kakaoMapObj.setLevel(5, { animate: true });
+                        applyHighlight(id);
+                    }
+                });
+            } catch (e) {
+                showMapError(e.message);
             }
         });
-    });
+    }
 
     /* ---- 주문 폼 로직 ---- */
     function onTermChange(radio) {
