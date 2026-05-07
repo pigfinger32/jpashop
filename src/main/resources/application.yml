@@ -1,16 +1,9 @@
 spring:
   datasource:
-    # 기존 RDS (flagmysql) 설정은 주석 처리됨
-     url: jdbc:mysql://flagmysql.cpakwuq24j8f.ap-northeast-2.rds.amazonaws.com:3306/jpashop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-     username: root
-     password: 12341234
-     driver-class-name: com.mysql.cj.jdbc.Driver
-
-    # localhost MySQL 설정 (활성화됨)
-#    url: jdbc:mysql://localhost:3306/jpabook?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-#    username: root
-#    password: 12341234!
-#    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/jpashop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     open-in-view: true
