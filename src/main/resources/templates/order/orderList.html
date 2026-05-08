@@ -51,7 +51,30 @@
 /* ── FullCalendar overrides ── */
 .fc .fc-button { font-size: 0.82rem !important; padding: 4px 10px !important; }
 .fc .fc-toolbar-title { font-size: 1.1rem !important; }
-.fc-event { cursor: pointer; }
+.fc-event { cursor: pointer; border-radius: 4px !important; }
+.fc-event-title { font-weight: 600 !important; font-size: 0.8rem !important; }
+
+/* 오늘 날짜 셀 배경 */
+.fc-day-today { background-color: rgba(255, 243, 205, 0.55) !important; }
+
+/* 오늘 날짜 숫자 — 주황 원 */
+.fc-day-today .fc-daygrid-day-number {
+    background: #ff9800;
+    color: #fff !important;
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin: 2px;
+    line-height: 1;
+}
+
+/* 임박 이벤트: 왼쪽 테두리를 두껍게 */
+.fc-event[style*="rgba(231,74,59"] {
+    border-left-width: 3px !important;
+}
 </style>
 
 <div class="container-fluid">

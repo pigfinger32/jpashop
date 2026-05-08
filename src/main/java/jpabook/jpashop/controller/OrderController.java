@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabook.jpashop.domain.OrderItem;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -178,38 +179,69 @@ public class OrderController {
         return "order/orderList";
     }
 
+    // 공연별 기본 색상 팔레트 (배경 rgba 계산에 사용)
     private static final String[] COLOR_PALETTE = {
-        "#4e73df","#e74a3b","#fd7e14","#f6c23e","#6f42c1",
-        "#20c9a6","#e83e8c","#17a2b8","#795548","#607d8b",
-        "#2196f3","#ff5722","#8bc34a","#9c27b0","#00bcd4"
+        "#4e73df","#20c9a6","#fd7e14","#6f42c1","#17a2b8",
+        "#607d8b","#2196f3","#ff5722","#8bc34a","#9c27b0",
+        "#00bcd4","#e91e63","#009688","#ff9800","#673ab7"
     };
 
     private List<Map<String, Object>> buildCalendarEvents(List<Order> allOrders) {
         Map<String, String> nameColorMap = new LinkedHashMap<>();
         Map<Long, Map<String, Object>> eventMap = new LinkedHashMap<>();
+        LocalDate today = LocalDate.now();
+
         for (Order o : allOrders) {
             Long id = o.getId();
             if (!eventMap.containsKey(id)) {
-                String color;
+
+                String bgColor, borderColor, textColor;
+
                 if (o.getStatus() == OrderStatus.CANCEL) {
-                    color = "#adb5bd";
+                    bgColor     = "rgba(173,181,189,0.18)";
+                    borderColor = "rgba(173,181,189,0.6)";
+                    textColor   = "#868e96";
                 } else {
-                    String name = o.getOrderName() != null ? o.getOrderName() : "";
-                    if (!nameColorMap.containsKey(name)) {
-                        nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
+                    // 시작 또는 종료가 오늘 기준 7일 이내이면 임박(빨강 계열)
+                    LocalDate evStart, evEnd;
+                    try { evStart = LocalDate.parse(o.getOrderStartDate()); } catch (Exception e) { evStart = today; }
+                    try { evEnd   = LocalDate.parse(o.getOrderEndDate());   } catch (Exception e) { evEnd   = today; }
+                    long daysToStart = ChronoUnit.DAYS.between(today, evStart);
+                    long daysToEnd   = ChronoUnit.DAYS.between(today, evEnd);
+                    boolean imminent = (daysToStart >= 0 && daysToStart <= 7)
+                                    || (daysToEnd   >= 0 && daysToEnd   <= 7);
+
+                    if (imminent) {
+                        bgColor     = "rgba(231,74,59,0.14)";
+                        borderColor = "rgba(231,74,59,0.75)";
+                        textColor   = "#c0392b";
+                    } else {
+                        String name = o.getOrderName() != null ? o.getOrderName() : "";
+                        if (!nameColorMap.containsKey(name)) {
+                            nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
+                        }
+                        int[] rgb   = hexToRgb(nameColorMap.get(name));
+                        bgColor     = String.format("rgba(%d,%d,%d,0.13)", rgb[0], rgb[1], rgb[2]);
+                        borderColor = String.format("rgba(%d,%d,%d,0.65)", rgb[0], rgb[1], rgb[2]);
+                        textColor   = String.format("rgb(%d,%d,%d)",
+                                          Math.max(0, rgb[0] - 40),
+                                          Math.max(0, rgb[1] - 40),
+                                          Math.max(0, rgb[2] - 40));
                     }
-                    color = nameColorMap.get(name);
                 }
-                String endDate;
-                try { endDate = LocalDate.parse(o.getOrderEndDate()).plusDays(1).toString(); }
-                catch (Exception e) { endDate = o.getOrderEndDate(); }
+
+                String calEnd;
+                try { calEnd = LocalDate.parse(o.getOrderEndDate()).plusDays(1).toString(); }
+                catch (Exception e) { calEnd = o.getOrderEndDate(); }
 
                 Map<String, Object> ev = new LinkedHashMap<>();
-                ev.put("id",    id);
-                ev.put("title", o.getOrderName());
-                ev.put("start", o.getOrderStartDate());
-                ev.put("end",   endDate);
-                ev.put("color", color);
+                ev.put("id",              id);
+                ev.put("title",           o.getOrderName());
+                ev.put("start",           o.getOrderStartDate());
+                ev.put("end",             calEnd);
+                ev.put("backgroundColor", bgColor);
+                ev.put("borderColor",     borderColor);
+                ev.put("textColor",       textColor);
 
                 Map<String, Object> props = new LinkedHashMap<>();
                 props.put("memberName", o.getMember().getName());
@@ -232,6 +264,14 @@ public class OrderController {
             }
         }
         return new ArrayList<>(eventMap.values());
+    }
+
+    private int[] hexToRgb(String hex) {
+        return new int[]{
+            Integer.parseInt(hex.substring(1, 3), 16),
+            Integer.parseInt(hex.substring(3, 5), 16),
+            Integer.parseInt(hex.substring(5, 7), 16)
+        };
     }
 
     @PostMapping("/orders/{orderId}/payed")
