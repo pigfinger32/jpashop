@@ -59,6 +59,9 @@ dependencies {
 	implementation group: 'nz.net.ultraq.thymeleaf', name: 'thymeleaf-layout-dialect'
 
 
+	// CoolSMS SDK
+	implementation 'net.nurigo:sdk:4.3.0'
+
 	testCompileOnly 'junit:junit:4.13.2'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

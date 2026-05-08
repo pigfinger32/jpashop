@@ -29,6 +29,7 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderItemRepository orderItemRepository;
     private final EntityManager em;
+    private final SmsService smsService;
 
     //주문시 DB락을 건 수량검색
     public List<OrderItemDTO> findItemsOfPossibleWithDBLock(OrderSearch orderSearch) {
@@ -140,6 +141,9 @@ public class OrderService {
 
         //주문 저장
         orderRepository.save(order);
+
+        //SMS 발송 (회원 전화번호가 등록된 경우)
+        smsService.sendOrderConfirmation(member.getPhone(), orderName, orderStartDate, orderEndDate);
 
         return order.getId();
     }

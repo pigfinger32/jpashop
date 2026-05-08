@@ -26,14 +26,17 @@ public class ReportRepository {
 	
     public List<SettlementRowDTO> getSettlement(String month) {
         String sql =
-            "SELECT od.orderName, m.name AS memberName, i.name AS itemName, oi.count, oi.orderPrice, " +
+            "SELECT od.orderName, m.name AS memberName, " +
+            "       DATEDIFF(od.orderEndDate, od.orderStartDate) AS term, " +
+            "       SUM(oi.count) AS totalCount, " +
+            "       MAX(oi.orderPrice) AS unitPrice, " +
             "       od.orderStartDate, od.orderEndDate, od.status " +
             "FROM orders od " +
             "JOIN OrderItem oi ON od.order_id = oi.order_id " +
-            "JOIN Item i ON oi.item_id = i.item_id " +
             "JOIN Member m ON od.member_id = m.member_id " +
             "WHERE DATE_FORMAT(od.orderStartDate, '%Y-%m') = :month " +
-            "ORDER BY od.orderName, LENGTH(i.name), i.name";
+            "GROUP BY od.order_id, od.orderName, m.name, od.orderStartDate, od.orderEndDate, od.status " +
+            "ORDER BY od.orderName, od.orderStartDate";
 
         Query query = em.createNativeQuery(sql);
         query.setParameter("month", month);
@@ -45,10 +48,14 @@ public class ReportRepository {
             dto.setRowType("DATA");
             dto.setOrderName((String) row[0]);
             dto.setMemberName((String) row[1]);
-            dto.setSectionName((String) row[2]);
-            dto.setCount(row[3] != null ? ((Number) row[3]).intValue() : 0);
-            dto.setUnitPrice(row[4] != null ? ((Number) row[4]).intValue() : 0);
-            dto.setAmount(dto.getCount() * dto.getUnitPrice());
+            dto.setTerm(row[2] != null ? ((Number) row[2]).intValue() : 30);
+            int count = row[3] != null ? ((Number) row[3]).intValue() : 0;
+            int unitPrice = row[4] != null ? ((Number) row[4]).intValue() : 0;
+            dto.setCount(count);
+            dto.setUnitPrice(unitPrice);
+            dto.setAmount(count * unitPrice);
+            dto.setAssociationFee(count * 3000);
+            dto.setOperationFee(count * (unitPrice - 3000));
             dto.setStartDate((String) row[5]);
             dto.setEndDate((String) row[6]);
             String st = (String) row[7];

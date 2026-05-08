@@ -36,6 +36,14 @@ public class OrderController {
     private final UserSecurityService userSecurityService;
     private final ObjectMapper objectMapper;
 
+    @GetMapping("/sectionStatus")
+    public String sectionStatus(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
+        List<OrderItemDTO> itemList = orderService.findItemsOfPossible(orderSearch);
+        model.addAttribute("itemList", itemList);
+        model.addAttribute("startDate", orderSearch.getFindDate());
+        return "order/sectionStatus";
+    }
+
     @GetMapping("/layout")
     public String layout(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
         //유저로그인체크

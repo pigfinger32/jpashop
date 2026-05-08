@@ -53,41 +53,22 @@ public class ReportController {
         List<SettlementRowDTO> result = new ArrayList<>();
         int seq = 1;
         int grandTotal = 0;
-        String currentName = null;
-        int subtotalAmt = 0;
+        int totalAssociationFee = 0;
+        int totalOperationFee = 0;
 
         for (SettlementRowDTO row : rawRows) {
-            String name = row.getOrderName() != null ? row.getOrderName() : "";
-            if (!name.equals(currentName)) {
-                // 이전 공연 소계 행 추가
-                if (currentName != null) {
-                    result.add(makeSubtotal(currentName, subtotalAmt));
-                    subtotalAmt = 0;
-                }
-                currentName = name;
-            }
             row.setSeq(seq++);
             result.add(row);
-            subtotalAmt += row.getAmount();
-            grandTotal  += row.getAmount();
+            grandTotal += row.getAmount();
+            totalAssociationFee += row.getAssociationFee();
+            totalOperationFee += row.getOperationFee();
         }
-        // 마지막 공연 소계
-        if (currentName != null) {
-            result.add(makeSubtotal(currentName, subtotalAmt));
-        }
-        // 총합계 행
         SettlementRowDTO total = new SettlementRowDTO();
         total.setRowType("TOTAL");
         total.setAmount(grandTotal);
+        total.setAssociationFee(totalAssociationFee);
+        total.setOperationFee(totalOperationFee);
         result.add(total);
         return result;
-    }
-
-    private SettlementRowDTO makeSubtotal(String orderName, int amount) {
-        SettlementRowDTO sub = new SettlementRowDTO();
-        sub.setRowType("SUBTOTAL");
-        sub.setOrderName(orderName);
-        sub.setAmount(amount);
-        return sub;
     }
 }

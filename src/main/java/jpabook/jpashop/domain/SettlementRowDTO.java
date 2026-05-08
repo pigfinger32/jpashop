@@ -16,4 +16,7 @@ public class SettlementRowDTO {
     private String startDate;  // 게첨 시작일
     private String endDate;    // 게첨 종료일
     private String statusLabel;// 신청 / 결제완료 / 취소
+    private int    term;           // 기간(일): 15 or 30
+    private int    associationFee; // 협회분 (count × 3,000)
+    private int    operationFee;   // 운영분 (count × (unitPrice - 3,000))
 }

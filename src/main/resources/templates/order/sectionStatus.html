@@ -26,7 +26,7 @@
 
 <div class="container-fluid px-4 py-3">
 
-    <!-- 날짜 검색 + 지도 버튼 -->
+    <!-- 날짜 검색 -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">게첨 날짜 조회</h6>
@@ -45,16 +45,15 @@
 
     <!-- 카카오 지도 -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">구간 위치 지도</h6>
-            <small class="text-muted">마커 클릭 시 구간이 자동 선택됩니다</small>
         </div>
         <div class="card-body p-0">
             <div id="kakaoMap" style="width:100%;height:420px;border-radius:0 0 4px 4px;"></div>
         </div>
     </div>
 
-    <!-- 구간 현황 (프로그레스 바) -->
+    <!-- 구간별 잔여 현황 -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">구간별 잔여 현황</h6>
@@ -68,7 +67,7 @@
                     <th>종료지점</th>
                     <th>총수량</th>
                     <th style="min-width:180px">잔여 현황</th>
-                    <th>상태</th>
+                    <th>현황</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -101,92 +100,6 @@
         </div>
     </div>
 
-    <!-- 예약 신청 폼 -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">예약 신청</h6>
-        </div>
-        <div class="card-body">
-            <form id="orderForm" action="/order" method="post">
-                <input type="hidden" id="hiddenStartDate" name="startDate">
-                <input type="hidden" id="hiddenTerm" name="term" value="30">
-                <select id="memberSelect" name="memberId" style="display:none">
-                    <option th:each="member : ${members}" th:value="${member.id}" th:text="${member.name}"/>
-                </select>
-                <div id="hiddenItemInputs"></div>
-
-                <div class="row align-items-end">
-                    <div class="col-md-4 form-group mb-2">
-                        <label class="font-weight-bold">공연명</label>
-                        <input type="text" id="orderNameInput" class="form-control" placeholder="공연명을 입력하세요">
-                    </div>
-                    <div class="col-md-3 form-group mb-2">
-                        <label class="font-weight-bold">구간 선택</label>
-                        <select id="itemSelect" class="form-control">
-                            <option value="">구간을 선택하세요</option>
-                            <option th:each="item : ${items}"
-                                    th:value="${item.id}"
-                                    th:text="${item.name}"/>
-                        </select>
-                    </div>
-                    <div class="col-md-2 form-group mb-2">
-                        <label class="font-weight-bold">수량</label>
-                        <select id="countSelect" class="form-control">
-                            <option value="">선택</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 form-group mb-2">
-                        <label class="font-weight-bold">주문기간(일)</label>
-                        <div class="mt-1">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="termRadio" id="term15" value="15" onchange="onTermChange(this)">
-                                <label class="form-check-label" for="term15">15Day</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="termRadio" id="term30" value="30" checked onchange="onTermChange(this)">
-                                <label class="form-check-label" for="term30">30Day</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-1 form-group mb-2">
-                        <button type="button" class="btn btn-success btn-block" onclick="addItem()">추가</button>
-                    </div>
-                </div>
-
-                <div id="selectedSection" style="display:none" class="mt-2">
-                    <hr>
-                    <h6 class="font-weight-bold mb-3">선택된 구간 목록</h6>
-                    <table class="table table-bordered text-center">
-                        <thead class="thead-light">
-                        <tr>
-                            <th>구간</th>
-                            <th>수량</th>
-                            <th>기간</th>
-                            <th>금액</th>
-                            <th>삭제</th>
-                        </tr>
-                        </thead>
-                        <tbody id="selectedTableBody"></tbody>
-                        <tfoot>
-                        <tr class="font-weight-bold bg-light">
-                            <td colspan="3" class="text-right">총 금액</td>
-                            <td class="text-primary" id="totalPriceCell">0원</td>
-                            <td></td>
-                        </tr>
-                        </tfoot>
-                    </table>
-                    <div class="text-right">
-                        <button type="submit" class="btn btn-primary btn-lg px-5" onclick="return prepareSubmit()">예약하기</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
 </div>
 
 <!-- 구간 지도 모달 -->
@@ -214,10 +127,7 @@
 <script th:inline="javascript">
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
-    var UNIT_PRICE   = 20000;
-    var selectedItems = [];
 
-    // 구간별 실제 도로 경로 (Kakao Mobility API 추출)
     var SECTION_COORDS = [
         { path: [ // 1구간
             {lat:34.761692,lng:127.63983},{lat:34.761999,lng:127.639818},{lat:34.763099,lng:127.639791},
@@ -375,20 +285,18 @@
         ]}
     ];
 
-    var overlays    = []; // { itemId, polyline, overlay, midCoord, item }
+    var overlays    = [];
     var kakaoMapObj = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
-        document.getElementById('hiddenStartDate').value = serverDate || today;
         var dateInput = document.getElementById('findDate');
         if (dateInput && !dateInput.value) {
             dateInput.value = today;
-            if (!serverDate) { dateInput.closest('form').submit(); } // 첫 진입 시 당일 자동 조회
+            if (!serverDate) { dateInput.closest('form').submit(); }
         }
     });
 
-    /* ---- 색상 헬퍼 ---- */
     function strokeColor(curStock) {
         return curStock === 0 ? '#dc3545' : (curStock <= 20 ? '#ffc107' : '#28a745');
     }
@@ -406,9 +314,7 @@
     }
 
     window.onMarkerClick = function (itemId) {
-        var sid = String(itemId);
-        document.getElementById('itemSelect').value = sid;
-        applyHighlight(sid);
+        applyHighlight(String(itemId));
     };
 
     function applyHighlight(itemId) {
@@ -423,7 +329,6 @@
         });
     }
 
-    /* ---- 카카오맵 초기화 ---- */
     function showMapError(msg) {
         var el = document.getElementById('kakaoMap');
         if (el) el.innerHTML =
@@ -431,8 +336,6 @@
           + '<i class="fas fa-map-marked-alt fa-3x mb-3"></i>'
           + '<p class="mb-1 font-weight-bold">지도를 불러올 수 없습니다</p>'
           + '<small>' + (msg || '') + '</small>'
-          + '<small class="mt-2 text-info">카카오 개발자 콘솔 → 플랫폼 → Web → 사이트 도메인에<br>'
-          + '<strong>http://180.210.82.98</strong> 등록 필요</small>'
           + '</div>';
     }
 
@@ -449,126 +352,33 @@
 
                 itemListData.forEach(function (item, idx) {
                     var coord = SECTION_COORDS[idx];
-                    var polyline = null;
-                    var midLat, midLng;
+                    if (!coord) return;
 
-                    if (coord) {
-                        // 실제 도로 경로로 선 그리기
-                        var color = strokeColor(item.curStock);
-                        polyline = new kakao.maps.Polyline({
-                            map: kakaoMapObj,
-                            path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
-                            strokeWeight: 5,
-                            strokeColor: color,
-                            strokeOpacity: 0.8,
-                            strokeStyle: 'solid'
-                        });
-                        kakao.maps.event.addListener(polyline, 'click', function () { onMarkerClick(item.id); });
-                        // 라벨은 경로 중간 지점에 배치
-                        var mid = coord.path[Math.floor(coord.path.length / 2)];
-                        midLat = mid.lat;
-                        midLng = mid.lng;
-                    } else {
-                        return; // 좌표 미등록 구간은 건너뜀
-                    }
+                    var color = strokeColor(item.curStock);
+                    var polyline = new kakao.maps.Polyline({
+                        map: kakaoMapObj,
+                        path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
+                        strokeWeight: 5,
+                        strokeColor: color,
+                        strokeOpacity: 0.8,
+                        strokeStyle: 'solid'
+                    });
+                    kakao.maps.event.addListener(polyline, 'click', function () { onMarkerClick(item.id); });
 
+                    var mid = coord.path[Math.floor(coord.path.length / 2)];
                     var overlay = new kakao.maps.CustomOverlay({
                         map: kakaoMapObj,
-                        position: new kakao.maps.LatLng(midLat, midLng),
+                        position: new kakao.maps.LatLng(mid.lat, mid.lng),
                         content: labelContent(item, false),
                         yAnchor: 1
                     });
                     overlays.push({ itemId: String(item.id), polyline: polyline, overlay: overlay,
-                                    midCoord: { lat: midLat, lng: midLng }, item: item });
-                });
-
-                document.getElementById('itemSelect').addEventListener('change', function () {
-                    var id = this.value;
-                    if (!id) return;
-                    var found = overlays.find(function (o) { return o.itemId === id; });
-                    if (found) {
-                        kakaoMapObj.panTo(new kakao.maps.LatLng(found.midCoord.lat, found.midCoord.lng));
-                        kakaoMapObj.setLevel(5, { animate: true });
-                        applyHighlight(id);
-                    }
+                                    midCoord: { lat: mid.lat, lng: mid.lng }, item: item });
                 });
             } catch (e) {
                 showMapError(e.message);
             }
         });
-    }
-
-    /* ---- 주문 폼 로직 ---- */
-    function onTermChange(radio) {
-        document.getElementById('hiddenTerm').value = radio.value;
-    }
-
-    function calcPrice(count, term) {
-        return (term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE) * parseInt(count);
-    }
-
-    function addItem() {
-        var orderName = document.getElementById('orderNameInput').value.trim();
-        var sel       = document.getElementById('itemSelect');
-        var itemId    = sel.value;
-        var itemText  = sel.options[sel.selectedIndex].text;
-        var count     = document.getElementById('countSelect').value;
-        var term      = document.querySelector('input[name="termRadio"]:checked').value;
-        var date      = document.getElementById('hiddenStartDate').value;
-        var memberId  = document.getElementById('memberSelect').value;
-
-        if (!orderName) { alert('공연명을 입력하세요.');  return; }
-        if (!itemId)    { alert('구간을 선택하세요.');    return; }
-        if (!count)     { alert('수량을 선택하세요.');    return; }
-        if (selectedItems.some(function (i) { return i.itemId === itemId; })) {
-            alert('이미 추가된 구간입니다. 삭제 후 다시 추가하세요.'); return;
-        }
-
-        selectedItems.push({
-            date: date, memberId: memberId, orderName: orderName,
-            itemId: itemId, itemText: itemText,
-            count: count, term: term,
-            price: calcPrice(count, term)
-        });
-        renderTable();
-    }
-
-    function removeItem(itemId) {
-        selectedItems = selectedItems.filter(function (i) { return i.itemId !== itemId; });
-        renderTable();
-    }
-
-    function renderTable() {
-        var tbody   = document.getElementById('selectedTableBody');
-        var section = document.getElementById('selectedSection');
-        if (selectedItems.length === 0) {
-            section.style.display = 'none';
-            tbody.innerHTML = '';
-            return;
-        }
-        section.style.display = 'block';
-        tbody.innerHTML = selectedItems.map(function (item) {
-            return '<tr>'
-                + '<td>' + item.itemText + '</td>'
-                + '<td>' + item.count + '</td>'
-                + '<td>' + item.term + '일</td>'
-                + '<td class="text-primary font-weight-bold">' + item.price.toLocaleString() + '원</td>'
-                + '<td><button type="button" class="btn btn-danger btn-sm"'
-                + ' onclick="removeItem(\'' + item.itemId + '\')">삭제</button></td>'
-                + '</tr>';
-        }).join('');
-        var total = selectedItems.reduce(function (s, i) { return s + i.price; }, 0);
-        document.getElementById('totalPriceCell').textContent = total.toLocaleString() + '원';
-    }
-
-    function prepareSubmit() {
-        if (selectedItems.length === 0) { alert('구간을 추가해주세요.'); return false; }
-        var c = document.getElementById('hiddenItemInputs');
-        c.innerHTML = selectedItems.map(function (item) {
-            var val = [item.date, item.memberId, item.orderName, item.itemId, item.count, item.term].join('%');
-            return '<input type="hidden" name="addItem" value="' + val + '">';
-        }).join('');
-        return true;
     }
 </script>
 </th:block>
