@@ -2,130 +2,224 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="layout">
-<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
 
 <th:block layout:fragment="content">
-    <!-- Begin Page Content -->
-    <body id="page-top" >
-    <div class="container">
-        <div>
-            <div>
-                <form th:object="${orderSearch}" class="form-inline">
-                    <label for="date">날짜를 선택하세요:
-                        <input type="date"
-                               id="date"
-                               max="2040-06-20"
-                               min="2022-07-01"
-                               value="2077-06-15"
-                               th:field="*{findDate}" class="form-control">
-                    </label>
-                    <div class="form-group mb-2">
-                        <!-- 회원명 검색 필드. ReportResDTO에 회원 이름 필드가 없어서 결과 테이블에 직접 표시하기는 어렵습니다. -->
-                        <input style="font-size: 10px;" type="text" th:field="*{memberName}" class="form-control" placeholder="회원명"/>
-                    </div>
-                    <div class="form-group mb-2">
-                        <input type="text" th:field="*{orderName}" class="form-control" placeholder="공연명"/>
-                    </div>
-                    <div class="form-group mx-sm-1 mb-2">
-                        <select th:field="*{orderStatus}" class="form-control">
-                            <option value="">주문상태</option>
-                            <option th:each="status : ${T(jpabook.jpashop.domain.OrderStatus).values()}"
-                                    th:value="${status}"
-                                    th:text="${status.name()}">option <!-- Enum 값을 문자열로 출력 -->
-                            </option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary mb-2">검색</button>
+<body id="page-top">
+
+<style>
+/* ── 화면 공통 ── */
+.settlement-wrap { max-width: 960px; margin: 0 auto; }
+
+/* ── 결산서 문서 영역 ── */
+#settlement-doc {
+    background: #fff;
+    padding: 40px 48px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+.doc-title {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    margin-bottom: 6px;
+}
+.doc-subtitle {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 28px;
+}
+.doc-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    color: #495057;
+}
+.settlement-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.settlement-table th {
+    background: #343a40;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.settlement-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+.settlement-table tr.row-data:hover { background: #f8f9fa; }
+.settlement-table tr.row-subtotal td {
+    background: #f1f3f5;
+    font-weight: 600;
+    color: #495057;
+}
+.settlement-table tr.row-subtotal td.label {
+    text-align: right;
+    color: #6c757d;
+    font-size: 0.82rem;
+}
+.settlement-table tr.row-total td {
+    background: #343a40;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.badge-order  { color: #4e73df; font-weight: 600; }
+.badge-payed  { color: #1cc88a; font-weight: 600; }
+.badge-cancel { color: #858796; }
+
+.doc-footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    border-top: 1px solid #e9ecef;
+    padding-top: 16px;
+}
+
+/* ── 인쇄 스타일 ── */
+@media print {
+    body * { visibility: hidden; }
+    #settlement-doc, #settlement-doc * { visibility: visible; }
+    #settlement-doc {
+        position: absolute; top: 0; left: 0;
+        width: 100%; border: none; padding: 20px 30px;
+    }
+    .no-print { display: none !important; }
+    .settlement-table th { background: #343a40 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .settlement-table tr.row-subtotal td { background: #f1f3f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .settlement-table tr.row-total td { background: #343a40 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+
+<div class="container-fluid">
+    <div class="settlement-wrap">
+
+        <!-- ── 검색 바 (화면 전용, 인쇄 시 숨김) ── -->
+        <div class="card shadow mb-4 no-print">
+            <div class="card-body py-3">
+                <form th:object="${orderSearch}" class="form-inline" id="searchForm">
+                    <label class="mr-2 font-weight-bold">조회 월</label>
+                    <input type="month" id="monthInput"
+                           th:field="*{findDate}"
+                           min="2022-07" max="2040-06"
+                           class="form-control mr-3">
+                    <button type="submit" class="btn btn-primary mr-2">조회</button>
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="window.print()">
+                        <i class="fas fa-print mr-1"></i>PDF 출력
+                    </button>
                 </form>
             </div>
-            <table class="table table-striped">
+        </div>
+
+        <!-- ── 결산서 문서 ── -->
+        <div id="settlement-doc">
+
+            <div class="doc-title">가 로 기 게 첨 결 산 서</div>
+            <div class="doc-subtitle">여수시 광고협회</div>
+
+            <div class="doc-meta">
+                <span>
+                    <strong>정산 기간:</strong>
+                    <span th:text="${#strings.replace(findMonth, '-', '년 ') + '월'}">2026년 05월</span>
+                </span>
+                <span>
+                    <strong>작성일:</strong>
+                    <span th:text="${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}"></span>
+                </span>
+            </div>
+
+            <!-- 데이터 없을 때 -->
+            <div th:if="${#lists.isEmpty(reportList) or (#lists.size(reportList) == 1 and reportList[0].rowType == 'TOTAL')}"
+                 class="text-center text-muted py-4">
+                해당 월의 게첨 내역이 없습니다.
+            </div>
+
+            <!-- 결산 테이블 -->
+            <table class="settlement-table"
+                   th:unless="${#lists.isEmpty(reportList) or (#lists.size(reportList) == 1 and reportList[0].rowType == 'TOTAL')}">
                 <thead>
                 <tr>
-                    <th>주문 시작일</th>
-                    <th>회원명</th>
-                    <th>구간</th>
+                    <th style="width:40px">No</th>
                     <th>공연명</th>
-                    <th>가격</th>
-                    <th>수량</th>
-                    <th>상태</th>
-                    <th>공연 시작 시간</th>
-                    <th>공연 종료 시간</th>
-                    <th>주문 합계 금액</th>
-                    <th></th> <!-- 취소 버튼 컬럼 -->
+                    <th>신청자</th>
+                    <th>게첨 구간</th>
+                    <th>시작일</th>
+                    <th>종료일</th>
+                    <th style="width:50px">수량</th>
+                    <th>단가</th>
+                    <th>금액</th>
+                    <th style="width:70px">상태</th>
                 </tr>
                 </thead>
                 <tbody>
-                <!-- reportList를 순회합니다. -->
-                <tr th:each="report : ${reportList}">
-                    <!-- 롤업 ROW (memberId가 null인 경우)와 일반 ROW를 구분하여 표시 -->
+                <th:block th:each="row : ${reportList}">
 
-                    <!-- 주문 시작일 -->
-                    <td th:text="${report.memberId != null ? report.startDate : '-'}"></td>
-                    <!-- 회원 ID -->
-                    <td th:text="${report.memberId != null ? report.memberName : '-'}"></td>
-                    <!-- 상품 ID -->
-                    <td th:text="${report.memberId != null ? report.itemId : '-'}"></td>
-                    <!-- 공연명 -->
-                    <td th:text="${report.memberId != null ? report.orderName : '-'}"></td>
-                    <!-- 가격: 쉼표 포맷 적용, 롤업 ROW는 '-' 표시 -->
-                    <td th:text="${report.memberId != null ? #numbers.formatInteger(report.orderPrice, 0, 'COMMA') : '-'}"></td>
-                    <!-- 수량 -->
-                    <td th:text="${report.memberId != null ? report.count : '-'}"></td>
-                    <!-- 상태: Enum name 출력, 롤업 ROW는 '-' 표시 -->
-                    <td th:text="${report.memberId != null ? (report.status != null ? report.status.name() : '-') : '-'}"></td>
-                    <!-- 공연 시작 시간 -->
-                    <td th:text="${report.memberId != null ? report.orderStartDate : '-'}"></td>
-                    <!-- 공연 종료 시간: 롤업 ROW일 때 '합계' 표시 -->
-                    <td th:text="${report.memberId != null ? report.orderEndDate : '합계'}"></td>
-                    <!-- 주문 합계 금액: 쉼표 포맷 적용 (롤업 ROW 포함) -->
-                    <td th:text="${#numbers.formatInteger(report.orderSum, 0, 'COMMA')}"></td>
+                    <!-- 데이터 행 -->
+                    <tr th:if="${row.rowType == 'DATA'}" class="row-data">
+                        <td class="text-center" th:text="${row.seq}"></td>
+                        <td th:text="${row.orderName}"></td>
+                        <td th:text="${row.memberName}"></td>
+                        <td th:text="${row.sectionName}"></td>
+                        <td class="text-center" th:text="${row.startDate}"></td>
+                        <td class="text-center" th:text="${row.endDate}"></td>
+                        <td class="text-center" th:text="${row.count}"></td>
+                        <td class="text-right" th:text="${#numbers.formatInteger(row.unitPrice, 0, 'COMMA') + '원'}"></td>
+                        <td class="text-right" th:text="${#numbers.formatInteger(row.amount, 0, 'COMMA') + '원'}"></td>
+                        <td class="text-center"
+                            th:classappend="${row.statusLabel == '결제완료'} ? 'badge-payed' : (${row.statusLabel == '취소'} ? 'badge-cancel' : 'badge-order')"
+                            th:text="${row.statusLabel}"></td>
+                    </tr>
 
-                    <!-- 취소 버튼 컬럼: 일반 ROW에만 표시 -->
-                    <td th:if="${report.memberId != null}">
-                        <!-- 취소 버튼 로직 (ReportResDTO에 orderId 필드를 추가해야 활성화 가능) -->
-                        <!--
-                        <a th:if="${report.status != null and report.status.name() == 'ORDER'}" href="#"
-                           th:href="'javascript:cancel('+${report.orderId}+')'"
-                           class="btn btn-danger">CANCEL</a>
-                        -->
-                    </td>
-                    <td th:if="${report.memberId == null}">
-                         <!-- 총합 ROW에는 버튼을 표시하지 않음 -->
-                    </td>
-                </tr>
+                    <!-- 소계 행 -->
+                    <tr th:if="${row.rowType == 'SUBTOTAL'}" class="row-subtotal">
+                        <td colspan="7" class="label"
+                            th:text="${row.orderName + ' 소계'}"></td>
+                        <td colspan="2" class="text-right"
+                            th:text="${#numbers.formatInteger(row.amount, 0, 'COMMA') + '원'}"></td>
+                        <td></td>
+                    </tr>
+
+                    <!-- 합계 행 -->
+                    <tr th:if="${row.rowType == 'TOTAL'}" class="row-total">
+                        <td colspan="7" class="text-center" style="letter-spacing:4px">합 계</td>
+                        <td colspan="2" class="text-right"
+                            th:text="${#numbers.formatInteger(row.amount, 0, 'COMMA') + '원'}"></td>
+                        <td></td>
+                    </tr>
+
+                </th:block>
                 </tbody>
             </table>
+
+            <div class="doc-footer">
+                전라남도목욕관광협회 여수시지부 &nbsp;|&nbsp;
+                소재지: (우)59629 전라남도 여수시 미평 10길 1 &nbsp;|&nbsp;
+                대표전화: 061-652-2190
+            </div>
         </div>
-    </div> <!-- /container -->
+        <!-- /settlement-doc -->
 
-    </body>
-    <script th:inline="javascript">
-// 날짜 입력 필드 기본값 설정 스크립트
-var startDate = [[${startDate}]]; // 컨트롤러에서 모델에 담아준 startDate (orderSearch.findDate) 사용
-var dateInput = document.getElementById('date');
-if (startDate) {
-    dateInput.value = startDate;
-} else {
-    // startDate가 없으면 오늘 날짜로 설정
-    var today = new Date();
-    var yyyy = today.getFullYear();
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
-    var dd = String(today.getDate()).padStart(2, '0');
-    dateInput.value = yyyy + '-' + mm + '-' + dd;
-}
+    </div>
+</div>
 
-
-    // 취소 버튼 동작 스크립트 (현재 DTO에 orderId가 없어서 동작하지 않습니다. DTO 수정 필요)
-    /*
-    function cancel(id) {
-        var form = document.createElement("form");
-        form.setAttribute("method", "post");
-        form.setAttribute("action", "/myOrders/" + id + "/cancel"); // /myOrders/{orderId}/cancel 경로 사용
-        document.body.appendChild(form);
-        form.submit();
-    }
-    */
-
+<script th:inline="javascript">
+    var savedMonth = [[${findMonth}]];
+    var input = document.getElementById('monthInput');
+    if (input && savedMonth) input.value = savedMonth;
 </script>
+
+</body>
 </th:block>
 </html>

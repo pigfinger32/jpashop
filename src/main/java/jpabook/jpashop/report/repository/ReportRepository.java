@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.domain.ReportResDTO;
+import jpabook.jpashop.domain.SettlementRowDTO;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,41 @@ public class ReportRepository {
 	@PersistenceContext
     private final EntityManager em;
 	
+    public List<SettlementRowDTO> getSettlement(String month) {
+        String sql =
+            "SELECT od.orderName, m.name, i.name, oi.count, oi.orderPrice, " +
+            "       od.orderStartDate, od.orderEndDate, od.status " +
+            "FROM orders od " +
+            "JOIN OrderItem oi ON od.order_id = oi.order_id " +
+            "JOIN Item i ON oi.item_id = i.item_id " +
+            "JOIN Member m ON od.member_id = m.member_id " +
+            "WHERE DATE_FORMAT(od.orderStartDate, '%Y-%m') = :month " +
+            "ORDER BY od.orderName, " +
+            "CAST(REGEXP_REPLACE(i.name, '[^0-9]', '') AS UNSIGNED)";
+
+        Query query = em.createNativeQuery(sql);
+        query.setParameter("month", month);
+
+        List<Object[]> rows = query.getResultList();
+        List<SettlementRowDTO> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            SettlementRowDTO dto = new SettlementRowDTO();
+            dto.setRowType("DATA");
+            dto.setOrderName((String) row[0]);
+            dto.setMemberName((String) row[1]);
+            dto.setSectionName((String) row[2]);
+            dto.setCount(row[3] != null ? ((Number) row[3]).intValue() : 0);
+            dto.setUnitPrice(row[4] != null ? ((Number) row[4]).intValue() : 0);
+            dto.setAmount(dto.getCount() * dto.getUnitPrice());
+            dto.setStartDate((String) row[5]);
+            dto.setEndDate((String) row[6]);
+            String st = (String) row[7];
+            dto.setStatusLabel("PAYED".equals(st) ? "결제완료" : "CANCEL".equals(st) ? "취소" : "신청");
+            result.add(dto);
+        }
+        return result;
+    }
+
 	 public List<ReportResDTO> getOrderReport(OrderSearch orderSearch) {
 	        // 네이티브 SQL 쿼리 작성 시작
 	        StringBuilder sql = new StringBuilder();

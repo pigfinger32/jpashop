@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
 import jpabook.jpashop.domain.ReportResDTO;
+import jpabook.jpashop.domain.SettlementRowDTO;
 import jpabook.jpashop.report.repository.ReportRepository;
 import jpabook.jpashop.repository.ItemRepository;
 import jpabook.jpashop.repository.MemberRepository;
@@ -32,11 +33,12 @@ public class ReportService {
     private final OrderItemRepository orderItemRepository;
     private final EntityManager em;
     
-    //검색
     public List<ReportResDTO> getOrderReport(OrderSearch orderSearch) {
-        List<ReportResDTO> reportList = reportRepository.getOrderReport(orderSearch);
-        
-        return reportList;
+        return reportRepository.getOrderReport(orderSearch);
+    }
+
+    public List<SettlementRowDTO> getSettlement(String month) {
+        return reportRepository.getSettlement(month);
     }
 
 
