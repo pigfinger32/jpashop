@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabook.jpashop.domain.OrderItem;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -189,7 +188,6 @@ public class OrderController {
     private List<Map<String, Object>> buildCalendarEvents(List<Order> allOrders) {
         Map<String, String> nameColorMap = new LinkedHashMap<>();
         Map<Long, Map<String, Object>> eventMap = new LinkedHashMap<>();
-        LocalDate today = LocalDate.now();
 
         for (Order o : allOrders) {
             Long id = o.getId();
@@ -198,36 +196,17 @@ public class OrderController {
                 String bgColor, borderColor, textColor;
 
                 if (o.getStatus() == OrderStatus.CANCEL) {
-                    bgColor     = "rgba(173,181,189,0.18)";
-                    borderColor = "rgba(173,181,189,0.6)";
+                    bgColor     = "#f8f9fa";
+                    borderColor = "#adb5bd";
                     textColor   = "#868e96";
                 } else {
-                    // 시작 또는 종료가 오늘 기준 7일 이내이면 임박(빨강 계열)
-                    LocalDate evStart, evEnd;
-                    try { evStart = LocalDate.parse(o.getOrderStartDate()); } catch (Exception e) { evStart = today; }
-                    try { evEnd   = LocalDate.parse(o.getOrderEndDate());   } catch (Exception e) { evEnd   = today; }
-                    long daysToStart = ChronoUnit.DAYS.between(today, evStart);
-                    long daysToEnd   = ChronoUnit.DAYS.between(today, evEnd);
-                    boolean imminent = (daysToStart >= 0 && daysToStart <= 7)
-                                    || (daysToEnd   >= 0 && daysToEnd   <= 7);
-
-                    if (imminent) {
-                        bgColor     = "rgba(231,74,59,0.14)";
-                        borderColor = "rgba(231,74,59,0.75)";
-                        textColor   = "#c0392b";
-                    } else {
-                        String name = o.getOrderName() != null ? o.getOrderName() : "";
-                        if (!nameColorMap.containsKey(name)) {
-                            nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
-                        }
-                        int[] rgb   = hexToRgb(nameColorMap.get(name));
-                        bgColor     = String.format("rgba(%d,%d,%d,0.13)", rgb[0], rgb[1], rgb[2]);
-                        borderColor = String.format("rgba(%d,%d,%d,0.65)", rgb[0], rgb[1], rgb[2]);
-                        textColor   = String.format("rgb(%d,%d,%d)",
-                                          Math.max(0, rgb[0] - 40),
-                                          Math.max(0, rgb[1] - 40),
-                                          Math.max(0, rgb[2] - 40));
+                    String name = o.getOrderName() != null ? o.getOrderName() : "";
+                    if (!nameColorMap.containsKey(name)) {
+                        nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
                     }
+                    borderColor = nameColorMap.get(name);
+                    bgColor     = "#ffffff";
+                    textColor   = "#2d3436";
                 }
 
                 String calEnd;
@@ -264,14 +243,6 @@ public class OrderController {
             }
         }
         return new ArrayList<>(eventMap.values());
-    }
-
-    private int[] hexToRgb(String hex) {
-        return new int[]{
-            Integer.parseInt(hex.substring(1, 3), 16),
-            Integer.parseInt(hex.substring(3, 5), 16),
-            Integer.parseInt(hex.substring(5, 7), 16)
-        };
     }
 
     @PostMapping("/orders/{orderId}/payed")
