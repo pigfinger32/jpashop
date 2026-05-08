@@ -142,8 +142,10 @@ public class OrderService {
         //주문 저장
         orderRepository.save(order);
 
-        //SMS 발송 (회원 전화번호가 등록된 경우)
+        //예약자 SMS: 신청 완료 안내
         smsService.sendOrderConfirmation(member.getPhone(), orderName, orderStartDate, orderEndDate);
+        //담당자 SMS: 새 예약 입금 확인 요청
+        smsService.sendAdminNotification(orderName, member.getName(), orderStartDate, orderEndDate);
 
         return order.getId();
     }

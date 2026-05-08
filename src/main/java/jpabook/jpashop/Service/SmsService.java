@@ -24,6 +24,9 @@ public class SmsService {
     @Value("${coolsms.from}")
     private String fromNumber;
 
+    @Value("${coolsms.admin-phone}")
+    private String adminPhone;
+
     private DefaultMessageService messageService;
 
     @PostConstruct
@@ -31,13 +34,23 @@ public class SmsService {
         this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, "https://api.coolsms.co.kr");
     }
 
+    /** 예약자에게 신청 완료 안내 */
     public void sendOrderConfirmation(String toPhone, String orderName, String startDate, String endDate) {
         if (!StringUtils.hasText(toPhone)) return;
+        send(toPhone, "[여수가로기] '" + orderName + "' 게첨 신청이 완료되었습니다.\n기간: " + startDate + " ~ " + endDate + "\n문의: 061-652-2190");
+    }
+
+    /** 담당자에게 새 예약 입금 확인 요청 */
+    public void sendAdminNotification(String orderName, String memberName, String startDate, String endDate) {
+        send(adminPhone, "[여수가로기] 새 예약\n업체: " + memberName + "\n공연명: " + orderName + "\n기간: " + startDate + " ~ " + endDate + "\n입금을 2일 안으로 확인해 주세요.");
+    }
+
+    private void send(String toPhone, String text) {
         try {
             Message message = new Message();
             message.setFrom(fromNumber.replaceAll("-", ""));
             message.setTo(toPhone.replaceAll("-", ""));
-            message.setText("[여수가로기] '" + orderName + "' 게첨 신청 완료\n기간: " + startDate + " ~ " + endDate + "\n문의: 061-652-2190");
+            message.setText(text);
             messageService.sendOne(new SingleMessageSendingRequest(message));
             log.info("SMS 발송 완료: {}", toPhone);
         } catch (Exception e) {
