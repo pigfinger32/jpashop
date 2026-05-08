@@ -26,7 +26,7 @@ public class ReportRepository {
 	
     public List<SettlementRowDTO> getSettlement(String month) {
         String sql =
-            "SELECT od.orderName, m.name, i.name, oi.count, oi.orderPrice, " +
+            "SELECT od.orderName, m.name AS memberName, i.name AS itemName, oi.count, oi.orderPrice, " +
             "       od.orderStartDate, od.orderEndDate, od.status " +
             "FROM orders od " +
             "JOIN OrderItem oi ON od.order_id = oi.order_id " +
