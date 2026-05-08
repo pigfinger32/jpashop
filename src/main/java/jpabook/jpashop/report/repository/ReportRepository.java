@@ -33,8 +33,7 @@ public class ReportRepository {
             "JOIN Item i ON oi.item_id = i.item_id " +
             "JOIN Member m ON od.member_id = m.member_id " +
             "WHERE DATE_FORMAT(od.orderStartDate, '%Y-%m') = :month " +
-            "ORDER BY od.orderName, " +
-            "CAST(REGEXP_REPLACE(i.name, '[^0-9]', '') AS UNSIGNED)";
+            "ORDER BY od.orderName, LENGTH(i.name), i.name";
 
         Query query = em.createNativeQuery(sql);
         query.setParameter("month", month);
