@@ -129,9 +129,9 @@ public class OrderService {
             //주문상품 생성
             Item item = itemRepository.findOne(orderDto.getItemId());
             if(term == 15) {
-            	orderItems.add(OrderItem.OrderItem(item, item.getPrice()/2, orderDto.getCount())); //주문기간이 15일이면 가격의 2/1 가격이 입력됨.
+            	orderItems.add(OrderItem.OrderItem(item, item.getPrice() * 3 / 4, orderDto.getCount())); // 15일: 단가 × 3/4 = 15,000
             } else {
-            	orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount())); //주문기간이 30일이면 정가격
+            	orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount())); // 30일: 단가 그대로 = 20,000
             }
             
         }
