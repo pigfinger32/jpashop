@@ -37,7 +37,7 @@ public class SmsService {
     /** 예약자에게 신청 완료 안내 */
     public void sendOrderConfirmation(String toPhone, String orderName, String startDate, String endDate) {
         if (!StringUtils.hasText(toPhone)) return;
-        send(toPhone, "[여수가로기] '" + orderName + "' 게첨 신청이 완료되었습니다.\n기간: " + startDate + " ~ " + endDate + "\n문의: 061-652-2190");
+        send(toPhone, "[여수가로기] '" + orderName + "' 게첨 신청이 완료되었습니다.\n기간: " + startDate + " ~ " + endDate + "\n문의: 010-8744-0026");
     }
 
     /** 담당자에게 새 예약 입금 확인 요청 */
