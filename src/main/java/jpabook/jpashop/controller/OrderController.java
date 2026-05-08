@@ -196,7 +196,7 @@ public class OrderController {
                 String bgColor, borderColor, textColor;
 
                 if (o.getStatus() == OrderStatus.CANCEL) {
-                    bgColor     = "#f8f9fa";
+                    bgColor     = "rgba(173,181,189,0.22)";
                     borderColor = "#adb5bd";
                     textColor   = "#868e96";
                 } else {
@@ -204,9 +204,13 @@ public class OrderController {
                     if (!nameColorMap.containsKey(name)) {
                         nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
                     }
+                    int[] rgb   = hexToRgb(nameColorMap.get(name));
+                    bgColor     = String.format("rgba(%d,%d,%d,0.18)", rgb[0], rgb[1], rgb[2]);
                     borderColor = nameColorMap.get(name);
-                    bgColor     = "#ffffff";
-                    textColor   = "#2d3436";
+                    textColor   = String.format("rgb(%d,%d,%d)",
+                                      Math.max(0, rgb[0] - 50),
+                                      Math.max(0, rgb[1] - 50),
+                                      Math.max(0, rgb[2] - 50));
                 }
 
                 String calEnd;
@@ -243,6 +247,14 @@ public class OrderController {
             }
         }
         return new ArrayList<>(eventMap.values());
+    }
+
+    private int[] hexToRgb(String hex) {
+        return new int[]{
+            Integer.parseInt(hex.substring(1, 3), 16),
+            Integer.parseInt(hex.substring(3, 5), 16),
+            Integer.parseInt(hex.substring(5, 7), 16)
+        };
     }
 
     @PostMapping("/orders/{orderId}/payed")
