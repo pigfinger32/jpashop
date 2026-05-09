@@ -46,8 +46,9 @@ public class OrderRepository {
                 " select o from Order o " +
                         " join fetch o.member m" +
                         " join fetch o.orderItems oi" +
-                        " join fetch oi.item oi";
-        boolean isFirstCondition = true;
+                        " join fetch oi.item oi" +
+                        " where o.active = true";
+        boolean isFirstCondition = false;
 
         //주문 상태 검색
         if (orderSearch.getOrderStatus() != null) {

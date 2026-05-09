@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 /**
@@ -24,9 +26,16 @@ public class PasswordMigrationRunner implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PersistenceContext
+    private EntityManager em;
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        em.createNativeQuery(
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS active TINYINT(1) NOT NULL DEFAULT 1"
+        ).executeUpdate();
+
         List<Member> members = memberRepository.findAll();
         int count = 0;
         for (Member member : members) {

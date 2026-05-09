@@ -75,7 +75,8 @@ public class ReportRepository {
             "FROM orders od " +
             "JOIN OrderItem oi ON od.order_id = oi.order_id " +
             "JOIN Member m ON od.member_id = m.member_id " +
-            (memberId != null ? "WHERE od.member_id = :memberId " : "") +
+            "WHERE od.active = 1 " +
+            (memberId != null ? "AND od.member_id = :memberId " : "") +
             "GROUP BY od.order_id, od.orderName, m.company, m.name, od.orderStartDate, od.orderEndDate, od.status " +
             "ORDER BY od.orderStartDate DESC, od.orderName";
 

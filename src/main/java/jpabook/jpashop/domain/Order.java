@@ -44,6 +44,9 @@ public class Order implements Comparable<Order> {
     @Enumerated(EnumType.STRING)
     private OrderStatus status; //주문상태 [ORDER, CANCEL, PAYED]
 
+    @Column(columnDefinition = "TINYINT(1) NOT NULL DEFAULT 1")
+    private boolean active = true; // false = 자동취소로 숨김 처리
+
     @Override
     public int compareTo(Order o) {
         return this.getOrderItems().get(0).getItem().getName().compareTo(o.getOrderItems().get(0).getItem().getName());
