@@ -68,12 +68,19 @@
                                            (${row.statusLabel == '취소'} ? 'badge-cancel' : 'badge-order')"
                             th:text="${row.statusLabel}"></td>
                         <td class="text-center">
-                            <form th:if="${row.statusLabel == '신청'}"
-                                  th:action="@{/myOrders/{id}/cancel(id=${row.orderId})}"
-                                  method="post" style="margin:0">
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('예약을 취소하시겠습니까?')">취소</button>
-                            </form>
+                            <div th:if="${row.statusLabel == '신청'}" style="display:flex;gap:4px;justify-content:center;">
+                                <form th:if="${isAdmin}"
+                                      th:action="@{/myOrders/{id}/payed(id=${row.orderId})}"
+                                      method="post" style="margin:0">
+                                    <button type="submit" class="btn btn-success btn-sm"
+                                            onclick="return confirm('결제완료로 변경하시겠습니까?')">결제완료</button>
+                                </form>
+                                <form th:action="@{/myOrders/{id}/cancel(id=${row.orderId})}"
+                                      method="post" style="margin:0">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('예약을 취소하시겠습니까?')">취소</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     </tbody>

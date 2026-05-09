@@ -299,6 +299,12 @@ public class OrderController {
         return "redirect:/orders";
     }
 
+    @PostMapping("/myOrders/{orderId}/payed")
+    public String payedMyOrder(@PathVariable("orderId") Long orderId) {
+        orderService.payed(orderId);
+        return "redirect:/myOrders";
+    }
+
     @PostMapping("/myOrders/{orderId}/cancel")
     public String cancelMyOrder(@PathVariable("orderId") Long orderId) {
         orderService.cancle(orderId);
