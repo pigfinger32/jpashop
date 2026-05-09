@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -142,10 +143,16 @@ public class OrderService {
         //주문 저장
         orderRepository.save(order);
 
-        //예약자 SMS: 신청 완료 안내
-        smsService.sendOrderConfirmation(member.getPhone(), orderName, orderStartDate, orderEndDate);
+        //SMS용 총 수량·총 금액·납부 기한 계산
+        int unitPrice = (term == 15) ? 15000 : 20000;
+        int totalCount  = orderDtoList.stream().mapToInt(OrderDto::getCount).sum();
+        int totalAmount = unitPrice * totalCount;
+        String payDeadline = LocalDate.parse(orderStartDate).plusDays(2).toString();
+
+        //예약자 SMS: 신청 완료 + 입금 안내
+        smsService.sendOrderConfirmation(member.getPhone(), orderName, orderStartDate, orderEndDate, totalAmount, payDeadline);
         //담당자 SMS: 새 예약 입금 확인 요청
-        smsService.sendAdminNotification(orderName, member.getName(), orderStartDate, orderEndDate);
+        smsService.sendAdminNotification(orderName, member.getCompany(), orderStartDate, orderEndDate, totalCount);
 
         return order.getId();
     }

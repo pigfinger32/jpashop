@@ -34,15 +34,28 @@ public class SmsService {
         this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, "https://api.coolsms.co.kr");
     }
 
-    /** 예약자에게 신청 완료 안내 */
-    public void sendOrderConfirmation(String toPhone, String orderName, String startDate, String endDate) {
+    /** 예약자에게 신청 완료 + 입금 안내 */
+    public void sendOrderConfirmation(String toPhone, String orderName, String startDate, String endDate,
+                                      int totalAmount, String payDeadline) {
         if (!StringUtils.hasText(toPhone)) return;
-        send(toPhone, "[여수가로기] '" + orderName + "' 게첨 신청이 완료되었습니다.\n기간: " + startDate + " ~ " + endDate + "\n문의: 010-8744-0026");
+        send(toPhone,
+            "[여수가로기] '" + orderName + "' 게첨 신청이 완료되었습니다.\n" +
+            "기간: " + startDate + " ~ " + endDate + "\n" +
+            "문의: 010-8744-0026\n" +
+            "아래 계좌로 " + payDeadline + "까지 " + String.format("%,d", totalAmount) + "원 입금해주세요.\n" +
+            "기업(193-110190-04-013) 주식회사아이비");
     }
 
     /** 담당자에게 새 예약 입금 확인 요청 */
-    public void sendAdminNotification(String orderName, String memberName, String startDate, String endDate) {
-        send(adminPhone, "[여수가로기] 새 예약\n업체: " + memberName + "\n공연명: " + orderName + "\n기간: " + startDate + " ~ " + endDate + "\n입금을 2일 안으로 확인해 주세요.");
+    public void sendAdminNotification(String orderName, String company, String startDate, String endDate,
+                                      int totalCount) {
+        send(adminPhone,
+            "[여수가로기] 새 예약\n" +
+            "업체: " + company + "\n" +
+            "공연명: " + orderName + "\n" +
+            "기간: " + startDate + " ~ " + endDate + "\n" +
+            "수량: " + totalCount + "개\n" +
+            "입금을 2일 안으로 확인하시고 입금완료로 변경해주세요.");
     }
 
     private void send(String toPhone, String text) {
