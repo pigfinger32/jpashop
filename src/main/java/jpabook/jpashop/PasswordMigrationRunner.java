@@ -10,8 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -25,16 +27,12 @@ public class PasswordMigrationRunner implements ApplicationRunner {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @PersistenceContext
-    private EntityManager em;
+    private final DataSource dataSource;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        em.createNativeQuery(
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS active TINYINT(1) NOT NULL DEFAULT 1"
-        ).executeUpdate();
+        addActiveColumnIfNotExists();
 
         List<Member> members = memberRepository.findAll();
         int count = 0;
@@ -47,6 +45,25 @@ public class PasswordMigrationRunner implements ApplicationRunner {
         }
         if (count > 0) {
             log.info("비밀번호 마이그레이션 완료: {}개 계정 BCrypt 암호화", count);
+        }
+    }
+
+    private void addActiveColumnIfNotExists() {
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(
+                "SELECT COUNT(*) FROM information_schema.columns " +
+                "WHERE table_schema = DATABASE() AND table_name = 'orders' AND column_name = 'active'"
+            );
+            rs.next();
+            if (rs.getInt(1) == 0) {
+                stmt.executeUpdate(
+                    "ALTER TABLE orders ADD COLUMN active TINYINT(1) NOT NULL DEFAULT 1"
+                );
+                log.info("orders 테이블에 active 컬럼 추가 완료");
+            }
+        } catch (Exception e) {
+            log.error("active 컬럼 추가 실패: {}", e.getMessage());
         }
     }
 }
