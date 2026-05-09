@@ -1,6 +1,7 @@
 package jpabook.jpashop.controller;
 
 import jpabook.jpashop.Service.MemberService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.SessionConst;
@@ -27,6 +28,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
@@ -54,7 +56,7 @@ public class MemberController {
         Member member = new Member();
         member.setLoginId(form.getLoginId());
         member.setName(form.getName());
-        member.setPw(form.getPw()); //2023-05-09 setPw추가
+        member.setPw(passwordEncoder.encode(form.getPw())); //BCrypt 암호화 후 저장
         member.setCompany(form.getCompany()); //2023-05-09 setCompany추가
         member.setAddress(address);
         member.setPhone(form.getPhone().replaceAll("-",""));

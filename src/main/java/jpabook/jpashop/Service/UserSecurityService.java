@@ -15,12 +15,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import javax.servlet.http.Cookie;
 
 @RequiredArgsConstructor
 @Service
@@ -43,10 +41,8 @@ public class UserSecurityService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority(UserRole.USER.getValue()));
         }
         siteUser.setName(siteUser.getLoginId());
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String encodedPassword = passwordEncoder.encode(siteUser.getPw());
 
-        return new User(siteUser.getName(), encodedPassword, authorities);
+        return new User(siteUser.getName(), siteUser.getPw(), authorities);
     }
 
     public String LoginUserCheck() {
