@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter @Setter
 public class SettlementRowDTO {
-    private String rowType;    // "DATA" | "SUBTOTAL" | "TOTAL"
+    private String rowType;    // "DATA" | "TOTAL"
+    private Long   orderId;    // 취소 버튼용
     private int    seq;        // 순번 (DATA 행만)
     private String orderName;  // 공연명
     private String memberName; // 신청자

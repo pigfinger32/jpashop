@@ -65,6 +65,48 @@ public class ReportRepository {
         return result;
     }
 
+    public List<SettlementRowDTO> getMyOrders(Long memberId) {
+        String sql =
+            "SELECT od.order_id, od.orderName, COALESCE(m.company, m.name) AS companyName, " +
+            "       DATEDIFF(od.orderEndDate, od.orderStartDate) AS term, " +
+            "       SUM(oi.count) AS totalCount, " +
+            "       MAX(oi.orderPrice) AS unitPrice, " +
+            "       od.orderStartDate, od.orderEndDate, od.status " +
+            "FROM orders od " +
+            "JOIN OrderItem oi ON od.order_id = oi.order_id " +
+            "JOIN Member m ON od.member_id = m.member_id " +
+            (memberId != null ? "WHERE od.member_id = :memberId " : "") +
+            "GROUP BY od.order_id, od.orderName, m.company, m.name, od.orderStartDate, od.orderEndDate, od.status " +
+            "ORDER BY od.orderStartDate DESC, od.orderName";
+
+        Query query = em.createNativeQuery(sql);
+        if (memberId != null) query.setParameter("memberId", memberId);
+
+        List<Object[]> rows = query.getResultList();
+        List<SettlementRowDTO> result = new ArrayList<>();
+        int seq = 1;
+        for (Object[] row : rows) {
+            SettlementRowDTO dto = new SettlementRowDTO();
+            dto.setSeq(seq++);
+            dto.setRowType("DATA");
+            dto.setOrderId(row[0] != null ? ((Number) row[0]).longValue() : null);
+            dto.setOrderName((String) row[1]);
+            dto.setMemberName((String) row[2]);
+            dto.setTerm(row[3] != null ? ((Number) row[3]).intValue() : 30);
+            int count    = row[4] != null ? ((Number) row[4]).intValue() : 0;
+            int unitPrice = row[5] != null ? ((Number) row[5]).intValue() : 0;
+            dto.setCount(count);
+            dto.setUnitPrice(unitPrice);
+            dto.setAmount(count * unitPrice);
+            dto.setStartDate((String) row[6]);
+            dto.setEndDate((String) row[7]);
+            String st = (String) row[8];
+            dto.setStatusLabel("PAYED".equals(st) ? "결제완료" : "CANCEL".equals(st) ? "취소" : "신청");
+            result.add(dto);
+        }
+        return result;
+    }
+
 	 public List<ReportResDTO> getOrderReport(OrderSearch orderSearch) {
 	        // 네이티브 SQL 쿼리 작성 시작
 	        StringBuilder sql = new StringBuilder();

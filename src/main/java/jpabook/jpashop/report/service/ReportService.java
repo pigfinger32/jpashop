@@ -41,5 +41,9 @@ public class ReportService {
         return reportRepository.getSettlement(month);
     }
 
+    public List<SettlementRowDTO> getMyOrders(Long memberId) {
+        return reportRepository.getMyOrders(memberId);
+    }
+
 
 }

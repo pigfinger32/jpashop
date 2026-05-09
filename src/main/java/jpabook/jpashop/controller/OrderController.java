@@ -5,6 +5,7 @@ import jpabook.jpashop.Service.MemberService;
 import jpabook.jpashop.Service.OrderService;
 import jpabook.jpashop.Service.UserSecurityService;
 import jpabook.jpashop.domain.*;
+import jpabook.jpashop.report.service.ReportService;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class OrderController {
     private final ItemService itemService;
     private final UserSecurityService userSecurityService;
     private final ObjectMapper objectMapper;
+    private final ReportService reportService;
 
     @GetMapping("/sectionStatus")
     public String sectionStatus(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
@@ -272,26 +274,22 @@ public class OrderController {
     }
 
     @GetMapping("/myOrders")
-    public String myOrderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
-        //유저로그인체크
-        if(userSecurityService.LoginUserCheck() == "anonymousUser") //로그인 안했다면
-            return "login_form";
+    public String myOrderList(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userId = auth.getName();
+        if ("anonymousUser".equals(userId)) return "login_form";
 
-        //나의 로그인 정보로 이름을 구해 OrderSearch에 name을 넣어줌
-        Authentication loggedinUser = SecurityContextHolder.getContext().getAuthentication();
-        //*****로그인체크부분 추가할것.
-        if ("anonymousUser".equals(loggedinUser.getName())){
-            throw new IllegalStateException("로그인 후 이용하세요.");
+        boolean isAdmin = "admin".equals(userId);
+        java.util.List<SettlementRowDTO> orders;
+        if (isAdmin) {
+            orders = reportService.getMyOrders(null);
+        } else {
+            Member member = memberService.findByLoginId(userId);
+            orders = reportService.getMyOrders(member.getId());
         }
-        String userId = loggedinUser.getName();//getName에 Login ID를 넣어놓음.
-        Member member = memberService.findByLoginId(userId);
-        orderSearch.setMemberName(member.getName());
-        //<--
-        List<Order> orders = orderService.findOrders(orderSearch);
-        model.addAttribute("orders", orders);
-        model.addAttribute("date", orderSearch.getFindDate());
-        model.addAttribute("startDate", orderSearch.getFindDate());
 
+        model.addAttribute("orders", orders);
+        model.addAttribute("isAdmin", isAdmin);
         return "order/myOrderList";
     }
 
