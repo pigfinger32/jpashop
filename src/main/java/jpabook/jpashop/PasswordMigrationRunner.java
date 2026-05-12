@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
@@ -33,6 +34,7 @@ public class PasswordMigrationRunner implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         addActiveColumnIfNotExists();
+        insertDefaultNoticesIfEmpty();
 
         List<Member> members = memberRepository.findAll();
         int count = 0;
@@ -45,6 +47,37 @@ public class PasswordMigrationRunner implements ApplicationRunner {
         }
         if (count > 0) {
             log.info("비밀번호 마이그레이션 완료: {}개 계정 BCrypt 암호화", count);
+        }
+    }
+
+    private void insertDefaultNoticesIfEmpty() {
+        String[][] notices = {
+            {"6월 예약 접수 일정 안내",        "6월 가로기 게첨 구간 예약 접수 일정을 안내드립니다. 예약 접수는 매월 첫째 주 화요일 오전 9시 30분부터 선착순으로 진행되오니 일정을 확인하시고 접수하시기 바랍니다.",                                                "2026.04.27"},
+            {"5월 현수막 예약 접수시 필독사항", "5월 현수막(가로기) 게첨 예약 접수 시 반드시 확인하셔야 할 사항을 안내드립니다. 수수료는 신청 당일 17시까지 납부하여야 하며, 미납 시 예약이 자동 취소될 수 있습니다.",                                        "2026.03.24"},
+            {"4월 현수막 예약 접수시 필독사항", "4월 현수막(가로기) 게첨 예약 접수 시 필독사항을 안내드립니다. 현수막은 게첨 부착일 3일 전까지 제출하셔야 합니다.",                                                                                             "2026.03.06"},
+            {"4월 예약 접수 일정 변경 안내",   "4월 가로기 게첨 구간 예약 접수 일정이 변경되었음을 안내드립니다. 변경된 일정을 확인하시고 접수에 차질 없으시기 바랍니다.",                                                                                     "2026.01.29"},
+            {"1월 현수막 예약 접수시 필독사항", "1월 현수막(가로기) 게첨 예약 접수 시 필독사항을 안내드립니다. 기업은행 193-110190-04-013 (주식회사아이비)으로 수수료를 납부하여 주시기 바랍니다.",                                                            "2025.12.26"},
+            {"12월 현수막 예약 접수시 필독사항","12월 현수막(가로기) 게첨 예약 접수 시 필독사항을 안내드립니다. 자세한 사항은 민원상담 전화(010-8744-0026)로 문의하여 주시기 바랍니다.",                                                                       "2025.10.20"},
+            {"11월분 게시대 예약 안내 건",     "11월 가로기 게첨 구간 예약 접수에 관한 안내입니다. 예약 접수 후 2일 이내에 수수료를 납부하지 않으면 예약이 자동 취소됩니다.",                                                                                   "2025.09.02"}
+        };
+        try (Connection conn = dataSource.getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM Notice");
+                rs.next();
+                if (rs.getInt(1) > 0) return;
+            }
+            String sql = "INSERT INTO Notice (subject, contents, createdDate) VALUES (?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (String[] n : notices) {
+                    ps.setString(1, n[0]);
+                    ps.setString(2, n[1]);
+                    ps.setString(3, n[2]);
+                    ps.executeUpdate();
+                }
+            }
+            log.info("공지사항 기본 데이터 {}건 추가 완료", notices.length);
+        } catch (Exception e) {
+            log.warn("공지사항 초기 데이터 삽입 실패: {}", e.getMessage());
         }
     }
 

@@ -5,51 +5,26 @@
 <th:block layout:fragment="content">
 
 <style>
-.map-marker { display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; }
-.marker-bubble {
-    padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;
-    color: #fff; white-space: nowrap;
-    border: 2px solid rgba(255,255,255,0.85);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-    transition: transform 0.15s;
+.section-badge {
+    display:inline-block; padding:1px 7px; border-radius:10px;
+    font-size:11px; font-weight:600; color:#fff; background:#28a745;
+    cursor:pointer; margin-left:4px; border:none; vertical-align:middle;
 }
-.marker-bubble:hover { transform: scale(1.08); }
-.marker-bubble.selected { border-color: #333; box-shadow: 0 0 0 3px rgba(0,0,0,0.25); transform: scale(1.15); }
-.marker-tail { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid; }
-.marker-success .marker-bubble { background:#28a745; }
-.marker-success .marker-tail   { border-top-color:#28a745; }
-.marker-warning .marker-bubble { background:#ffc107; color:#333; }
-.marker-warning .marker-tail   { border-top-color:#ffc107; }
-.marker-danger  .marker-bubble { background:#dc3545; }
-.marker-danger  .marker-tail   { border-top-color:#dc3545; }
+.section-badge:hover { background:#218838; }
 </style>
 
 <div class="container-fluid px-4 py-3">
 
     <!-- 날짜 검색 -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">게첨 날짜 조회</h6>
-            <button type="button" class="btn btn-info btn-sm"
-                    data-toggle="modal" data-target="#flagMapModal">
-                <i class="fas fa-map-marked-alt mr-1"></i>구간 지도 보기
-            </button>
         </div>
         <div class="card-body py-2">
             <form th:object="${orderSearch}" class="form-inline">
                 <input type="date" th:field="*{findDate}" class="form-control mr-2">
                 <button type="submit" class="btn btn-primary">조회</button>
             </form>
-        </div>
-    </div>
-
-    <!-- 카카오 지도 -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">구간 위치 지도</h6>
-        </div>
-        <div class="card-body p-0">
-            <div id="kakaoMap" style="width:100%;height:420px;border-radius:0 0 4px 4px;"></div>
         </div>
     </div>
 
@@ -71,9 +46,13 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="item : ${itemList}"
+                <tr th:each="item,iterStat : ${itemList}"
                     th:classappend="${item.curStock == 0} ? 'table-danger' : ''">
-                    <td class="font-weight-bold align-middle" th:text="${item.name}"></td>
+                    <td class="font-weight-bold align-middle" style="white-space:nowrap">
+                        <span th:text="${item.name}"></span>
+                        <button class="section-badge" onclick="openPhotoModal()">사진</button>
+                        <button class="section-badge" th:onclick="|openSectionMap(${iterStat.index})|">map</button>
+                    </td>
                     <td class="align-middle" th:text="${item.startPlace}"></td>
                     <td class="align-middle" th:text="${item.endPlace}"></td>
                     <td class="align-middle" th:text="${item.stockQuantity}"></td>
@@ -102,18 +81,37 @@
 
 </div>
 
+<!-- 사진 모달 -->
+<div class="modal fade" id="photoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title font-weight-bold">구간 사진</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-2">
+                <div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#e9ecef 25%,#dee2e6 75%);
+                            display:flex;flex-direction:column;align-items:center;justify-content:center;
+                            color:#adb5bd;border-radius:4px;min-height:280px;">
+                    <i class="fas fa-camera" style="font-size:3rem;margin-bottom:12px;"></i>
+                    <div style="font-size:1rem;font-weight:500;">사진 준비 중</div>
+                    <div style="font-size:0.8rem;margin-top:4px;">이미지를 추가해 주세요</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 구간 지도 모달 -->
-<div class="modal fade" id="flagMapModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="sectionMapModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title font-weight-bold">구간 지도</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-header py-2">
+                <h5 class="modal-title font-weight-bold" id="sectionMapTitle">구간 위치</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body p-1">
-                <img src="/assets/img/yeasuFlagMap2.png" class="img-fluid w-100" alt="구간 지도">
+            <div class="modal-body p-0">
+                <div id="modalKakaoMap" style="width:100%;height:480px;"></div>
             </div>
         </div>
     </div>
@@ -121,172 +119,29 @@
 
 <!-- 카카오맵 API -->
 <script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"
-        onerror="showMapError('카카오맵 SDK 로드 실패')"></script>
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
 
 <script th:inline="javascript">
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
+    var selectedSectionIdx = -1;
 
     var SECTION_COORDS = [
-        { path: [ // 1구간
-            {lat:34.761692,lng:127.63983},{lat:34.761999,lng:127.639818},{lat:34.763099,lng:127.639791},
-            {lat:34.761999,lng:127.639818},{lat:34.760863,lng:127.639845},{lat:34.760881,lng:127.642717},
-            {lat:34.760897,lng:127.645339},{lat:34.76091,lng:127.646726},{lat:34.76092,lng:127.647098},
-            {lat:34.760924,lng:127.648332},{lat:34.760924,lng:127.648419},{lat:34.760947,lng:127.650058},
-            {lat:34.760939,lng:127.650429},{lat:34.760969,lng:127.651368},{lat:34.760969,lng:127.651467},
-            {lat:34.760963,lng:127.652636},{lat:34.760979,lng:127.654919},{lat:34.760991,lng:127.655945},
-            {lat:34.760978,lng:127.65766},{lat:34.760972,lng:127.658807},{lat:34.761027,lng:127.659364},
-            {lat:34.761083,lng:127.659954},{lat:34.76124,lng:127.661275},{lat:34.761351,lng:127.662138},
-            {lat:34.761306,lng:127.662149}
-        ]},
-        { path: [ // 2구간
-            {lat:34.777286,lng:127.651584},{lat:34.777053,lng:127.651913},{lat:34.776829,lng:127.652274},
-            {lat:34.776631,lng:127.652537},{lat:34.776281,lng:127.653019},{lat:34.776083,lng:127.65325},
-            {lat:34.776029,lng:127.653294},{lat:34.775804,lng:127.653502},{lat:34.775499,lng:127.653766},
-            {lat:34.774833,lng:127.654129},{lat:34.773635,lng:127.654746},{lat:34.772924,lng:127.654956},
-            {lat:34.772617,lng:127.65499},{lat:34.772058,lng:127.65496},{lat:34.771084,lng:127.654866},
-            {lat:34.770444,lng:127.654879},{lat:34.769670,lng:127.655024},{lat:34.768679,lng:127.655378},
-            {lat:34.767616,lng:127.655765},{lat:34.767103,lng:127.655942},{lat:34.766571,lng:127.656086},
-            {lat:34.766427,lng:127.656098},{lat:34.765390,lng:127.656069},{lat:34.764245,lng:127.656041},
-            {lat:34.763542,lng:127.655989},{lat:34.762686,lng:127.655971},{lat:34.761649,lng:127.655954},
-            {lat:34.761054,lng:127.655945}
-        ]},
-        { path: [ // 3구간
-            {lat:34.766473,lng:127.66275},{lat:34.766419,lng:127.662849},{lat:34.766384,lng:127.663275},
-            {lat:34.766268,lng:127.66356},{lat:34.766197,lng:127.663899},{lat:34.764961,lng:127.663707},
-            {lat:34.764573,lng:127.663698},{lat:34.763672,lng:127.663756},{lat:34.763877,lng:127.662968},
-            {lat:34.763859,lng:127.662761},{lat:34.762011,lng:127.662812},{lat:34.761668,lng:127.662814},
-            {lat:34.761586,lng:127.66265},{lat:34.761388,lng:127.662607},{lat:34.761351,lng:127.662138},
-            {lat:34.76124,lng:127.661275},{lat:34.760991,lng:127.655945},{lat:34.761649,lng:127.655954},
-            {lat:34.762686,lng:127.655971},{lat:34.763542,lng:127.655989},{lat:34.764245,lng:127.656063}
-        ]},
-        { path: [ // 4구간
-            {lat:34.762244,lng:127.668983},{lat:34.762253,lng:127.66895},{lat:34.761684,lng:127.668701},
-            {lat:34.761359,lng:127.668561},{lat:34.760502,lng:127.668193},{lat:34.760222,lng:127.668074},
-            {lat:34.759265,lng:127.667673},{lat:34.759185,lng:127.667947},{lat:34.758537,lng:127.668168},
-            {lat:34.758473,lng:127.667851},{lat:34.758941,lng:127.667664},{lat:34.759265,lng:127.667673},
-            {lat:34.759329,lng:127.667706}
-        ]},
-        { path: [ // 5구간
-            {lat:34.760991,lng:127.655967},{lat:34.760991,lng:127.655945},{lat:34.760450,lng:127.655948},
-            {lat:34.759729,lng:127.655907},{lat:34.758845,lng:127.655790},{lat:34.758430,lng:127.655814},
-            {lat:34.757818,lng:127.656079},{lat:34.756999,lng:127.656617},{lat:34.756513,lng:127.656892},
-            {lat:34.755675,lng:127.657005},{lat:34.754521,lng:127.657032},{lat:34.753331,lng:127.657058},
-            {lat:34.752817,lng:127.656919},{lat:34.752501,lng:127.656767},{lat:34.750767,lng:127.655715},
-            {lat:34.749521,lng:127.655097},{lat:34.748790,lng:127.654893},{lat:34.747889,lng:127.654733},
-            {lat:34.746608,lng:127.654487},{lat:34.745849,lng:127.654064},{lat:34.744411,lng:127.652224},
-            {lat:34.743552,lng:127.651507},{lat:34.743092,lng:127.651258},{lat:34.741441,lng:127.650784},
-            {lat:34.740664,lng:127.650416},{lat:34.740095,lng:127.650080},{lat:34.739861,lng:127.650016},
-            {lat:34.739607,lng:127.649427},{lat:34.739083,lng:127.649331},{lat:34.738814,lng:127.649780}
-        ]},
-        { path: [ // 6구간
-            {lat:34.749361,lng:127.655841},{lat:34.749129,lng:127.656639},{lat:34.748862,lng:127.657721},
-            {lat:34.748809,lng:127.658093},{lat:34.748844,lng:127.664231},{lat:34.748882,lng:127.665072},
-            {lat:34.748829,lng:127.665345},{lat:34.748829,lng:127.665585},{lat:34.748911,lng:127.665672},
-            {lat:34.748634,lng:127.666656},{lat:34.748571,lng:127.666766},{lat:34.747978,lng:127.667577},
-            {lat:34.747476,lng:127.668409},{lat:34.747253,lng:127.669261},{lat:34.748651,lng:127.669442},
-            {lat:34.748939,lng:127.66955},{lat:34.749066,lng:127.669691},{lat:34.749175,lng:127.669996},
-            {lat:34.749194,lng:127.670433},{lat:34.749176,lng:127.673601},{lat:34.749115,lng:127.674671},
-            {lat:34.748622,lng:127.675438},{lat:34.747786,lng:127.676424},{lat:34.748618,lng:127.677447},
-            {lat:34.749097,lng:127.678057},{lat:34.749758,lng:127.678863},{lat:34.748886,lng:127.679860},
-            {lat:34.747798,lng:127.681164},{lat:34.745848,lng:127.683432},{lat:34.744353,lng:127.684159},
-            {lat:34.743542,lng:127.684086},{lat:34.740600,lng:127.682961},{lat:34.740122,lng:127.682766}
-        ]},
-        { path: [ // 7구간
-            {lat:34.764245,lng:127.656063},{lat:34.765390,lng:127.656069},{lat:34.766427,lng:127.656098},
-            {lat:34.766582,lng:127.656742},{lat:34.766517,lng:127.659036},{lat:34.766444,lng:127.662062},
-            {lat:34.766328,lng:127.662456},{lat:34.766103,lng:127.662654},{lat:34.765030,lng:127.662713},
-            {lat:34.763859,lng:127.662761},{lat:34.762011,lng:127.662812},{lat:34.761586,lng:127.66265},
-            {lat:34.761388,lng:127.662607},{lat:34.761172,lng:127.662848},{lat:34.761209,lng:127.663099},
-            {lat:34.760878,lng:127.664095},{lat:34.759937,lng:127.666196},{lat:34.759265,lng:127.667673},
-            {lat:34.759087,lng:127.668231},{lat:34.758317,lng:127.670473},{lat:34.757575,lng:127.672552},
-            {lat:34.757028,lng:127.673843},{lat:34.755778,lng:127.674744},{lat:34.753994,lng:127.675308},
-            {lat:34.752725,lng:127.676033},{lat:34.751645,lng:127.676813},{lat:34.750737,lng:127.677712},
-            {lat:34.749758,lng:127.678863},{lat:34.748618,lng:127.677447},{lat:34.747786,lng:127.676424},
-            {lat:34.746394,lng:127.674977},{lat:34.745744,lng:127.674597},{lat:34.744886,lng:127.674338},
-            {lat:34.745383,lng:127.674457}
-        ]},
-        { path: [ // 8구간
-            {lat:34.749260,lng:127.678264},{lat:34.749758,lng:127.678863},{lat:34.748886,lng:127.679860},
-            {lat:34.747798,lng:127.681164},{lat:34.745848,lng:127.683432},{lat:34.744353,lng:127.684159},
-            {lat:34.743542,lng:127.684086},{lat:34.740600,lng:127.682961},{lat:34.739788,lng:127.682647},
-            {lat:34.738254,lng:127.682042},{lat:34.737568,lng:127.681859},{lat:34.736874,lng:127.681883},
-            {lat:34.736037,lng:127.682236},{lat:34.735317,lng:127.682905},{lat:34.734769,lng:127.683704},
-            {lat:34.734724,lng:127.683770}
-        ]},
-        { path: [ // 9구간
-            {lat:34.744173,lng:127.684160},{lat:34.744353,lng:127.684159},{lat:34.745326,lng:127.683838},
-            {lat:34.745848,lng:127.683432},{lat:34.747798,lng:127.681164},{lat:34.748886,lng:127.679860},
-            {lat:34.749263,lng:127.679422},{lat:34.749758,lng:127.678863},{lat:34.744391,lng:127.684672},
-            {lat:34.744528,lng:127.685305},{lat:34.74479,lng:127.685763},{lat:34.745505,lng:127.686798},
-            {lat:34.745840,lng:127.687386},{lat:34.747044,lng:127.689195},{lat:34.748365,lng:127.691199},
-            {lat:34.748592,lng:127.691876},{lat:34.748670,lng:127.694071},{lat:34.748636,lng:127.695119},
-            {lat:34.748617,lng:127.698188},{lat:34.748592,lng:127.698920},{lat:34.748259,lng:127.699118},
-            {lat:34.748142,lng:127.699501},{lat:34.748270,lng:127.699872},{lat:34.748559,lng:127.700384},
-            {lat:34.748608,lng:127.702000},{lat:34.748738,lng:127.703387},{lat:34.748884,lng:127.704315},
-            {lat:34.749095,lng:127.705450},{lat:34.749278,lng:127.706607},{lat:34.749307,lng:127.707775},
-            {lat:34.749276,lng:127.709556}
-        ]},
-        { path: [ // 10구간
-            {lat:34.761311,lng:127.673935},{lat:34.761834,lng:127.674206},{lat:34.762601,lng:127.674509},
-            {lat:34.762882,lng:127.674814},{lat:34.763181,lng:127.675392},{lat:34.763688,lng:127.676307},
-            {lat:34.764214,lng:127.677463},{lat:34.764314,lng:127.677922},{lat:34.764120,lng:127.679354},
-            {lat:34.763961,lng:127.680643},{lat:34.764017,lng:127.681550},{lat:34.764145,lng:127.682128},
-            {lat:34.764863,lng:127.684201},{lat:34.766450,lng:127.688051},{lat:34.767112,lng:127.689644},
-            {lat:34.768004,lng:127.692787},{lat:34.768523,lng:127.694784},{lat:34.768896,lng:127.696104},
-            {lat:34.769084,lng:127.695590},{lat:34.769613,lng:127.694791},{lat:34.770045,lng:127.694352},
-            {lat:34.770432,lng:127.694023},{lat:34.769084,lng:127.695590},{lat:34.768940,lng:127.695984}
-        ]},
-        { path: [ // 11구간
-            {lat:34.768940,lng:127.695984},{lat:34.768583,lng:127.697187},{lat:34.768315,lng:127.698160},
-            {lat:34.767912,lng:127.699396},{lat:34.767248,lng:127.700775},{lat:34.766593,lng:127.702034},
-            {lat:34.765992,lng:127.703150},{lat:34.765255,lng:127.704202},{lat:34.764240,lng:127.705615},
-            {lat:34.763521,lng:127.706458},{lat:34.762450,lng:127.707325},{lat:34.761362,lng:127.708257},
-            {lat:34.760795,lng:127.708915},{lat:34.759915,lng:127.710087},{lat:34.759133,lng:127.711258},
-            {lat:34.758757,lng:127.712341},{lat:34.758374,lng:127.714429},{lat:34.758126,lng:127.716057},
-            {lat:34.758642,lng:127.716634},{lat:34.758886,lng:127.717496},{lat:34.758066,lng:127.717652},
-            {lat:34.757974,lng:127.716691}
-        ]},
-        { path: [ // 12구간
-            {lat:34.753868,lng:127.747540},{lat:34.754554,lng:127.748007},{lat:34.755032,lng:127.748203},
-            {lat:34.755664,lng:127.748463},{lat:34.756448,lng:127.748657},{lat:34.757044,lng:127.748907},
-            {lat:34.758143,lng:127.748423},{lat:34.756448,lng:127.748657},{lat:34.755357,lng:127.748355},
-            {lat:34.754788,lng:127.748072},{lat:34.754166,lng:127.747626},{lat:34.753741,lng:127.747256},
-            {lat:34.752964,lng:127.746276},{lat:34.752439,lng:127.745622},{lat:34.752060,lng:127.745306},
-            {lat:34.751302,lng:127.744948},{lat:34.750716,lng:127.744721},{lat:34.749995,lng:127.744767},
-            {lat:34.749274,lng:127.744933},{lat:34.748527,lng:127.745153},{lat:34.748301,lng:127.745460},
-            {lat:34.747851,lng:127.745887},{lat:34.746699,lng:127.746808},{lat:34.745827,lng:127.747641},
-            {lat:34.744792,lng:127.748550},{lat:34.744018,lng:127.749143},{lat:34.743532,lng:127.749603},
-            {lat:34.743389,lng:127.750215},{lat:34.742715,lng:127.751167},{lat:34.741564,lng:127.752579},
-            {lat:34.741312,lng:127.753028},{lat:34.741151,lng:127.753454},{lat:34.741905,lng:127.752207}
-        ]},
-        { path: [ // 13구간
-            {lat:34.740420,lng:127.727661},{lat:34.740404,lng:127.728895},{lat:34.740352,lng:127.729824},
-            {lat:34.740284,lng:127.731440},{lat:34.740154,lng:127.733712},{lat:34.740067,lng:127.735449},
-            {lat:34.739870,lng:127.735985},{lat:34.740330,lng:127.736201},{lat:34.741052,lng:127.736636},
-            {lat:34.741360,lng:127.737301},{lat:34.741397,lng:127.737705},{lat:34.741204,lng:127.739977},
-            {lat:34.741466,lng:127.740490},{lat:34.742837,lng:127.740835},{lat:34.743830,lng:127.741105},
-            {lat:34.744373,lng:127.742108},{lat:34.744205,lng:127.743670},{lat:34.743939,lng:127.745888},
-            {lat:34.743726,lng:127.747767},{lat:34.743532,lng:127.749603},{lat:34.743390,lng:127.750215},
-            {lat:34.742715,lng:127.751167},{lat:34.741564,lng:127.752579},{lat:34.741151,lng:127.753454},
-            {lat:34.741152,lng:127.753956},{lat:34.740323,lng:127.754188},{lat:34.739168,lng:127.753940},
-            {lat:34.738121,lng:127.753310},{lat:34.737498,lng:127.752526},{lat:34.736765,lng:127.751272},
-            {lat:34.736555,lng:127.750126},{lat:34.736752,lng:127.749252},{lat:34.737120,lng:127.748486}
-        ]},
-        { path: [ // 14구간
-            {lat:34.740420,lng:127.727661},{lat:34.739678,lng:127.726353},{lat:34.738555,lng:127.724446},
-            {lat:34.737886,lng:127.723323},{lat:34.737026,lng:127.721895},{lat:34.736782,lng:127.721579},
-            {lat:34.735464,lng:127.720634},{lat:34.734217,lng:127.719753},{lat:34.733287,lng:127.719101},
-            {lat:34.732303,lng:127.718406},{lat:34.731888,lng:127.718090},{lat:34.730352,lng:127.716938},
-            {lat:34.729882,lng:127.716405},{lat:34.729014,lng:127.715228},{lat:34.728354,lng:127.714346},
-            {lat:34.727278,lng:127.712909},{lat:34.726229,lng:127.711471},{lat:34.724954,lng:127.709750},
-            {lat:34.724131,lng:127.708628},{lat:34.726301,lng:127.711569}
-        ]}
+        { path: [{lat:34.761692,lng:127.63983},{lat:34.761999,lng:127.639818},{lat:34.763099,lng:127.639791},{lat:34.761999,lng:127.639818},{lat:34.760863,lng:127.639845},{lat:34.760881,lng:127.642717},{lat:34.760897,lng:127.645339},{lat:34.76091,lng:127.646726},{lat:34.76092,lng:127.647098},{lat:34.760924,lng:127.648332},{lat:34.760924,lng:127.648419},{lat:34.760947,lng:127.650058},{lat:34.760939,lng:127.650429},{lat:34.760969,lng:127.651368},{lat:34.760969,lng:127.651467},{lat:34.760963,lng:127.652636},{lat:34.760979,lng:127.654919},{lat:34.760991,lng:127.655945},{lat:34.760978,lng:127.65766},{lat:34.760972,lng:127.658807},{lat:34.761027,lng:127.659364},{lat:34.761083,lng:127.659954},{lat:34.76124,lng:127.661275},{lat:34.761351,lng:127.662138},{lat:34.761306,lng:127.662149}]},
+        { path: [{lat:34.777286,lng:127.651584},{lat:34.777053,lng:127.651913},{lat:34.776829,lng:127.652274},{lat:34.776631,lng:127.652537},{lat:34.776281,lng:127.653019},{lat:34.776083,lng:127.65325},{lat:34.776029,lng:127.653294},{lat:34.775804,lng:127.653502},{lat:34.775499,lng:127.653766},{lat:34.774833,lng:127.654129},{lat:34.773635,lng:127.654746},{lat:34.772924,lng:127.654956},{lat:34.772617,lng:127.65499},{lat:34.772058,lng:127.65496},{lat:34.771084,lng:127.654866},{lat:34.770444,lng:127.654879},{lat:34.769670,lng:127.655024},{lat:34.768679,lng:127.655378},{lat:34.767616,lng:127.655765},{lat:34.767103,lng:127.655942},{lat:34.766571,lng:127.656086},{lat:34.766427,lng:127.656098},{lat:34.765390,lng:127.656069},{lat:34.764245,lng:127.656041},{lat:34.763542,lng:127.655989},{lat:34.762686,lng:127.655971},{lat:34.761649,lng:127.655954},{lat:34.761054,lng:127.655945}]},
+        { path: [{lat:34.766473,lng:127.66275},{lat:34.766419,lng:127.662849},{lat:34.766384,lng:127.663275},{lat:34.766268,lng:127.66356},{lat:34.766197,lng:127.663899},{lat:34.764961,lng:127.663707},{lat:34.764573,lng:127.663698},{lat:34.763672,lng:127.663756},{lat:34.763877,lng:127.662968},{lat:34.763859,lng:127.662761},{lat:34.762011,lng:127.662812},{lat:34.761668,lng:127.662814},{lat:34.761586,lng:127.66265},{lat:34.761388,lng:127.662607},{lat:34.761351,lng:127.662138},{lat:34.76124,lng:127.661275},{lat:34.760991,lng:127.655945},{lat:34.761649,lng:127.655954},{lat:34.762686,lng:127.655971},{lat:34.763542,lng:127.655989},{lat:34.764245,lng:127.656063}]},
+        { path: [{lat:34.762244,lng:127.668983},{lat:34.762253,lng:127.66895},{lat:34.761684,lng:127.668701},{lat:34.761359,lng:127.668561},{lat:34.760502,lng:127.668193},{lat:34.760222,lng:127.668074},{lat:34.759265,lng:127.667673},{lat:34.759185,lng:127.667947},{lat:34.758537,lng:127.668168},{lat:34.758473,lng:127.667851},{lat:34.758941,lng:127.667664},{lat:34.759265,lng:127.667673},{lat:34.759329,lng:127.667706}]},
+        { path: [{lat:34.760991,lng:127.655967},{lat:34.760991,lng:127.655945},{lat:34.760450,lng:127.655948},{lat:34.759729,lng:127.655907},{lat:34.758845,lng:127.655790},{lat:34.758430,lng:127.655814},{lat:34.757818,lng:127.656079},{lat:34.756999,lng:127.656617},{lat:34.756513,lng:127.656892},{lat:34.755675,lng:127.657005},{lat:34.754521,lng:127.657032},{lat:34.753331,lng:127.657058},{lat:34.752817,lng:127.656919},{lat:34.752501,lng:127.656767},{lat:34.750767,lng:127.655715},{lat:34.749521,lng:127.655097},{lat:34.748790,lng:127.654893},{lat:34.747889,lng:127.654733},{lat:34.746608,lng:127.654487},{lat:34.745849,lng:127.654064},{lat:34.744411,lng:127.652224},{lat:34.743552,lng:127.651507},{lat:34.743092,lng:127.651258},{lat:34.741441,lng:127.650784},{lat:34.740664,lng:127.650416},{lat:34.740095,lng:127.650080},{lat:34.739861,lng:127.650016},{lat:34.739607,lng:127.649427},{lat:34.739083,lng:127.649331},{lat:34.738814,lng:127.649780}]},
+        { path: [{lat:34.749361,lng:127.655841},{lat:34.749129,lng:127.656639},{lat:34.748862,lng:127.657721},{lat:34.748809,lng:127.658093},{lat:34.748844,lng:127.664231},{lat:34.748882,lng:127.665072},{lat:34.748829,lng:127.665345},{lat:34.748829,lng:127.665585},{lat:34.748911,lng:127.665672},{lat:34.748634,lng:127.666656},{lat:34.748571,lng:127.666766},{lat:34.747978,lng:127.667577},{lat:34.747476,lng:127.668409},{lat:34.747253,lng:127.669261},{lat:34.748651,lng:127.669442},{lat:34.748939,lng:127.66955},{lat:34.749066,lng:127.669691},{lat:34.749175,lng:127.669996},{lat:34.749194,lng:127.670433},{lat:34.749176,lng:127.673601},{lat:34.749115,lng:127.674671},{lat:34.748622,lng:127.675438},{lat:34.747786,lng:127.676424},{lat:34.748618,lng:127.677447},{lat:34.749097,lng:127.678057},{lat:34.749758,lng:127.678863},{lat:34.748886,lng:127.679860},{lat:34.747798,lng:127.681164},{lat:34.745848,lng:127.683432},{lat:34.744353,lng:127.684159},{lat:34.743542,lng:127.684086},{lat:34.740600,lng:127.682961},{lat:34.740122,lng:127.682766}]},
+        { path: [{lat:34.764245,lng:127.656063},{lat:34.765390,lng:127.656069},{lat:34.766427,lng:127.656098},{lat:34.766582,lng:127.656742},{lat:34.766517,lng:127.659036},{lat:34.766444,lng:127.662062},{lat:34.766328,lng:127.662456},{lat:34.766103,lng:127.662654},{lat:34.765030,lng:127.662713},{lat:34.763859,lng:127.662761},{lat:34.762011,lng:127.662812},{lat:34.761586,lng:127.66265},{lat:34.761388,lng:127.662607},{lat:34.761172,lng:127.662848},{lat:34.761209,lng:127.663099},{lat:34.760878,lng:127.664095},{lat:34.759937,lng:127.666196},{lat:34.759265,lng:127.667673},{lat:34.759087,lng:127.668231},{lat:34.758317,lng:127.670473},{lat:34.757575,lng:127.672552},{lat:34.757028,lng:127.673843},{lat:34.755778,lng:127.674744},{lat:34.753994,lng:127.675308},{lat:34.752725,lng:127.676033},{lat:34.751645,lng:127.676813},{lat:34.750737,lng:127.677712},{lat:34.749758,lng:127.678863},{lat:34.748618,lng:127.677447},{lat:34.747786,lng:127.676424},{lat:34.746394,lng:127.674977},{lat:34.745744,lng:127.674597},{lat:34.744886,lng:127.674338},{lat:34.745383,lng:127.674457}]},
+        { path: [{lat:34.749260,lng:127.678264},{lat:34.749758,lng:127.678863},{lat:34.748886,lng:127.679860},{lat:34.747798,lng:127.681164},{lat:34.745848,lng:127.683432},{lat:34.744353,lng:127.684159},{lat:34.743542,lng:127.684086},{lat:34.740600,lng:127.682961},{lat:34.739788,lng:127.682647},{lat:34.738254,lng:127.682042},{lat:34.737568,lng:127.681859},{lat:34.736874,lng:127.681883},{lat:34.736037,lng:127.682236},{lat:34.735317,lng:127.682905},{lat:34.734769,lng:127.683704},{lat:34.734724,lng:127.683770}]},
+        { path: [{lat:34.744173,lng:127.684160},{lat:34.744353,lng:127.684159},{lat:34.745326,lng:127.683838},{lat:34.745848,lng:127.683432},{lat:34.747798,lng:127.681164},{lat:34.748886,lng:127.679860},{lat:34.749263,lng:127.679422},{lat:34.749758,lng:127.678863},{lat:34.744391,lng:127.684672},{lat:34.744528,lng:127.685305},{lat:34.74479,lng:127.685763},{lat:34.745505,lng:127.686798},{lat:34.745840,lng:127.687386},{lat:34.747044,lng:127.689195},{lat:34.748365,lng:127.691199},{lat:34.748592,lng:127.691876},{lat:34.748670,lng:127.694071},{lat:34.748636,lng:127.695119},{lat:34.748617,lng:127.698188},{lat:34.748592,lng:127.698920},{lat:34.748259,lng:127.699118},{lat:34.748142,lng:127.699501},{lat:34.748270,lng:127.699872},{lat:34.748559,lng:127.700384},{lat:34.748608,lng:127.702000},{lat:34.748738,lng:127.703387},{lat:34.748884,lng:127.704315},{lat:34.749095,lng:127.705450},{lat:34.749278,lng:127.706607},{lat:34.749307,lng:127.707775},{lat:34.749276,lng:127.709556}]},
+        { path: [{lat:34.761311,lng:127.673935},{lat:34.761834,lng:127.674206},{lat:34.762601,lng:127.674509},{lat:34.762882,lng:127.674814},{lat:34.763181,lng:127.675392},{lat:34.763688,lng:127.676307},{lat:34.764214,lng:127.677463},{lat:34.764314,lng:127.677922},{lat:34.764120,lng:127.679354},{lat:34.763961,lng:127.680643},{lat:34.764017,lng:127.681550},{lat:34.764145,lng:127.682128},{lat:34.764863,lng:127.684201},{lat:34.766450,lng:127.688051},{lat:34.767112,lng:127.689644},{lat:34.768004,lng:127.692787},{lat:34.768523,lng:127.694784},{lat:34.768896,lng:127.696104},{lat:34.769084,lng:127.695590},{lat:34.769613,lng:127.694791},{lat:34.770045,lng:127.694352},{lat:34.770432,lng:127.694023},{lat:34.769084,lng:127.695590},{lat:34.768940,lng:127.695984}]},
+        { path: [{lat:34.768940,lng:127.695984},{lat:34.768583,lng:127.697187},{lat:34.768315,lng:127.698160},{lat:34.767912,lng:127.699396},{lat:34.767248,lng:127.700775},{lat:34.766593,lng:127.702034},{lat:34.765992,lng:127.703150},{lat:34.765255,lng:127.704202},{lat:34.764240,lng:127.705615},{lat:34.763521,lng:127.706458},{lat:34.762450,lng:127.707325},{lat:34.761362,lng:127.708257},{lat:34.760795,lng:127.708915},{lat:34.759915,lng:127.710087},{lat:34.759133,lng:127.711258},{lat:34.758757,lng:127.712341},{lat:34.758374,lng:127.714429},{lat:34.758126,lng:127.716057},{lat:34.758642,lng:127.716634},{lat:34.758886,lng:127.717496},{lat:34.758066,lng:127.717652},{lat:34.757974,lng:127.716691}]},
+        { path: [{lat:34.753868,lng:127.747540},{lat:34.754554,lng:127.748007},{lat:34.755032,lng:127.748203},{lat:34.755664,lng:127.748463},{lat:34.756448,lng:127.748657},{lat:34.757044,lng:127.748907},{lat:34.758143,lng:127.748423},{lat:34.756448,lng:127.748657},{lat:34.755357,lng:127.748355},{lat:34.754788,lng:127.748072},{lat:34.754166,lng:127.747626},{lat:34.753741,lng:127.747256},{lat:34.752964,lng:127.746276},{lat:34.752439,lng:127.745622},{lat:34.752060,lng:127.745306},{lat:34.751302,lng:127.744948},{lat:34.750716,lng:127.744721},{lat:34.749995,lng:127.744767},{lat:34.749274,lng:127.744933},{lat:34.748527,lng:127.745153},{lat:34.748301,lng:127.745460},{lat:34.747851,lng:127.745887},{lat:34.746699,lng:127.746808},{lat:34.745827,lng:127.747641},{lat:34.744792,lng:127.748550},{lat:34.744018,lng:127.749143},{lat:34.743532,lng:127.749603},{lat:34.743389,lng:127.750215},{lat:34.742715,lng:127.751167},{lat:34.741564,lng:127.752579},{lat:34.741312,lng:127.753028},{lat:34.741151,lng:127.753454},{lat:34.741905,lng:127.752207}]},
+        { path: [{lat:34.740420,lng:127.727661},{lat:34.740404,lng:127.728895},{lat:34.740352,lng:127.729824},{lat:34.740284,lng:127.731440},{lat:34.740154,lng:127.733712},{lat:34.740067,lng:127.735449},{lat:34.739870,lng:127.735985},{lat:34.740330,lng:127.736201},{lat:34.741052,lng:127.736636},{lat:34.741360,lng:127.737301},{lat:34.741397,lng:127.737705},{lat:34.741204,lng:127.739977},{lat:34.741466,lng:127.740490},{lat:34.742837,lng:127.740835},{lat:34.743830,lng:127.741105},{lat:34.744373,lng:127.742108},{lat:34.744205,lng:127.743670},{lat:34.743939,lng:127.745888},{lat:34.743726,lng:127.747767},{lat:34.743532,lng:127.749603},{lat:34.743390,lng:127.750215},{lat:34.742715,lng:127.751167},{lat:34.741564,lng:127.752579},{lat:34.741151,lng:127.753454},{lat:34.741152,lng:127.753956},{lat:34.740323,lng:127.754188},{lat:34.739168,lng:127.753940},{lat:34.738121,lng:127.753310},{lat:34.737498,lng:127.752526},{lat:34.736765,lng:127.751272},{lat:34.736555,lng:127.750126},{lat:34.736752,lng:127.749252},{lat:34.737120,lng:127.748486}]},
+        { path: [{lat:34.740420,lng:127.727661},{lat:34.739678,lng:127.726353},{lat:34.738555,lng:127.724446},{lat:34.737886,lng:127.723323},{lat:34.737026,lng:127.721895},{lat:34.736782,lng:127.721579},{lat:34.735464,lng:127.720634},{lat:34.734217,lng:127.719753},{lat:34.733287,lng:127.719101},{lat:34.732303,lng:127.718406},{lat:34.731888,lng:127.718090},{lat:34.730352,lng:127.716938},{lat:34.729882,lng:127.716405},{lat:34.729014,lng:127.715228},{lat:34.728354,lng:127.714346},{lat:34.727278,lng:127.712909},{lat:34.726229,lng:127.711471},{lat:34.724954,lng:127.709750},{lat:34.724131,lng:127.708628},{lat:34.726301,lng:127.711569}]}
     ];
-
-    var overlays    = [];
-    var kakaoMapObj = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
@@ -297,89 +152,53 @@
         }
     });
 
-    function strokeColor(curStock) {
-        return curStock === 0 ? '#dc3545' : (curStock <= 20 ? '#ffc107' : '#28a745');
-    }
-    function colorClass(curStock) {
-        return curStock === 0 ? 'marker-danger' : (curStock <= 20 ? 'marker-warning' : 'marker-success');
+    function openPhotoModal() {
+        $('#photoModal').modal('show');
     }
 
-    function labelContent(item, selected) {
-        var cc = colorClass(item.curStock);
-        var bc = 'marker-bubble' + (selected ? ' selected' : '');
-        return '<div class="map-marker ' + cc + '" onclick="onMarkerClick(\'' + item.id + '\')">'
-             + '<div class="' + bc + '">' + item.name + ' (' + item.curStock + ')</div>'
-             + '<div class="marker-tail"></div>'
-             + '</div>';
+    function openSectionMap(idx) {
+        selectedSectionIdx = idx;
+        var item = itemListData[idx];
+        if (item) {
+            document.getElementById('sectionMapTitle').textContent = item.name + ' 위치';
+        }
+        $('#sectionMapModal').modal('show');
     }
 
-    window.onMarkerClick = function (itemId) {
-        applyHighlight(String(itemId));
-    };
+    $('#sectionMapModal').on('shown.bs.modal', function () {
+        if (typeof kakao === 'undefined' || selectedSectionIdx < 0) return;
+        var coord = SECTION_COORDS[selectedSectionIdx];
+        if (!coord) return;
 
-    function applyHighlight(itemId) {
-        overlays.forEach(function (o) {
-            var selected = String(o.item.id) === String(itemId);
-            o.overlay.setContent(labelContent(o.item, selected));
-            if (o.polyline) o.polyline.setOptions({
-                strokeWeight:  selected ? 10 : 5,
-                strokeOpacity: selected ? 1  : 0.75,
-                strokeColor:   selected ? '#00e676' : strokeColor(o.item.curStock)
-            });
-        });
-    }
+        var container = document.getElementById('modalKakaoMap');
+        container.innerHTML = '';
+        var mid = coord.path[Math.floor(coord.path.length / 2)];
 
-    function showMapError(msg) {
-        var el = document.getElementById('kakaoMap');
-        if (el) el.innerHTML =
-            '<div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">'
-          + '<i class="fas fa-map-marked-alt fa-3x mb-3"></i>'
-          + '<p class="mb-1 font-weight-bold">지도를 불러올 수 없습니다</p>'
-          + '<small>' + (msg || '') + '</small>'
-          + '</div>';
-    }
-
-    if (typeof kakao === 'undefined') {
-        showMapError('카카오맵 SDK 로드 실패 (네트워크 또는 API 키 오류)');
-    } else {
         kakao.maps.load(function () {
-            try {
-                var container = document.getElementById('kakaoMap');
-                kakaoMapObj = new kakao.maps.Map(container, {
-                    center: new kakao.maps.LatLng(34.752, 127.690),
-                    level: 9
+            var map = new kakao.maps.Map(container, {
+                center: new kakao.maps.LatLng(mid.lat, mid.lng),
+                level: 6
+            });
+            new kakao.maps.Polyline({
+                map: map,
+                path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
+                strokeWeight: 8,
+                strokeColor: '#4e73df',
+                strokeOpacity: 0.95,
+                strokeStyle: 'solid'
+            });
+            var item = itemListData[selectedSectionIdx];
+            if (item) {
+                new kakao.maps.CustomOverlay({
+                    map: map,
+                    position: new kakao.maps.LatLng(mid.lat, mid.lng),
+                    content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;">'
+                           + item.name + ' (잔여 ' + item.curStock + ')</div>',
+                    yAnchor: 1
                 });
-
-                itemListData.forEach(function (item, idx) {
-                    var coord = SECTION_COORDS[idx];
-                    if (!coord) return;
-
-                    var color = strokeColor(item.curStock);
-                    var polyline = new kakao.maps.Polyline({
-                        map: kakaoMapObj,
-                        path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
-                        strokeWeight: 5,
-                        strokeColor: color,
-                        strokeOpacity: 0.8,
-                        strokeStyle: 'solid'
-                    });
-                    kakao.maps.event.addListener(polyline, 'click', function () { onMarkerClick(item.id); });
-
-                    var mid = coord.path[Math.floor(coord.path.length / 2)];
-                    var overlay = new kakao.maps.CustomOverlay({
-                        map: kakaoMapObj,
-                        position: new kakao.maps.LatLng(mid.lat, mid.lng),
-                        content: labelContent(item, false),
-                        yAnchor: 1
-                    });
-                    overlays.push({ itemId: String(item.id), polyline: polyline, overlay: overlay,
-                                    midCoord: { lat: mid.lat, lng: mid.lng }, item: item });
-                });
-            } catch (e) {
-                showMapError(e.message);
             }
         });
-    }
+    });
 </script>
 </th:block>
 </html>
