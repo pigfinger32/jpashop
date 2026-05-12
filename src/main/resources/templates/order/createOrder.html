@@ -391,7 +391,6 @@
     ];
 
     var selectedSectionIdx = -1;
-    var kakaoMapsReady = false;
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
@@ -400,9 +399,6 @@
         if (dateInput && !dateInput.value) {
             dateInput.value = today;
             if (!serverDate) { dateInput.closest('form').submit(); }
-        }
-        if (typeof kakao !== 'undefined') {
-            kakao.maps.load(function () { kakaoMapsReady = true; });
         }
     });
 
@@ -420,7 +416,7 @@
     }
 
     $('#sectionMapModal').on('shown.bs.modal', function () {
-        if (!kakaoMapsReady || selectedSectionIdx < 0) return;
+        if (typeof kakao === 'undefined' || selectedSectionIdx < 0) return;
         var coord = SECTION_COORDS[selectedSectionIdx];
         if (!coord) return;
 
@@ -428,28 +424,30 @@
         container.innerHTML = '';
         var mid = coord.path[Math.floor(coord.path.length / 2)];
 
-        var map = new kakao.maps.Map(container, {
-            center: new kakao.maps.LatLng(mid.lat, mid.lng),
-            level: 6
-        });
-        new kakao.maps.Polyline({
-            map: map,
-            path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
-            strokeWeight: 8,
-            strokeColor: '#4e73df',
-            strokeOpacity: 0.95,
-            strokeStyle: 'solid'
-        });
-        var item = itemListData[selectedSectionIdx];
-        if (item) {
-            new kakao.maps.CustomOverlay({
-                map: map,
-                position: new kakao.maps.LatLng(mid.lat, mid.lng),
-                content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;">'
-                       + item.name + ' (잔여 ' + item.curStock + ')</div>',
-                yAnchor: 1
+        kakao.maps.load(function () {
+            var map = new kakao.maps.Map(container, {
+                center: new kakao.maps.LatLng(mid.lat, mid.lng),
+                level: 6
             });
-        }
+            new kakao.maps.Polyline({
+                map: map,
+                path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
+                strokeWeight: 8,
+                strokeColor: '#4e73df',
+                strokeOpacity: 0.95,
+                strokeStyle: 'solid'
+            });
+            var item = itemListData[selectedSectionIdx];
+            if (item) {
+                new kakao.maps.CustomOverlay({
+                    map: map,
+                    position: new kakao.maps.LatLng(mid.lat, mid.lng),
+                    content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;">'
+                           + item.name + ' (잔여 ' + item.curStock + ')</div>',
+                    yAnchor: 1
+                });
+            }
+        });
     });
 
     /* ---- 주문 폼 로직 ---- */
