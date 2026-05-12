@@ -5,6 +5,7 @@
 <th:block layout:fragment="content">
 
 <style>
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 .section-badge {
     display:inline-block; padding:1px 7px; border-radius:10px;
     font-size:11px; font-weight:600; color:#fff; background:#28a745;
@@ -135,14 +136,13 @@
     </div>
 </div>
 
-<!-- 카카오맵 API -->
-<script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script th:inline="javascript">
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
     var selectedSectionIdx = -1;
+    var _leafletMap = null;
 
     var SECTION_COORDS = [
         { path: [{lat:34.761692,lng:127.63983},{lat:34.761999,lng:127.639818},{lat:34.763099,lng:127.639791},{lat:34.761999,lng:127.639818},{lat:34.760863,lng:127.639845},{lat:34.760881,lng:127.642717},{lat:34.760897,lng:127.645339},{lat:34.76091,lng:127.646726},{lat:34.76092,lng:127.647098},{lat:34.760924,lng:127.648332},{lat:34.760924,lng:127.648419},{lat:34.760947,lng:127.650058},{lat:34.760939,lng:127.650429},{lat:34.760969,lng:127.651368},{lat:34.760969,lng:127.651467},{lat:34.760963,lng:127.652636},{lat:34.760979,lng:127.654919},{lat:34.760991,lng:127.655945},{lat:34.760978,lng:127.65766},{lat:34.760972,lng:127.658807},{lat:34.761027,lng:127.659364},{lat:34.761083,lng:127.659954},{lat:34.76124,lng:127.661275},{lat:34.761351,lng:127.662138},{lat:34.761306,lng:127.662149}]},
@@ -184,38 +184,33 @@
     }
 
     $('#sectionMapModal').on('shown.bs.modal', function () {
-        if (typeof kakao === 'undefined' || selectedSectionIdx < 0) return;
+        if (selectedSectionIdx < 0) return;
         var coord = SECTION_COORDS[selectedSectionIdx];
         if (!coord) return;
 
+        if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
+
         var container = document.getElementById('modalKakaoMap');
-        container.innerHTML = '';
         var mid = coord.path[Math.floor(coord.path.length / 2)];
 
-        kakao.maps.load(function () {
-            var map = new kakao.maps.Map(container, {
-                center: new kakao.maps.LatLng(mid.lat, mid.lng),
-                level: 6
-            });
-            new kakao.maps.Polyline({
-                map: map,
-                path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
-                strokeWeight: 8,
-                strokeColor: '#4e73df',
-                strokeOpacity: 0.95,
-                strokeStyle: 'solid'
-            });
-            var item = itemListData[selectedSectionIdx];
-            if (item) {
-                new kakao.maps.CustomOverlay({
-                    map: map,
-                    position: new kakao.maps.LatLng(mid.lat, mid.lng),
-                    content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;">'
-                           + item.name + ' (잔여 ' + item.curStock + ')</div>',
-                    yAnchor: 1
-                });
-            }
-        });
+        _leafletMap = L.map(container).setView([mid.lat, mid.lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(_leafletMap);
+        L.polyline(coord.path.map(function (p) { return [p.lat, p.lng]; }), {
+            color: '#4e73df', weight: 8, opacity: 0.95
+        }).addTo(_leafletMap);
+
+        var item = itemListData[selectedSectionIdx];
+        if (item) {
+            L.marker([mid.lat, mid.lng]).addTo(_leafletMap)
+                .bindPopup('<strong>' + item.name + '</strong><br>잔여 ' + item.curStock + '개')
+                .openPopup();
+        }
+    });
+
+    $('#sectionMapModal').on('hidden.bs.modal', function () {
+        if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
     });
 </script>
 </th:block>
