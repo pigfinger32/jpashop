@@ -84,9 +84,6 @@
 
 </div>
 
-<!-- 카카오맵 pre-render 캐시 영역 -->
-<div id="kakaoMapCacheArea" style="position:fixed;left:-20000px;top:0;width:800px;overflow:hidden;z-index:-1;"></div>
-
 <!-- 카카오맵 API -->
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
 
@@ -144,7 +141,7 @@
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
     var selectedSectionIdx = -1;
-    var kakaoMapCache = {}; // idx -> { map, div }
+    var _kakaoMap = null;
 
     var SECTION_COORDS = [
         { path: [{lat:34.761692,lng:127.63983},{lat:34.761999,lng:127.639818},{lat:34.763099,lng:127.639791},{lat:34.761999,lng:127.639818},{lat:34.760863,lng:127.639845},{lat:34.760881,lng:127.642717},{lat:34.760897,lng:127.645339},{lat:34.76091,lng:127.646726},{lat:34.76092,lng:127.647098},{lat:34.760924,lng:127.648332},{lat:34.760924,lng:127.648419},{lat:34.760947,lng:127.650058},{lat:34.760939,lng:127.650429},{lat:34.760969,lng:127.651368},{lat:34.760969,lng:127.651467},{lat:34.760963,lng:127.652636},{lat:34.760979,lng:127.654919},{lat:34.760991,lng:127.655945},{lat:34.760978,lng:127.65766},{lat:34.760972,lng:127.658807},{lat:34.761027,lng:127.659364},{lat:34.761083,lng:127.659954},{lat:34.76124,lng:127.661275},{lat:34.761351,lng:127.662138},{lat:34.761306,lng:127.662149}]},
@@ -188,61 +185,39 @@
     $('#sectionMapModal').on('shown.bs.modal', function () {
         var idx = selectedSectionIdx;
         if (idx < 0) return;
-        var cached = kakaoMapCache[idx];
-        if (!cached) return;
-        var modalContainer = document.getElementById('modalKakaoMap');
-        modalContainer.innerHTML = '';
-        cached.div.style.width  = '100%';
-        cached.div.style.height = '480px';
-        modalContainer.appendChild(cached.div);
-        cached.map.relayout();
-        var mid = SECTION_COORDS[idx].path[Math.floor(SECTION_COORDS[idx].path.length / 2)];
-        cached.map.setCenter(new kakao.maps.LatLng(mid.lat, mid.lng));
-    });
+        var container = document.getElementById('modalKakaoMap');
+        container.innerHTML = '';
+        _kakaoMap = null;
 
-    $('#sectionMapModal').on('hidden.bs.modal', function () {
-        var cacheArea = document.getElementById('kakaoMapCacheArea');
-        var modalContainer = document.getElementById('modalKakaoMap');
-        while (modalContainer.firstChild) {
-            var child = modalContainer.firstChild;
-            child.style.width  = '800px';
-            child.style.height = '480px';
-            cacheArea.appendChild(child);
-        }
-    });
-
-    function initAllKakaoMaps() {
-        SECTION_COORDS.forEach(function (coord, idx) {
-            var div = document.createElement('div');
-            div.style.width  = '800px';
-            div.style.height = '480px';
-            document.getElementById('kakaoMapCacheArea').appendChild(div);
-
-            var mid = coord.path[Math.floor(coord.path.length / 2)];
-            var map = new kakao.maps.Map(div, {
+        kakao.maps.load(function () {
+            var coord = SECTION_COORDS[idx];
+            var mid   = coord.path[Math.floor(coord.path.length / 2)];
+            _kakaoMap = new kakao.maps.Map(container, {
                 center: new kakao.maps.LatLng(mid.lat, mid.lng),
                 level: 6
             });
             new kakao.maps.Polyline({
-                map: map,
+                map: _kakaoMap,
                 path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
                 strokeWeight: 8, strokeColor: '#4e73df', strokeOpacity: 0.95, strokeStyle: 'solid'
             });
             var item = itemListData[idx];
             if (item) {
                 new kakao.maps.CustomOverlay({
-                    map: map,
+                    map: _kakaoMap,
                     position: new kakao.maps.LatLng(mid.lat, mid.lng),
                     content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">'
-                           + item.name + ' (잔여 ' + item.curStock + '개)</div>',
-                    yAnchor: 1
+                           + item.name + ' &nbsp;잔여 ' + item.curStock + '개</div>',
+                    yAnchor: 1.5
                 });
             }
-            kakaoMapCache[idx] = { map: map, div: div };
         });
-    }
+    });
 
-    kakao.maps.load(function () { initAllKakaoMaps(); });
+    $('#sectionMapModal').on('hidden.bs.modal', function () {
+        document.getElementById('modalKakaoMap').innerHTML = '';
+        _kakaoMap = null;
+    });
 </script>
 </th:block>
 </html>
