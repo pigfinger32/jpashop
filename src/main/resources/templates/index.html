@@ -14,14 +14,14 @@
 .notice-list li:last-child { border-bottom:none; }
 
 /* 민원/수수료 박스 */
-.info-card { border-radius:8px; padding:18px 20px; display:flex; align-items:center; gap:16px; }
+.info-card { border-radius:8px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
 .info-card.blue  { background:#1b4f8a; color:#fff; }
 .info-card.green { background:#1a6e44; color:#fff; }
-.info-card-icon { font-size:2.2rem; opacity:0.85; flex-shrink:0; }
-.info-card-body h6 { font-weight:700; font-size:0.88rem; margin-bottom:4px; opacity:0.85; letter-spacing:.5px; }
-.info-card-body .phone { font-size:1.4rem; font-weight:800; letter-spacing:1px; }
-.info-card-body .account { font-size:1.1rem; font-weight:700; letter-spacing:.5px; }
-.info-card-body small { opacity:0.8; font-size:0.78rem; }
+.info-card-icon { font-size:1.6rem; opacity:0.85; flex-shrink:0; }
+.info-card-body h6 { font-weight:700; font-size:0.78rem; margin-bottom:2px; opacity:0.85; letter-spacing:.3px; }
+.info-card-body .phone { font-size:1.0rem; font-weight:800; letter-spacing:.5px; }
+.info-card-body .account { font-size:0.82rem; font-weight:700; letter-spacing:.3px; }
+.info-card-body small { opacity:0.8; font-size:0.72rem; }
 
 /* 접수절차 */
 .proc-wrap { display:flex; align-items:flex-start; flex-wrap:wrap; gap:0; }
@@ -83,8 +83,8 @@
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="card shadow h-100">
+        <div class="col-lg-5 d-flex flex-column">
+            <div class="card shadow mb-2" style="flex:1 1 auto;">
                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-bullhorn mr-1"></i>공지사항
@@ -103,38 +103,33 @@
                     </ul>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Row 2: 민원상담전화 + 수수료입금안내 -->
-    <div class="row mb-4 align-items-stretch">
-        <div class="col-md-6 mb-3 mb-md-0">
-            <div class="info-card blue shadow h-100">
-                <div class="info-card-icon">
-                    <i class="fas fa-phone-alt"></i>
+            <!-- 민원상담 + 수수료 컴팩트 박스 -->
+            <div class="row no-gutters">
+                <div class="col-6 pr-1">
+                    <div class="info-card blue shadow h-100">
+                        <div class="info-card-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div class="info-card-body">
+                            <h6>민원상담</h6>
+                            <div class="phone">010-8744-0026</div>
+                            <small>전남외광협회 여수시지부</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-card-body">
-                    <h6>민원상담 전화번호</h6>
-                    <div class="phone">010-8744-0026</div>
-                    <small>전남외광협회 여수시지부</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="info-card green shadow h-100">
-                <div class="info-card-icon">
-                    <i class="fas fa-university"></i>
-                </div>
-                <div class="info-card-body">
-                    <h6>수수료 입금안내</h6>
-                    <div class="account">기업 193-110190-04-013</div>
-                    <small>주식회사아이비</small>
+                <div class="col-6 pl-1">
+                    <div class="info-card green shadow h-100">
+                        <div class="info-card-icon"><i class="fas fa-university"></i></div>
+                        <div class="info-card-body">
+                            <h6>수수료 입금</h6>
+                            <div class="account">기업 193-110190-04-013</div>
+                            <small>주식회사아이비</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row 3: 접수절차 + 링크박스 -->
+    <!-- Row 2: 접수절차 + 링크박스 -->
     <div class="row">
         <div class="col-lg-8 mb-4">
             <div class="card shadow h-100">
