@@ -170,6 +170,12 @@
 
 </div>
 
+<!-- 카카오맵 pre-render 캐시 영역 -->
+<div id="kakaoMapCacheArea" style="position:fixed;left:-20000px;top:0;width:800px;overflow:hidden;z-index:-1;"></div>
+
+<!-- 카카오맵 API -->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a40aa84e4b695bb1391b34691db972f&autoload=false"></script>
+
 <!-- 사진 모달 -->
 <div class="modal fade" id="photoModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -385,7 +391,7 @@
     ];
 
     var selectedSectionIdx = -1;
-    var _leafletMap = null;
+    var kakaoMapCache = {};
 
     document.addEventListener('DOMContentLoaded', function () {
         var today = new Date().toISOString().substring(0, 10);
@@ -408,53 +414,66 @@
             document.getElementById('sectionMapTitle').textContent = item.name + ' 위치';
         }
         $('#sectionMapModal').modal('show');
-        setTimeout(function() {
-            var coord = SECTION_COORDS[idx];
-            if (coord) renderSVGMap(coord.path, item);
-        }, 150);
     }
 
-    function renderSVGMap(path, item) {
-        var container = document.getElementById('modalKakaoMap');
-        var W = container.offsetWidth || 800;
-        var H = 480;
+    $('#sectionMapModal').on('shown.bs.modal', function () {
+        var idx = selectedSectionIdx;
+        if (idx < 0) return;
+        var cached = kakaoMapCache[idx];
+        if (!cached) return;
+        var modalContainer = document.getElementById('modalKakaoMap');
+        modalContainer.innerHTML = '';
+        cached.div.style.width  = '100%';
+        cached.div.style.height = '480px';
+        modalContainer.appendChild(cached.div);
+        cached.map.relayout();
+        var mid = SECTION_COORDS[idx].path[Math.floor(SECTION_COORDS[idx].path.length / 2)];
+        cached.map.setCenter(new kakao.maps.LatLng(mid.lat, mid.lng));
+    });
 
-        var lats = path.map(function(p) { return p.lat; });
-        var lngs = path.map(function(p) { return p.lng; });
-        var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
-        var minLng = Math.min.apply(null, lngs), maxLng = Math.max.apply(null, lngs);
-        var padLat = (maxLat - minLat) * 0.25 || 0.002;
-        var padLng = (maxLng - minLng) * 0.25 || 0.002;
-        minLat -= padLat; maxLat += padLat;
-        minLng -= padLng; maxLng += padLng;
+    $('#sectionMapModal').on('hidden.bs.modal', function () {
+        var cacheArea = document.getElementById('kakaoMapCacheArea');
+        var modalContainer = document.getElementById('modalKakaoMap');
+        while (modalContainer.firstChild) {
+            var child = modalContainer.firstChild;
+            child.style.width  = '800px';
+            child.style.height = '480px';
+            cacheArea.appendChild(child);
+        }
+    });
 
-        function toX(lng) { return (lng - minLng) / (maxLng - minLng) * W; }
-        function toY(lat) { return H - (lat - minLat) / (maxLat - minLat) * H; }
+    function initAllKakaoMaps() {
+        SECTION_COORDS.forEach(function (coord, idx) {
+            var div = document.createElement('div');
+            div.style.width  = '800px';
+            div.style.height = '480px';
+            document.getElementById('kakaoMapCacheArea').appendChild(div);
 
-        var points = path.map(function(p) { return toX(p.lng).toFixed(1) + ',' + toY(p.lat).toFixed(1); }).join(' ');
-        var mid = path[Math.floor(path.length / 2)];
-        var mx = toX(mid.lng).toFixed(1), my = toY(mid.lat).toFixed(1);
-        var sx = toX(path[0].lng).toFixed(1), sy = toY(path[0].lat).toFixed(1);
-        var ex = toX(path[path.length-1].lng).toFixed(1), ey = toY(path[path.length-1].lat).toFixed(1);
-        var label = item ? item.name : '';
-        var stock = item ? '잔여 ' + item.curStock + '개' : '';
-
-        container.innerHTML =
-            '<svg width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg" style="background:#dde8f0;display:block;">'
-            + '<defs><pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#c4d8e8" stroke-width="0.8"/></pattern></defs>'
-            + '<rect width="100%" height="100%" fill="url(#g)"/>'
-            + '<polyline points="' + points + '" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>'
-            + '<polyline points="' + points + '" fill="none" stroke="#4e73df" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
-            + '<circle cx="' + sx + '" cy="' + sy + '" r="9" fill="#28a745" stroke="#fff" stroke-width="2.5"/>'
-            + '<circle cx="' + ex + '" cy="' + ey + '" r="9" fill="#e74a3b" stroke="#fff" stroke-width="2.5"/>'
-            + '<circle cx="' + mx + '" cy="' + my + '" r="20" fill="#4e73df" stroke="#fff" stroke-width="2.5" opacity="0.92"/>'
-            + '<text x="' + mx + '" y="' + (parseFloat(my)+5) + '" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" font-family="sans-serif">' + label + '</text>'
-            + '<rect x="12" y="12" width="130" height="68" rx="6" fill="rgba(255,255,255,0.93)" stroke="#ccc" stroke-width="1"/>'
-            + '<circle cx="27" cy="30" r="6" fill="#28a745"/><text x="38" y="34" font-size="12" fill="#333" font-family="sans-serif">시작지점</text>'
-            + '<circle cx="27" cy="52" r="6" fill="#e74a3b"/><text x="38" y="56" font-size="12" fill="#333" font-family="sans-serif">종료지점</text>'
-            + '<text x="16" y="72" font-size="11" fill="#555" font-family="sans-serif">' + stock + '</text>'
-            + '</svg>';
+            var mid = coord.path[Math.floor(coord.path.length / 2)];
+            var map = new kakao.maps.Map(div, {
+                center: new kakao.maps.LatLng(mid.lat, mid.lng),
+                level: 6
+            });
+            new kakao.maps.Polyline({
+                map: map,
+                path: coord.path.map(function (p) { return new kakao.maps.LatLng(p.lat, p.lng); }),
+                strokeWeight: 8, strokeColor: '#4e73df', strokeOpacity: 0.95, strokeStyle: 'solid'
+            });
+            var item = itemListData[idx];
+            if (item) {
+                new kakao.maps.CustomOverlay({
+                    map: map,
+                    position: new kakao.maps.LatLng(mid.lat, mid.lng),
+                    content: '<div style="padding:4px 10px;background:#4e73df;color:#fff;border-radius:12px;font-weight:bold;font-size:13px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">'
+                           + item.name + ' (잔여 ' + item.curStock + '개)</div>',
+                    yAnchor: 1
+                });
+            }
+            kakaoMapCache[idx] = { map: map, div: div };
+        });
     }
+
+    kakao.maps.load(function () { initAllKakaoMaps(); });
 
     /* ---- 주문 폼 로직 ---- */
     function onTermChange(radio) {
