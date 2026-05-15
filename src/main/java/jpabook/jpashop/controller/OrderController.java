@@ -206,21 +206,17 @@ public class OrderController {
                 String bgColor, borderColor, textColor;
 
                 if (o.getStatus() == OrderStatus.CANCEL) {
-                    bgColor     = "rgba(173,181,189,0.22)";
-                    borderColor = "#adb5bd";
-                    textColor   = "#868e96";
+                    bgColor     = "#9e9e9e";
+                    borderColor = "#757575";
+                    textColor   = "#ffffff";
                 } else {
                     String name = o.getOrderName() != null ? o.getOrderName() : "";
                     if (!nameColorMap.containsKey(name)) {
                         nameColorMap.put(name, COLOR_PALETTE[nameColorMap.size() % COLOR_PALETTE.length]);
                     }
-                    int[] rgb   = hexToRgb(nameColorMap.get(name));
-                    bgColor     = String.format("rgba(%d,%d,%d,0.18)", rgb[0], rgb[1], rgb[2]);
+                    bgColor     = nameColorMap.get(name);
                     borderColor = nameColorMap.get(name);
-                    textColor   = String.format("rgb(%d,%d,%d)",
-                                      Math.max(0, rgb[0] - 50),
-                                      Math.max(0, rgb[1] - 50),
-                                      Math.max(0, rgb[2] - 50));
+                    textColor   = "#ffffff";
                 }
 
                 String calEnd;
