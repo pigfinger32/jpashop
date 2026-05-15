@@ -177,38 +177,53 @@
             document.getElementById('sectionMapTitle').textContent = item.name + ' 위치';
         }
         $('#sectionMapModal').modal('show');
+        setTimeout(function() {
+            var coord = SECTION_COORDS[idx];
+            if (coord) renderSVGMap(coord.path, item);
+        }, 150);
     }
 
-    $('#sectionMapModal').on('shown.bs.modal', function () {
-        if (selectedSectionIdx < 0) return;
-        var coord = SECTION_COORDS[selectedSectionIdx];
-        if (!coord) return;
-
-        if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
-
+    function renderSVGMap(path, item) {
         var container = document.getElementById('modalKakaoMap');
-        var mid = coord.path[Math.floor(coord.path.length / 2)];
+        var W = container.offsetWidth || 800;
+        var H = 480;
 
-        _leafletMap = L.map(container).setView([mid.lat, mid.lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(_leafletMap);
-        L.polyline(coord.path.map(function (p) { return [p.lat, p.lng]; }), {
-            color: '#4e73df', weight: 8, opacity: 0.95
-        }).addTo(_leafletMap);
+        var lats = path.map(function(p) { return p.lat; });
+        var lngs = path.map(function(p) { return p.lng; });
+        var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
+        var minLng = Math.min.apply(null, lngs), maxLng = Math.max.apply(null, lngs);
+        var padLat = (maxLat - minLat) * 0.25 || 0.002;
+        var padLng = (maxLng - minLng) * 0.25 || 0.002;
+        minLat -= padLat; maxLat += padLat;
+        minLng -= padLng; maxLng += padLng;
 
-        var item = itemListData[selectedSectionIdx];
-        if (item) {
-            L.marker([mid.lat, mid.lng]).addTo(_leafletMap)
-                .bindPopup('<strong>' + item.name + '</strong><br>잔여 ' + item.curStock + '개')
-                .openPopup();
-        }
-        setTimeout(function () { _leafletMap.invalidateSize(); }, 100);
-    });
+        function toX(lng) { return (lng - minLng) / (maxLng - minLng) * W; }
+        function toY(lat) { return H - (lat - minLat) / (maxLat - minLat) * H; }
 
-    $('#sectionMapModal').on('hidden.bs.modal', function () {
-        if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
-    });
+        var points = path.map(function(p) { return toX(p.lng).toFixed(1) + ',' + toY(p.lat).toFixed(1); }).join(' ');
+        var mid = path[Math.floor(path.length / 2)];
+        var mx = toX(mid.lng).toFixed(1), my = toY(mid.lat).toFixed(1);
+        var sx = toX(path[0].lng).toFixed(1), sy = toY(path[0].lat).toFixed(1);
+        var ex = toX(path[path.length-1].lng).toFixed(1), ey = toY(path[path.length-1].lat).toFixed(1);
+        var label = item ? item.name : '';
+        var stock = item ? '잔여 ' + item.curStock + '개' : '';
+
+        container.innerHTML =
+            '<svg width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg" style="background:#dde8f0;display:block;">'
+            + '<defs><pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#c4d8e8" stroke-width="0.8"/></pattern></defs>'
+            + '<rect width="100%" height="100%" fill="url(#g)"/>'
+            + '<polyline points="' + points + '" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>'
+            + '<polyline points="' + points + '" fill="none" stroke="#4e73df" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
+            + '<circle cx="' + sx + '" cy="' + sy + '" r="9" fill="#28a745" stroke="#fff" stroke-width="2.5"/>'
+            + '<circle cx="' + ex + '" cy="' + ey + '" r="9" fill="#e74a3b" stroke="#fff" stroke-width="2.5"/>'
+            + '<circle cx="' + mx + '" cy="' + my + '" r="20" fill="#4e73df" stroke="#fff" stroke-width="2.5" opacity="0.92"/>'
+            + '<text x="' + mx + '" y="' + (parseFloat(my)+5) + '" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" font-family="sans-serif">' + label + '</text>'
+            + '<rect x="12" y="12" width="130" height="68" rx="6" fill="rgba(255,255,255,0.93)" stroke="#ccc" stroke-width="1"/>'
+            + '<circle cx="27" cy="30" r="6" fill="#28a745"/><text x="38" y="34" font-size="12" fill="#333" font-family="sans-serif">시작지점</text>'
+            + '<circle cx="27" cy="52" r="6" fill="#e74a3b"/><text x="38" y="56" font-size="12" fill="#333" font-family="sans-serif">종료지점</text>'
+            + '<text x="16" y="72" font-size="11" fill="#555" font-family="sans-serif">' + stock + '</text>'
+            + '</svg>';
+    }
 </script>
 </th:block>
 </html>
