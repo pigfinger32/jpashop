@@ -72,9 +72,9 @@
                         </div>
                     </td>
                     <td class="align-middle">
-                        <small th:class="${item.curStock == 0 ? 'text-danger font-weight-bold' : (item.curStock le 20 ? 'text-warning font-weight-bold' : 'text-success font-weight-bold')}"
-                               th:text="|총 ${item.stockQuantity}개 중 예약 ${item.usedStock}개, 잔여 수량 ${item.curStock}개|">
-                        </small>
+                        <span th:class="${item.curStock == 0 ? 'text-danger font-weight-bold' : (item.curStock le 20 ? 'text-warning font-weight-bold' : 'text-success font-weight-bold')}"
+                              th:text="|잔여 ${item.curStock}개|">
+                        </span>
                     </td>
                 </tr>
                 </tbody>
