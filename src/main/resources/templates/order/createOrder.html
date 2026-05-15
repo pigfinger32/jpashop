@@ -434,6 +434,7 @@
                 .bindPopup('<strong>' + item.name + '</strong><br>잔여 ' + item.curStock + '개')
                 .openPopup();
         }
+        setTimeout(function () { _leafletMap.invalidateSize(); }, 100);
     });
 
     $('#sectionMapModal').on('hidden.bs.modal', function () {
