@@ -188,11 +188,11 @@ public class OrderController {
         return "order/orderList";
     }
 
-    // 공연별 기본 색상 팔레트 (배경 rgba 계산에 사용)
+    // 공연별 기본 색상 팔레트 (채도 낮춘 버전)
     private static final String[] COLOR_PALETTE = {
-        "#4e73df","#20c9a6","#fd7e14","#6f42c1","#17a2b8",
-        "#607d8b","#2196f3","#ff5722","#8bc34a","#9c27b0",
-        "#00bcd4","#e91e63","#009688","#ff9800","#673ab7"
+        "#4a6cc4","#28a88a","#d4701a","#6438b0","#1890a0",
+        "#5a7280","#1e7ed4","#c84818","#6e9a30","#882098",
+        "#00a0b8","#c81858","#007d72","#c47e00","#5c30a0"
     };
 
     private List<Map<String, Object>> buildCalendarEvents(List<Order> allOrders) {
