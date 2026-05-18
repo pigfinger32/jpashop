@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-      xmlns:sec="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="layout">
 
 <th:block layout:fragment="content">
@@ -10,8 +10,6 @@
     <div class="py-5 text-center">
       <h2>글 상세</h2>
     </div>
-
-    <!--  <h2 th:if="${param.status}" th:text="'저장 완료'"></h2> -->
 
     <div>
       <label for="noticeId">ID</label>
@@ -41,7 +39,7 @@
     <hr class="my-4">
 
     <div class="row">
-      <div class="col">
+      <div class="col" sec:authorize="hasRole('ADMIN')">
         <button class="w-100 btn btn-primary btn-lg"
                 th:onclick="|location.href='@{/notices/{uid}/edit(uid=${notice.id})}'|"
                 type="button">수정</button>
@@ -51,8 +49,8 @@
                 th:onclick="|location.href='@{/notices}'|"
                 type="button">목록으로</button>
       </div>
-      <div class="col">
-        <button class="w-100 btn btn-secondary btn-lg"
+      <div class="col" sec:authorize="hasRole('ADMIN')">
+        <button class="w-100 btn btn-danger btn-lg"
                 th:onclick="|location.href='@{/notices/{uid}/delete(uid=${notice.id})}'|"
                 type="button">삭제</button>
       </div>
