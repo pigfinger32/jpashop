@@ -14,65 +14,67 @@
 .notice-list li:last-child { border-bottom:none; }
 
 /* 민원/수수료 박스 */
-.info-card { border-radius:8px; padding:18px 20px; display:flex; align-items:center; gap:16px; }
+.info-card { border-radius:8px; padding:14px 18px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
 .info-card.blue  { background:#1b4f8a; color:#fff; }
 .info-card.green { background:#1a6e44; color:#fff; }
-.info-card-icon { font-size:2.2rem; opacity:0.85; flex-shrink:0; }
-.info-card-body h6 { font-weight:700; font-size:0.88rem; margin-bottom:4px; opacity:0.85; letter-spacing:.5px; }
-.info-card-body .phone { font-size:1.4rem; font-weight:800; letter-spacing:1px; }
-.info-card-body .account { font-size:1.1rem; font-weight:700; letter-spacing:.5px; }
-.info-card-body small { opacity:0.8; font-size:0.78rem; }
+.info-card-icon { font-size:2rem; opacity:0.85; flex-shrink:0; }
+.info-card-body h6 { font-weight:700; font-size:0.85rem; margin-bottom:3px; opacity:0.85; letter-spacing:.5px; }
+.info-card-body .phone { font-size:1.3rem; font-weight:800; letter-spacing:1px; }
+.info-card-body .account { font-size:1rem; font-weight:700; letter-spacing:.5px; }
+.info-card-body small { opacity:0.8; font-size:0.75rem; }
 
 /* 접수절차 */
 .proc-wrap { display:flex; align-items:flex-start; flex-wrap:wrap; gap:0; }
-.proc-step { text-align:center; flex:1; min-width:80px; padding:0 4px; }
+.proc-step { text-align:center; flex:1; min-width:70px; padding:0 4px; }
 .proc-circle {
-    width:52px; height:52px; border-radius:50%;
+    width:44px; height:44px; border-radius:50%;
     background:#e8f1fb; border:2px solid #4e73df;
     display:flex; align-items:center; justify-content:center;
-    margin:0 auto 8px; color:#4e73df; font-size:1.1rem;
+    margin:0 auto 6px; color:#4e73df; font-size:1rem;
 }
-.proc-step .step-title { font-size:0.78rem; font-weight:600; color:#333; line-height:1.3; }
-.proc-step .step-sub   { font-size:0.7rem;  color:#888; margin-top:2px; }
-.proc-arrow { display:flex; align-items:center; padding-top:14px; color:#bbb; font-size:1.1rem; flex-shrink:0; }
+.proc-step .step-title { font-size:0.75rem; font-weight:600; color:#333; line-height:1.3; }
+.proc-step .step-sub   { font-size:0.68rem; color:#888; margin-top:2px; }
+.proc-arrow { display:flex; align-items:center; padding-top:10px; color:#bbb; font-size:1rem; flex-shrink:0; }
 
 /* 링크 박스 */
 .link-box {
-    background:#1b3f6a; color:#fff; border-radius:8px; padding:16px;
+    background:#1b3f6a; color:#fff; border-radius:8px; padding:12px 16px;
     display:flex; align-items:center; justify-content:space-between;
-    text-decoration:none; margin-bottom:10px; transition:background .15s;
+    text-decoration:none; margin-bottom:8px; transition:background .15s;
 }
 .link-box:hover { background:#15345a; color:#fff; text-decoration:none; }
-.link-box-text h6 { font-weight:700; font-size:0.9rem; margin-bottom:3px; }
-.link-box-text p  { font-size:0.75rem; opacity:.85; margin:0; }
-.link-box-icon    { font-size:1.8rem; opacity:.7; }
+.link-box-text h6 { font-weight:700; font-size:0.88rem; margin-bottom:2px; }
+.link-box-text p  { font-size:0.72rem; opacity:.85; margin:0; }
+.link-box-icon    { font-size:1.6rem; opacity:.7; }
 </style>
 
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid px-4 py-3"
+     style="height:calc(100vh - 70px);display:flex;flex-direction:column;overflow:hidden;">
 
-    <!-- Row 1+2 통합: 캐러셀(좌 전체높이) + 공지사항/민원/수수료(우 세로배열) -->
-    <div class="row mb-4 align-items-stretch">
+    <!-- Row 1: 캐러셀(좌) + 공지사항/민원/수수료(우) — 남은 높이 채움 -->
+    <div class="row mb-3 align-items-stretch" style="flex:1;min-height:0;">
 
         <!-- 좌: 캐러셀 -->
-        <div class="col-lg-6 mb-3 mb-lg-0">
-            <div id="homeCarousel" class="carousel slide shadow rounded h-100" data-ride="carousel" style="min-height:420px;">
+        <div class="col-lg-6 mb-3 mb-lg-0" style="height:100%;">
+            <div id="homeCarousel" class="carousel slide shadow rounded" data-ride="carousel"
+                 style="height:100%;">
                 <ol class="carousel-indicators">
                     <li data-target="#homeCarousel" data-slide-to="0" class="active"></li>
                     <li data-target="#homeCarousel" data-slide-to="1"></li>
                     <li data-target="#homeCarousel" data-slide-to="2"></li>
                     <li data-target="#homeCarousel" data-slide-to="3"></li>
                 </ol>
-                <div class="carousel-inner h-100" style="border-radius:6px;overflow:hidden;">
-                    <div class="carousel-item h-100 active">
+                <div class="carousel-inner" style="height:100%;border-radius:6px;overflow:hidden;">
+                    <div class="carousel-item active" style="height:100%;">
                         <img src="/assets/img/_1.png" style="width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <div class="carousel-item h-100">
+                    <div class="carousel-item" style="height:100%;">
                         <img src="/assets/img/_2.png" style="width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <div class="carousel-item h-100">
+                    <div class="carousel-item" style="height:100%;">
                         <img src="/assets/img/_3.png" style="width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <div class="carousel-item h-100">
+                    <div class="carousel-item" style="height:100%;">
                         <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;padding:10px;gap:6px;">
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-height:0;">
                                 <div style="position:relative;overflow:hidden;border-radius:4px;">
@@ -100,18 +102,18 @@
             </div>
         </div>
 
-        <!-- 우: 공지사항 + 민원상담 + 수수료 (세로 배열) -->
-        <div class="col-lg-6 d-flex flex-column" style="gap:12px;">
+        <!-- 우: 공지사항 + 민원상담 + 수수료 (세로 배열, 캐러셀과 동일 높이) -->
+        <div class="col-lg-6 d-flex flex-column" style="height:100%;gap:10px;">
 
-            <!-- 공지사항 -->
-            <div class="card shadow">
-                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+            <!-- 공지사항 — 남은 높이를 모두 채움 -->
+            <div class="card shadow" style="flex:1;min-height:0;display:flex;flex-direction:column;">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center" style="flex-shrink:0;">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-bullhorn mr-1"></i>공지사항
                     </h6>
                     <a href="/notices" class="small text-muted">전체보기 &rsaquo;</a>
                 </div>
-                <div class="card-body py-2 px-3">
+                <div class="card-body py-2 px-3" style="overflow-y:auto;flex:1;min-height:0;">
                     <ul class="notice-list list-unstyled mb-0">
                         <li th:each="notice : ${notices}">
                             <a th:href="@{/notices/{id}(id=${notice.id})}" th:text="${notice.subject}">공지 제목</a>
@@ -147,14 +149,14 @@
         </div>
     </div>
 
-    <!-- Row 3: 접수절차 + 링크박스 -->
-    <div class="row">
-        <div class="col-lg-8 mb-4">
-            <div class="card shadow h-100">
+    <!-- Row 2: 접수절차 + 링크박스 — 고정 높이 -->
+    <div class="row" style="flex-shrink:0;">
+        <div class="col-lg-8 mb-0">
+            <div class="card shadow">
                 <div class="card-header py-2">
                     <h6 class="m-0 font-weight-bold text-primary">지정게시대 접수절차</h6>
                 </div>
-                <div class="card-body d-flex align-items-center py-3">
+                <div class="card-body d-flex align-items-center py-2">
                     <div class="proc-wrap w-100">
                         <div class="proc-step">
                             <div class="proc-circle"><i class="fas fa-user-plus"></i></div>
@@ -187,7 +189,7 @@
             </div>
         </div>
 
-        <div class="col-lg-4 mb-4">
+        <div class="col-lg-4">
             <a href="/sectionStatus" class="link-box shadow">
                 <div class="link-box-text">
                     <h6>지정게시대 현황</h6>
@@ -202,7 +204,7 @@
                 </div>
                 <div class="link-box-icon"><i class="fas fa-info-circle"></i></div>
             </a>
-            <a href="/assets/download/banner_sample.eps" download class="link-box shadow" style="background:#1a4f6a;">
+            <a href="/assets/download/banner_sample.eps" download class="link-box shadow" style="background:#1a4f6a;margin-bottom:0;">
                 <div class="link-box-text">
                     <h6>AI 샘플 다운로드</h6>
                     <p>가로기 제작용 AI 샘플 파일을<br>다운로드하세요.</p>
