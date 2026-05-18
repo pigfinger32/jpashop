@@ -227,7 +227,6 @@ public class OrderController {
                 ev.put("id",              id);
                 ev.put("title",           o.getOrderName());
                 ev.put("start",           o.getOrderStartDate());
-                ev.put("end",             calEnd);
                 ev.put("backgroundColor", bgColor);
                 ev.put("borderColor",     borderColor);
                 ev.put("textColor",       textColor);
