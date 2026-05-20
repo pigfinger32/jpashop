@@ -528,7 +528,7 @@
         if (selectedItems.length === 0) { alert('구간을 추가해주세요.'); return false; }
         var c = document.getElementById('hiddenItemInputs');
         c.innerHTML = selectedItems.map(function (item) {
-            var val = [item.date, item.memberId, item.orderName, item.itemId, item.count, item.term].join('%');
+            var val = [item.date, item.memberId, item.orderName, item.itemId, item.count, item.term, item.eventType].join('%');
             return '<input type="hidden" name="addItem" value="' + val + '">';
         }).join('');
         return true;

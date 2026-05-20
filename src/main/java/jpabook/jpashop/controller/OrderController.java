@@ -115,7 +115,7 @@ public class OrderController {
         for(String str : addItemList) {
             String[] strArr = str.split("%");
             OrderDto orderDto = new OrderDto();
-            //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간
+            //strArr 순서 0.날짜 1.회원 2. 공연명 3.상품 4.수량 5.기간 6.행사종류
             orderDto.setStartDate(strArr[0]);
             orderDto.setMemberId(member.getId());
             orderDto.setMember(member);
@@ -123,6 +123,7 @@ public class OrderController {
             orderDto.setItemId(Long.parseLong(strArr[3]));
             orderDto.setCount(Integer.parseInt(strArr[4]));
             orderDto.setTerm(Integer.parseInt(strArr[5]));
+            orderDto.setEventType(strArr.length > 6 ? strArr[6] : "공공기관용");
             orderDtoList.add(orderDto);
         }
         //동시성TEST

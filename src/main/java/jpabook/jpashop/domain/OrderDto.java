@@ -22,6 +22,8 @@ public class OrderDto {
 
     private int term; //주문기간
 
+    private String eventType; //행사종류 (공공기관용 / 상업용)
+
     //////
     private Member member; //주문 회원객체
 }

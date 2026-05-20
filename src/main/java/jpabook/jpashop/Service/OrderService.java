@@ -128,14 +128,10 @@ public class OrderService {
         String orderName = orderDtoList.get(0).getOrderName();
         List<OrderItem> orderItems = new ArrayList<>();
         for(OrderDto orderDto : orderDtoList) {
-            //주문상품 생성
             Item item = itemRepository.findOne(orderDto.getItemId());
-            if(term == 15) {
-            	orderItems.add(OrderItem.OrderItem(item, item.getPrice() * 3 / 4, orderDto.getCount())); // 15일: 단가 × 3/4 = 15,000
-            } else {
-            	orderItems.add(OrderItem.OrderItem(item, item.getPrice(), orderDto.getCount())); // 30일: 단가 그대로 = 20,000
-            }
-            
+            int basePrice  = (term == 15) ? 15000 : 20000;
+            int extraPrice = "상업용".equals(orderDto.getEventType()) ? (term == 15 ? 6000 : 12000) : 0;
+            orderItems.add(OrderItem.OrderItem(item, basePrice + extraPrice, orderDto.getCount()));
         }
         //주문 생성
         Order order = Order.createOrder(member, orderName,orderStartDate, orderEndDate, orderItems);
@@ -144,9 +140,12 @@ public class OrderService {
         orderRepository.save(order);
 
         //SMS용 총 수량·총 금액·납부 기한 계산
-        int unitPrice = (term == 15) ? 15000 : 20000;
         int totalCount  = orderDtoList.stream().mapToInt(OrderDto::getCount).sum();
-        int totalAmount = unitPrice * totalCount;
+        int totalAmount = orderDtoList.stream().mapToInt(dto -> {
+            int base  = (term == 15) ? 15000 : 20000;
+            int extra = "상업용".equals(dto.getEventType()) ? (term == 15 ? 6000 : 12000) : 0;
+            return (base + extra) * dto.getCount();
+        }).sum();
         String payDeadline = LocalDate.parse(orderStartDate).plusDays(2).toString();
 
         //예약자 SMS: 신청 완료 + 입금 안내
