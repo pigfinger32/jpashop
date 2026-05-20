@@ -497,12 +497,25 @@
             var badge = item.eventType === '상업용'
                 ? '<span class="badge badge-warning text-dark">상업용</span>'
                 : '<span class="badge badge-info">공공기관용</span>';
+            var base  = BASE_PRICE[item.term] || 0;
+            var extra = (item.eventType === '상업용') ? (COMMERCIAL_EXTRA[item.term] || 0) : 0;
+            var priceCell;
+            if (item.eventType === '상업용') {
+                priceCell = '<td class="text-primary font-weight-bold" style="line-height:1.6;">'
+                    + item.price.toLocaleString() + '원'
+                    + '<br><small class="text-muted font-weight-normal">'
+                    + '기본 ' + (base * parseInt(item.count)).toLocaleString()
+                    + ' + 상업 ' + (extra * parseInt(item.count)).toLocaleString()
+                    + '</small></td>';
+            } else {
+                priceCell = '<td class="text-primary font-weight-bold">' + item.price.toLocaleString() + '원</td>';
+            }
             return '<tr>'
                 + '<td>' + item.itemText + '</td>'
                 + '<td>' + badge + '</td>'
                 + '<td>' + item.count + '</td>'
                 + '<td>' + item.term + '일</td>'
-                + '<td class="text-primary font-weight-bold">' + item.price.toLocaleString() + '원</td>'
+                + priceCell
                 + '<td><button type="button" class="btn btn-danger btn-sm"'
                 + ' onclick="removeItem(\'' + item.itemId + '\')">삭제</button></td>'
                 + '</tr>';
