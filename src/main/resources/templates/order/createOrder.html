@@ -96,9 +96,17 @@
                 <div id="hiddenItemInputs"></div>
 
                 <div class="row align-items-end">
-                    <div class="col-md-4 form-group mb-2">
+                    <div class="col-md-3 form-group mb-2">
                         <label class="font-weight-bold">공연명</label>
                         <input type="text" id="orderNameInput" class="form-control" placeholder="공연명을 입력하세요">
+                    </div>
+                    <div class="col-md-2 form-group mb-2">
+                        <label class="font-weight-bold">행사종류</label>
+                        <select id="eventTypeSelect" class="form-control">
+                            <option value="">행사종류를 선택하세요</option>
+                            <option value="공공기관용">공공기관용</option>
+                            <option value="상업용">상업용</option>
+                        </select>
                     </div>
                     <div class="col-md-3 form-group mb-2">
                         <label class="font-weight-bold">구간 선택</label>
@@ -109,7 +117,7 @@
                                     th:text="${item.name}"/>
                         </select>
                     </div>
-                    <div class="col-md-2 form-group mb-2">
+                    <div class="col-md-1 form-group mb-2">
                         <label class="font-weight-bold">수량</label>
                         <select id="countSelect" class="form-control">
                             <option value="">선택</option>
@@ -144,6 +152,7 @@
                         <thead class="thead-light">
                         <tr>
                             <th>구간</th>
+                            <th>행사종류</th>
                             <th>수량</th>
                             <th>기간</th>
                             <th>금액</th>
@@ -153,7 +162,7 @@
                         <tbody id="selectedTableBody"></tbody>
                         <tfoot>
                         <tr class="font-weight-bold bg-light">
-                            <td colspan="3" class="text-right">총 금액</td>
+                            <td colspan="4" class="text-right">총 금액</td>
                             <td class="text-primary" id="totalPriceCell">0원</td>
                             <td></td>
                         </tr>
@@ -207,6 +216,8 @@
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
     var UNIT_PRICE   = 20000;
+    // 상업용 추가비용: 15일 6000원/개, 30일 12000원/개
+    var COMMERCIAL_EXTRA = { '15': 6000, '30': 12000 };
     var selectedItems = [];
 
     // 구간별 실제 도로 경로 (Kakao Mobility API 추출)
@@ -432,12 +443,15 @@
         document.getElementById('hiddenTerm').value = radio.value;
     }
 
-    function calcPrice(count, term) {
-        return (term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE) * parseInt(count);
+    function calcPrice(count, term, eventType) {
+        var base  = (term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE);
+        var extra = (eventType === '상업용') ? (COMMERCIAL_EXTRA[term] || 0) : 0;
+        return (base + extra) * parseInt(count);
     }
 
     function addItem() {
         var orderName = document.getElementById('orderNameInput').value.trim();
+        var eventType = document.getElementById('eventTypeSelect').value;
         var sel       = document.getElementById('itemSelect');
         var itemId    = sel.value;
         var itemText  = sel.options[sel.selectedIndex].text;
@@ -446,18 +460,20 @@
         var date      = document.getElementById('hiddenStartDate').value;
         var memberId  = document.getElementById('memberSelect').value;
 
-        if (!orderName) { alert('공연명을 입력하세요.');  return; }
-        if (!itemId)    { alert('구간을 선택하세요.');    return; }
-        if (!count)     { alert('수량을 선택하세요.');    return; }
+        if (!orderName)  { alert('공연명을 입력하세요.');      return; }
+        if (!eventType)  { alert('행사종류를 선택하세요.');    return; }
+        if (!itemId)     { alert('구간을 선택하세요.');        return; }
+        if (!count)      { alert('수량을 선택하세요.');        return; }
         if (selectedItems.some(function (i) { return i.itemId === itemId; })) {
             alert('이미 추가된 구간입니다. 삭제 후 다시 추가하세요.'); return;
         }
 
         selectedItems.push({
             date: date, memberId: memberId, orderName: orderName,
+            eventType: eventType,
             itemId: itemId, itemText: itemText,
             count: count, term: term,
-            price: calcPrice(count, term)
+            price: calcPrice(count, term, eventType)
         });
         renderTable();
     }
@@ -477,8 +493,12 @@
         }
         section.style.display = 'block';
         tbody.innerHTML = selectedItems.map(function (item) {
+            var badge = item.eventType === '상업용'
+                ? '<span class="badge badge-warning text-dark">상업용</span>'
+                : '<span class="badge badge-info">공공기관용</span>';
             return '<tr>'
                 + '<td>' + item.itemText + '</td>'
+                + '<td>' + badge + '</td>'
                 + '<td>' + item.count + '</td>'
                 + '<td>' + item.term + '일</td>'
                 + '<td class="text-primary font-weight-bold">' + item.price.toLocaleString() + '원</td>'
