@@ -215,8 +215,9 @@
 <script th:inline="javascript">
     var serverDate   = /*[[${startDate}]]*/ null;
     var itemListData = /*[[${itemList}]]*/ [];
-    var UNIT_PRICE   = 20000;
-    // 상업용 추가비용: 15일 6000원/개, 30일 12000원/개
+    // 공공기관용 기본 단가
+    var BASE_PRICE = { '15': 15000, '30': 20000 };
+    // 상업용 추가비용
     var COMMERCIAL_EXTRA = { '15': 6000, '30': 12000 };
     var selectedItems = [];
 
@@ -444,7 +445,7 @@
     }
 
     function calcPrice(count, term, eventType) {
-        var base  = (term === '15' ? UNIT_PRICE / 2 : UNIT_PRICE);
+        var base  = BASE_PRICE[term] || 0;
         var extra = (eventType === '상업용') ? (COMMERCIAL_EXTRA[term] || 0) : 0;
         return (base + extra) * parseInt(count);
     }
