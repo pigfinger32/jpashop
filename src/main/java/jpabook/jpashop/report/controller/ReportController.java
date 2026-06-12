@@ -55,6 +55,7 @@ public class ReportController {
         int grandTotal = 0;
         int totalAssociationFee = 0;
         int totalOperationFee = 0;
+        int totalCityStampFee = 0;
 
         for (SettlementRowDTO row : rawRows) {
             row.setSeq(seq++);
@@ -62,12 +63,14 @@ public class ReportController {
             grandTotal += row.getAmount();
             totalAssociationFee += row.getAssociationFee();
             totalOperationFee += row.getOperationFee();
+            totalCityStampFee += row.getCityStampFee();
         }
         SettlementRowDTO total = new SettlementRowDTO();
         total.setRowType("TOTAL");
         total.setAmount(grandTotal);
         total.setAssociationFee(totalAssociationFee);
         total.setOperationFee(totalOperationFee);
+        total.setCityStampFee(totalCityStampFee);
         result.add(total);
         return result;
     }

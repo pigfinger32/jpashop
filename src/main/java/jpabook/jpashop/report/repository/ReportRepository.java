@@ -54,8 +54,15 @@ public class ReportRepository {
             dto.setCount(count);
             dto.setUnitPrice(unitPrice);
             dto.setAmount(count * unitPrice);
+
+            //기본단가(공공기관용 기준) 대비 차액을 시 인지대(상업용 추가분)로 분리
+            int basePrice = (dto.getTerm() == 15) ? 15000 : 20000;
+            int extraPrice = unitPrice - basePrice;
+            dto.setEventType(extraPrice > 0 ? "상업용" : "공공기관용");
             dto.setAssociationFee(count * 3000);
-            dto.setOperationFee(count * (unitPrice - 3000));
+            dto.setOperationFee(count * (basePrice - 3000));
+            dto.setCityStampFee(count * extraPrice);
+
             dto.setStartDate((String) row[5]);
             dto.setEndDate((String) row[6]);
             String st = (String) row[7];

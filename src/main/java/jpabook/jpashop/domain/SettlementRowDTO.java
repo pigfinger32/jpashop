@@ -18,6 +18,8 @@ public class SettlementRowDTO {
     private String endDate;    // 게첨 종료일
     private String statusLabel;// 신청 / 결제완료 / 취소
     private int    term;           // 기간(일): 15 or 30
+    private String eventType;      // 구분: 공공기관용 / 상업용
     private int    associationFee; // 협회분 (count × 3,000)
-    private int    operationFee;   // 운영분 (count × (unitPrice - 3,000))
+    private int    operationFee;   // 운영분 (count × (기본단가 - 3,000))
+    private int    cityStampFee;   // 시 인지대 (count × (단가 - 기본단가), 상업용만 발생)
 }

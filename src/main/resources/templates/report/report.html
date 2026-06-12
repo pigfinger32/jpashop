@@ -154,6 +154,7 @@
                     <th style="width:40px">No</th>
                     <th>업체명</th>
                     <th>공연명</th>
+                    <th style="width:60px">구분</th>
                     <th>시작일</th>
                     <th>종료일</th>
                     <th>기간</th>
@@ -161,6 +162,7 @@
                     <th>단가</th>
                     <th>협회분</th>
                     <th>운영분</th>
+                    <th>시인지대</th>
                     <th>합계</th>
                     <th style="width:70px">상태</th>
                 </tr>
@@ -173,6 +175,7 @@
                         <td class="text-center" th:text="${row.seq}"></td>
                         <td th:text="${row.memberName}"></td>
                         <td th:text="${row.orderName}"></td>
+                        <td class="text-center" th:text="${row.eventType == '상업용'} ? '상업' : '공공'"></td>
                         <td class="text-center" th:text="${row.startDate}"></td>
                         <td class="text-center" th:text="${row.endDate}"></td>
                         <td class="text-center" th:text="${row.term + '일'}"></td>
@@ -180,6 +183,7 @@
                         <td class="text-right" th:text="${#numbers.formatInteger(row.unitPrice, 0, 'COMMA') + '원'}"></td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.associationFee, 0, 'COMMA') + '원'}"></td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.operationFee, 0, 'COMMA') + '원'}"></td>
+                        <td class="text-right" th:text="${row.cityStampFee > 0} ? (${#numbers.formatInteger(row.cityStampFee, 0, 'COMMA') + '원'}) : '-'"></td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.amount, 0, 'COMMA') + '원'}"></td>
                         <td class="text-center"
                             th:classappend="${row.statusLabel == '결제완료'} ? 'badge-payed' : (${row.statusLabel == '취소'} ? 'badge-cancel' : 'badge-order')"
@@ -188,9 +192,10 @@
 
                     <!-- 합계 행 -->
                     <tr th:if="${row.rowType == 'TOTAL'}" class="row-total">
-                        <td colspan="8" class="text-center" style="letter-spacing:4px">합 계</td>
+                        <td colspan="9" class="text-center" style="letter-spacing:4px">합 계</td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.associationFee, 0, 'COMMA') + '원'}"></td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.operationFee, 0, 'COMMA') + '원'}"></td>
+                        <td class="text-right" th:text="${#numbers.formatInteger(row.cityStampFee, 0, 'COMMA') + '원'}"></td>
                         <td class="text-right" th:text="${#numbers.formatInteger(row.amount, 0, 'COMMA') + '원'}"></td>
                         <td></td>
                     </tr>
