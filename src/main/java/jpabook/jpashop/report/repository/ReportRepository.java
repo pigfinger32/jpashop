@@ -78,7 +78,7 @@ public class ReportRepository {
             "       DATEDIFF(od.orderEndDate, od.orderStartDate) AS term, " +
             "       SUM(oi.count) AS totalCount, " +
             "       MAX(oi.orderPrice) AS unitPrice, " +
-            "       od.orderStartDate, od.orderEndDate, od.status, od.govDocPath " +
+            "       od.orderStartDate, od.orderEndDate, od.status, MAX(od.govDocPath) AS govDocPath " +
             "FROM orders od " +
             "JOIN OrderItem oi ON od.order_id = oi.order_id " +
             "JOIN Member m ON od.member_id = m.member_id " +
