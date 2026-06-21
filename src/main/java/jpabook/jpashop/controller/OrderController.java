@@ -158,6 +158,13 @@ public class OrderController {
         return "redirect:/";
     }
 
+    @PostMapping("/admin/orders/deleteAll")
+    public String deleteAllOrders() {
+        if (!"admin".equals(userSecurityService.LoginUserCheck())) return "redirect:/";
+        orderService.deleteAllOrders();
+        return "redirect:/myOrders";
+    }
+
     @GetMapping("/orders")
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
         String userId = userSecurityService.LoginUserCheck();

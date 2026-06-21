@@ -22,4 +22,5 @@ public class SettlementRowDTO {
     private int    associationFee; // 협회분 (count × 3,000)
     private int    operationFee;   // 운영분 (count × (기본단가 - 3,000))
     private int    cityStampFee;   // 시 인지대 (count × (단가 - 기본단가), 상업용만 발생)
+    private String govDocPath;     // 공공기관용 공문서 경로
 }

@@ -178,6 +178,12 @@ public class OrderService {
     }
 
     @Transactional
+    public void deleteAllOrders() {
+        em.createNativeQuery("DELETE FROM OrderItem").executeUpdate();
+        em.createNativeQuery("DELETE FROM orders").executeUpdate();
+    }
+
+    @Transactional
     public void setGovDocPath(Long orderId, String path) {
         Order order = orderRepository.findOne(orderId);
         order.setGovDocPath(path);

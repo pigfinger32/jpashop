@@ -491,6 +491,16 @@
         if (selectedItems.some(function (i) { return i.itemId === itemId; })) {
             alert('이미 추가된 구간입니다. 삭제 후 다시 추가하세요.'); return;
         }
+        // 잔여 수량 초과 체크
+        var stockInfo = itemListData.find(function (i) { return String(i.id) === String(itemId); });
+        if (stockInfo && parseInt(count) > stockInfo.curStock) {
+            alert('[' + stockInfo.name + '] 수량 부족\n잔여: ' + stockInfo.curStock + '개  /  요청: ' + count + '개');
+            return;
+        }
+        if (stockInfo && stockInfo.curStock <= 0) {
+            alert('[' + stockInfo.name + '] 예약 가능 수량이 없습니다.');
+            return;
+        }
 
         selectedItems.push({
             date: date, memberId: memberId, orderName: orderName,

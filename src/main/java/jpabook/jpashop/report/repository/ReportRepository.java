@@ -78,7 +78,7 @@ public class ReportRepository {
             "       DATEDIFF(od.orderEndDate, od.orderStartDate) AS term, " +
             "       SUM(oi.count) AS totalCount, " +
             "       MAX(oi.orderPrice) AS unitPrice, " +
-            "       od.orderStartDate, od.orderEndDate, od.status " +
+            "       od.orderStartDate, od.orderEndDate, od.status, od.govDocPath " +
             "FROM orders od " +
             "JOIN OrderItem oi ON od.order_id = oi.order_id " +
             "JOIN Member m ON od.member_id = m.member_id " +
@@ -110,6 +110,7 @@ public class ReportRepository {
             dto.setEndDate((String) row[7]);
             String st = (String) row[8];
             dto.setStatusLabel("PAYED".equals(st) ? "결제완료" : "CANCEL".equals(st) ? "취소" : "신청");
+            dto.setGovDocPath((String) row[9]);
             result.add(dto);
         }
         return result;
