@@ -87,7 +87,7 @@
             <h6 class="m-0 font-weight-bold text-primary">예약 신청</h6>
         </div>
         <div class="card-body">
-            <form id="orderForm" action="/order" method="post">
+            <form id="orderForm" action="/order" method="post" enctype="multipart/form-data">
                 <input type="hidden" id="hiddenStartDate" name="startDate">
                 <input type="hidden" id="hiddenTerm" name="term" value="30">
                 <select id="memberSelect" name="memberId" style="display:none">
@@ -168,7 +168,18 @@
                         </tr>
                         </tfoot>
                     </table>
-                    <div class="text-right">
+                    <!-- 공공기관용 공문서 첨부 (공공기관용 항목 추가 시 표시) -->
+                    <div id="govDocSection" style="display:none; background:#eef2ff; border:1px solid #b8c7f3; border-radius:6px; padding:14px 18px;" class="mt-3">
+                        <label class="font-weight-bold text-primary mb-1">
+                            <i class="fas fa-paperclip mr-1"></i>공문서 첨부 <span class="text-danger">*</span>
+                            <small class="text-muted font-weight-normal">(공공기관용 예약 시 필수)</small>
+                        </label>
+                        <input type="file" id="govDocFile" name="govDoc" class="form-control mt-1"
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.hwp">
+                        <small class="text-muted">공공기관 공문 또는 승인서류를 첨부해 주세요.</small>
+                    </div>
+
+                    <div class="text-right mt-3">
                         <button type="submit" class="btn btn-primary btn-lg px-5" onclick="return prepareSubmit()">예약하기</button>
                     </div>
                 </div>
@@ -450,6 +461,18 @@
         return (base + extra) * parseInt(count);
     }
 
+    function updateGovDocVisibility() {
+        var hasGov = selectedItems.some(function (i) { return i.eventType === '공공기관용'; });
+        document.getElementById('govDocSection').style.display = hasGov ? 'block' : 'none';
+        if (!hasGov) document.getElementById('govDocFile').value = '';
+    }
+
+    document.getElementById('eventTypeSelect').addEventListener('change', function () {
+        if (this.value === '공공기관용' && selectedItems.length === 0) {
+            document.getElementById('govDocSection').style.display = 'block';
+        }
+    });
+
     function addItem() {
         var orderName = document.getElementById('orderNameInput').value.trim();
         var eventType = document.getElementById('eventTypeSelect').value;
@@ -477,11 +500,13 @@
             price: calcPrice(count, term, eventType)
         });
         renderTable();
+        updateGovDocVisibility();
     }
 
     function removeItem(itemId) {
         selectedItems = selectedItems.filter(function (i) { return i.itemId !== itemId; });
         renderTable();
+        updateGovDocVisibility();
     }
 
     function renderTable() {
@@ -526,6 +551,18 @@
 
     function prepareSubmit() {
         if (selectedItems.length === 0) { alert('구간을 추가해주세요.'); return false; }
+
+        // 공공기관용 항목이 있으면 파일 첨부 필수
+        var hasGov = selectedItems.some(function (i) { return i.eventType === '공공기관용'; });
+        if (hasGov) {
+            var f = document.getElementById('govDocFile');
+            if (!f || !f.files || f.files.length === 0) {
+                alert('공공기관용 예약 시 공문서를 첨부해 주세요.');
+                document.getElementById('govDocFile').focus();
+                return false;
+            }
+        }
+
         var c = document.getElementById('hiddenItemInputs');
         c.innerHTML = selectedItems.map(function (item) {
             var val = [item.date, item.memberId, item.orderName, item.itemId, item.count, item.term, item.eventType].join('%');

@@ -178,6 +178,12 @@ public class OrderService {
     }
 
     @Transactional
+    public void setGovDocPath(Long orderId, String path) {
+        Order order = orderRepository.findOne(orderId);
+        order.setGovDocPath(path);
+    }
+
+    @Transactional
     public void payed(Long orderId) {
         Order order = orderRepository.findOne(orderId);
         order.setStatus(OrderStatus.PAYED);

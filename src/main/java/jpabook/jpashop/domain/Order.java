@@ -47,6 +47,8 @@ public class Order implements Comparable<Order> {
     @Column(columnDefinition = "TINYINT(1) NOT NULL DEFAULT 1")
     private boolean active = true; // false = 자동취소로 숨김 처리
 
+    private String govDocPath; // 공공기관용 공문서 업로드 경로
+
     @Override
     public int compareTo(Order o) {
         return this.getOrderItems().get(0).getItem().getName().compareTo(o.getOrderItems().get(0).getItem().getName());

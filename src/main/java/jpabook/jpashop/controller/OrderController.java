@@ -17,12 +17,18 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabook.jpashop.domain.OrderItem;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,10 +106,11 @@ public class OrderController {
     }
 
     @PostMapping(value="/order")
-    public String order(//@RequestParam List<OrderDto> orderDtoList,
-                        @RequestParam (name="addItem", required=true) List<String> addItemList,
+    public String order(@RequestParam(name="addItem") List<String> addItemList,
                         @RequestParam("startDate") String startDate,
-                        @RequestParam("term") int term) throws ParseException, InterruptedException {
+                        @RequestParam("term") int term,
+                        @RequestParam(required=false) MultipartFile govDoc)
+            throws ParseException, InterruptedException {
 
         //유저로그인체크
         String userId = userSecurityService.LoginUserCheck();
@@ -111,7 +118,7 @@ public class OrderController {
 
         //orderDtoList 생성
         List<OrderDto> orderDtoList = new ArrayList<>();
-        //%로 문자열을 나눠서 List로 담기
+        boolean hasGovType = false;
         for(String str : addItemList) {
             String[] strArr = str.split("%");
             OrderDto orderDto = new OrderDto();
@@ -124,38 +131,30 @@ public class OrderController {
             orderDto.setCount(Integer.parseInt(strArr[4]));
             orderDto.setTerm(Integer.parseInt(strArr[5]));
             orderDto.setEventType(strArr.length > 6 ? strArr[6] : "공공기관용");
+            if ("공공기관용".equals(orderDto.getEventType())) hasGovType = true;
             orderDtoList.add(orderDto);
         }
-        //동시성TEST
-//        int numberOfThreads = 2;
-//        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-//        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-//        service.execute(() -> {
-//            try {
-//                orderService.order(orderDtoList, startDate, term);
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//            latch.countDown();
-//        });
-//        service.execute(() -> {
-//            try {
-//                orderService.order(orderDtoList, startDate, term);
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//            latch.countDown();
-//        });
-//        latch.await();
-//
-//        return "redirect:/";
 
-        //동시성 TEST 끝
-        orderService.order(orderDtoList, startDate, term);
+        // 공공기관용인데 파일 미첨부 시 거부
+        if (hasGovType && (govDoc == null || govDoc.isEmpty())) {
+            throw new IllegalArgumentException("공공기관용 예약은 공문서 첨부가 필수입니다.");
+        }
+
+        Long orderId = orderService.order(orderDtoList, startDate, term);
+
+        // 공문서 저장
+        if (govDoc != null && !govDoc.isEmpty()) {
+            try {
+                String filename = UUID.randomUUID() + "_" + govDoc.getOriginalFilename();
+                Path uploadDir = Paths.get("/uploads");
+                Files.createDirectories(uploadDir);
+                Files.copy(govDoc.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+                orderService.setGovDocPath(orderId, "/uploads/" + filename);
+            } catch (Exception e) {
+                // 파일 저장 실패해도 주문은 유지
+            }
+        }
+
         return "redirect:/";
     }
 
